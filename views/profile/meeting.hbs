@@ -1,0 +1,123 @@
+<link rel="stylesheet" href="/styles/event.css">
+<style>
+        .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+</style>
+      <form action="">
+
+<div id="filter" style="display: none;">
+  <span  id="closeFilter" onclick="closeFilterModal()">&times;</span>
+        <div id="filterBox1" class="filterBoxOne">
+          {{!-- <select name="category"> --}}
+            {{!-- <option disabled selected>Выберите категорию</option> --}}
+            {{!-- {{#if eventCats.length}} --}}
+              {{!-- {{#each eventCats}} --}}
+              {{!-- <option value="{{user._id}}" {{#if (q.category)}} selected  {{/if}}>{{q.name}}</option> --}}
+              {{!-- {{/each}} --}}
+            {{!-- {{/if}} --}}
+          {{!-- </select> --}}
+          <input placeholder="Название" name="name" value="{{q.name}}">
+          <button>Поиск</button>
+        </div>
+      <div  class="filterBoxTwo">
+        <p>По дате</p>
+        <input type="date" name="date_from">
+        {{!-- <input type="date" id="period"> --}}
+       
+      </div>
+    </div>
+          </form>
+
+
+
+    
+<div id="events" style="display: flex;">
+        <div class="eventMainBody">
+          <div class="eventHead">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/meeting/page">Встречи</a>  &gt; <a id="changeNavText">Все Встречи</a></p>
+            </div>
+            <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+              Фильтр
+              <img src="/images/staticimg/Group(10).svg">
+            </div>
+          </div>
+          <div id="eventBody">
+            <div id="eventBodyHead">
+              {{!-- <p>Топ</p> --}}
+              <form action="/admin/profile/meeting/destroy/many" method="POST">
+              <button>
+                <img src="/images/staticimg/delete 1.svg">
+              </button>
+            </div>
+            <div id="eventBodyContent">
+              <table id="table">
+                <thead>
+                  <tr>
+                    <th class="td1" style="padding: 11px 8px; text-align: center">
+                      №
+                    </th>
+                    <th class="td1">Название Встречи</th>
+                    <th class="td1">Организатор</th>
+                    <th class="td1">Статус</th>
+                    <th class="td1">Участники</th>
+                    {{!-- <th class="td1">Ситуация</th> --}}
+                    <th class="td1">Дата начала встречи</th>
+                    {{!-- <th class="td1">Дата присоединения</th> --}}
+                    <th class="td1">Место прохождения</th>
+                    <th class="td1">Рейтинг</th>
+                    <th class="td1">Редактировать</th>
+                    {{!-- <th class="td1">Показать</th> --}}
+                  </tr>
+                </thead>
+                <tbody id="tbody1">
+                    {{#if meetings}}
+                      {{#optionsMeetingArrays meetings "_id" "purpose" "user" "address" "openDate" "openTime" "date"  "status" "ratingCalculated" "situation"}}
+                         <tr>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>
+                              <input type="checkbox" style="text-align: center; width: 16px; height: 16px;" name="des_events" value="{{id}}">
+                          </td>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>{{purpose}}</td>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>{{getValue owner "name"}} {{getValue owner "surname"}}</td>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>
+                            {{#if (eq situation "passed")}}Завершено
+                            {{else if (eq status 0)}}Hа модерации
+                            {{else if (eq status 1)}}Одобрено
+                            {{else}}Отклонено
+                            {{/if}}
+                            </td>
+                          <td class="td" ><a href="/admin/profile/meeting/participants/{{id}}"  {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;display: flex;align-items: center;justify-content: center;"{{else if (eq status 0)}} style="color: #59d815;display: flex;align-items: center;justify-content: center;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;display: flex;align-items: center;justify-content: center;"{{else if (eq status 2)}}style="color: red;display: flex;align-items: center;justify-content: center;"{{else}} style="display: flex;align-items: center;justify-content: center;color: black;"{{/if}} >Участники</a></td>
+                          {{!-- <td class="td">{{lng situation "ru"}}</td> --}}
+                          {{!-- <td class="td">{{openDate}}-{{openTime}}</td> --}}
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>{{startDate}}</td>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>{{address}}</td>
+                          <td class="td" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}><img style="margin-bottom:-2px;margin-right:8px" src="/images/staticimg/heart.svg">{{likes}}</td>
+                          <td class="td" style="text-align:center;" {{#if (and (eq situation "passed") (eq status 0))}} style="color: #e5e8e3;"{{else if (eq status 0)}} style="color: #59d815;"{{else if (and (eq situation "upcoming") (eq status 0))}}style="color: #59d815;"{{else if (eq status 2)}}style="color: red;"{{/if}}>
+                            {{#if (notEq situation "passed") }}
+                              <a href="/admin/profile/meet/single/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/staticimg/Vector1(1).svg" style="width: 15px; height: 16px; cursor: pointer;">
+                              </a>
+                            {{else}}
+                            <a href="/admin/profile/meet/show/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/pics/Vector 202.svg" style="width: 15px; height: 16px; cursor: pointer;">
+                            </a>
+                            {{/if}}
+                          </td>
+                          {{!-- <td class="td">
+                            <a href="/admin/profile/meet/show/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/pics/Vector 202.svg" style="width: 15px; height: 16px; cursor: pointer;">
+                            </a>
+                          </td> --}}
+                          </tr>
+                      {{/optionsMeetingArrays}}
+                    {{/if}}   
+                </tbody>
+              </table>
+            </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <script src="/js/helper.js"></script>
+      

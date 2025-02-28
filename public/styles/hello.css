@@ -1,0 +1,130 @@
+@font-face {
+  font-family: "Source Sans Pro1";
+  src: url("fonts/SourceSansPro-Regular.eot");
+  src: url("fonts/SourceSansPro-Regular.eot?#iefix") format("embedded-opentype"),
+    url("fonts/SourceSansPro-Regular.woff2") format("woff2"),
+    url("fonts/SourceSansPro-Regular.woff") format("woff"),
+    url("fonts/SourceSansPro-Regular.ttf") format("truetype"),
+    url("fonts/SourceSansPro-Regular.svg#SourceSansPro-Regular") format("svg");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.bg {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mobile {
+  position: absolute;
+  width: 320px;
+  height: 570px;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  z-index: 2;
+}
+
+/* .bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.2;
+  z-index: 1;
+} */
+
+.logo {
+  position: absolute;
+  width: 300px;
+  left: 50%;
+  top: 20%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+}
+
+.desc {
+  position: absolute;
+  text-align: center;
+  font-family: "Source Sans Pro1" !important;
+  font-size: 18px;
+  color: #00aca3;
+  top: 40%;
+  left: 50%;
+  width: 300px;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  font-family: "Courier New", Courier, monospace;
+}
+
+.googlePlay {
+  position: absolute;
+  left: 90%;
+  top: 50%;
+  transform: translate(-50%, 0);
+  -webkit-transform: translate(-50%, 0);
+  -moz-transform: translate(-50%, 0);
+  -ms-transform: translate(-50%, 0);
+  -o-transform: translate(-50%, 0);
+}
+
+.appStore {
+  position: absolute;
+  left: 10%;
+  top: 50%;
+  transform: translate(-50%, 0);
+  -webkit-transform: translate(-50%, 0);
+  -moz-transform: translate(-50%, 0);
+  -ms-transform: translate(-50%, 0);
+  -o-transform: translate(-50%, 0);
+}
+
+.appStore img {
+  width: 180px;
+  transition: all 0.7s;
+  -webkit-transition: all 0.7s;
+  -moz-transition: all 0.7s;
+  -ms-transition: all 0.7s;
+  -o-transition: all 0.7s;
+}
+
+.googlePlay img {
+  width: 180px;
+  transition: all 0.7s;
+  -webkit-transition: all 0.7s;
+  -moz-transition: all 0.7s;
+  -ms-transition: all 0.7s;
+  -o-transition: all 0.7s;
+}
+
+.appStore:hover img {
+  transform: scale(1.1);
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+}
+
+.googlePlay:hover img {
+  transform: scale(1.1);
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+}

@@ -1,0 +1,425 @@
+//Get number code by phone number
+/api/get_phone_code
+method GET
+{
+  "phone_number":"79607777907" //phone number
+}
+
+//Confirm phone number code
+/api/phone_code_confirm
+method POST
+{
+  "phone_number":"79607777907",  //phone number
+  "phone_number_code":"6864" //code received from /api/get_phone_code,
+}
+
+//SignUp after receiving the token
+/api/sign_up
+method POST
+{
+  "role":"VISITOR", //role VISITOR or ORGANIZER
+  "password":"1234" //signup pin code
+  "expiration_token":"token", //token received from /api/phone_code_confirm,
+}
+
+//Login after receiving the code
+/api/login
+method POST
+{
+  "phone_number":"79607777907", //phone number
+  "password":"1234" //signup pin code
+  "fcm_token":"1234" //device token
+}
+
+//Logout
+/api/logout
+With Bearer Token
+method POST
+{
+  "fcm_token":"1234" //device token, not required
+}
+
+//Get event categories
+/api/event/categories
+With Bearer Token
+method GET
+{
+
+}
+
+//Store event category
+/api/event/category/store
+With Bearer Token
+method POST
+{
+  "name":"movie",
+  "description":"movie desc"
+}
+
+
+//Get events
+/api/event
+With Bearer Token
+method GET
+?category=6357927cb87baa4813029f8e,6357927cb87baa4813029f8e //Get events by category id
+?situation=passed //Get events by situation / enum: ['passing','upcoming','passed']
+{
+
+}
+
+//Update event data by event_id
+/api/event/edit/6357927cb87baa4813029f8e // 6357927cb87baa4813029f8e - event_id
+With Bearer Token
+method PUT
+{
+  "name":"event",
+  "description":"event_desc",
+  ...
+}
+
+//Get event by id
+/api/event/single/:id
+With Bearer Token
+method GET
+{
+
+}
+
+
+//Store event
+/api/event/store
+With Bearer Token
+method POST
+{
+  "name":"test",
+  "description":"test desc", // can be empty
+  "description_visit":"test" // can be empty
+  "category":"633153781a8a9ffe268a57da",
+  "started_time":"2016-05-18 00:00",
+  "joinng_time":"2016-05-18 00:00",
+  "tickets_link":"11111", // can be empty
+  "website_link":"http://test"  // can be empty
+  "latitude":"50",
+  "longitude":"50",
+  "images":["/storage/upload/path255.png","/storage/upload/path35.png"],
+  "address": "test"
+  
+}
+
+
+//Like event, first time will store, second time remove 
+/api/event/like
+With Bearer Token
+method POST
+{
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Get liked events
+/api/event/like
+With Bearer Token
+method GET
+{
+}
+
+
+//Favorite event, first time will store, second time remove
+/api/event/favorite
+With Bearer Token
+method POST
+{
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Get favorited events
+/api/event/favorite
+With Bearer Token
+method GET
+{
+}
+
+
+//Visit event, first time will store, second time remove
+/api/event/visit
+With Bearer Token
+method POST
+{
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Get visited events
+/api/event/visit
+With Bearer Token
+method GET
+{
+}
+
+//If you post a couse, it means you didn't come to the event, if you came to the event, don't post the couse
+/api/event/in_place
+With Bearer Token
+method POST
+{
+  "couse": "Не успел" //not required //If you post a couse, it means you didn't come to the event, if you came to the event, don't post the couse
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Get in placed events
+/api/event/in_place
+With Bearer Token
+method GET
+{
+}
+
+
+//View event
+/api/event/view
+With Bearer Token
+method POST
+{
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Store event rating
+/api/event/rating/store
+With Bearer Token
+method POST
+{
+  "rating:5 //min 1,max 5
+  "event_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Get event comment
+/api/event/comment/get
+With Bearer Token
+method GET
+{}
+
+//Store event comment
+/api/event/comment/store
+With Bearer Token
+method POST
+{
+  "text:5
+  "event_id":"6335853a6cb80a925fc0f2b5"
+  "parent_id":"633bf1a136aabd0797387156" //if use subcomment
+}
+
+//Like event comment, first time will store, second time remove
+/api/event/comment/like/store
+With Bearer Token
+method POST
+{
+  "comment_id":"6335853a6cb80a925fc0f2b5"
+}
+
+//Store event impression image
+/api/event/impression-images/store
+With Bearer Token
+method POST
+{
+   "event_id":"638f3d931cd6b574d51e7908",
+    "files":["upload/test.mp4","upload/test.png"] // definitely array
+}
+
+
+//Password reset via phone_number
+/api/password/reset
+method POST
+{
+  "phone_number":"6335853a6cb80a925fc0f2b5",
+}
+
+//Password reset confirm
+/api/password/reset/confirm
+method POST
+{
+   "phone_number":"12345678",
+   "phone_number_code":"4104", // Confirmation code that came to the phone
+}
+
+//New Password
+api/password/reset/new
+method POST
+{
+  "expiration_token":"wxcece",
+  "password":1111  // New Password Pin
+}
+
+
+//Get all documents
+/api/document
+With Bearer Token
+method GET
+{
+}
+
+//Confirm document
+/api/document
+With Bearer Token
+method POST
+{
+  "document_id":"6335853a6cb80a925fc0f2b5",
+}
+
+//Get feedbacks
+/api/feedback
+With Bearer Token
+method GET
+
+//Feedback store
+/api/feedback
+With Bearer Token
+method POST
+{
+  "topic":"hi",
+  "message":"hello",
+  "parent_id":"6335853a6cb80a925fc0f2b5", //if you answer message
+}
+
+//Update user phone number
+/api/profile/phone_number/update
+With Bearer Token
+method POST
+{
+  "phone_number":"12121"
+}
+
+//Confirm updated user phone number 
+/api/profile/phone_number/update/confirm
+With Bearer Token
+method POST
+{
+  "phone_number_code":"1111"
+}
+
+
+//Get user data
+/api/profile
+With Bearer Token
+method GET
+{
+}
+
+//Update user data
+/api/profile/update
+With Bearer Token
+method PUT
+{
+  "name":"test",
+  "surname":"test",
+  "email":"test@test.ru",
+  "avatar":"/uploads/avatar.png"
+}
+
+//Update user avatar
+/api/profile/avatar/update
+With Bearer Token
+method PATCH
+{
+  "avatar":file
+}
+
+//Get event impressions by user_id and event_id
+/api/event/user/impressions
+With Bearer Token
+Query param
+method GET
+{
+  "event_id":"63579190b87baa4813029f75",
+  "user_id":"6332d0f9c3d598529b3f9930"
+}
+
+
+//Delete user
+/api/profile/destroy
+With Bearer Token
+method DELETE
+
+//Get notifications
+/api/notifications
+With Bearer Token
+method GET
+
+
+//Get near events
+/api/event/near
+With Bearer Token
+method GET
+/api/event/near?max_distance=10000&latitude=11&longitude=12
+Query param
+{
+    "max_distance":"10000", // maximum distance on meter
+    "latitude":"11", // your latitude
+    "longitude":"12" // your longitude
+}
+
+
+//Store favorite category
+/api/profile/favorite_categories
+With Bearer Token
+method POST
+{
+  "event_category_id":"6332d0f9c3d598529b3f9930"
+}
+
+//Delete favorite category
+/api/profile/favorite_categories
+With Bearer Token
+method DELETE
+{
+  "event_category_id":"6332d0f9c3d598529b3f9930"
+}
+
+//Get favorite categories
+/api/profile/favorite_categories
+With Bearer Token
+method GET
+{
+}
+
+
+//Store notification list
+/api/profile/list_of_notifications
+With Bearer Token
+method POST
+{
+  "notifications_list_id":"6332d0f9c3d598529b3f9930"
+}
+
+//Delete notification list
+/api/profile/list_of_notifications
+With Bearer Token
+method DELETE
+{
+  "notifications_list_id":"6332d0f9c3d598529b3f9930"
+}
+
+//Get notification list
+/api/profile/list_of_notifications
+With Bearer Token
+method GET
+{
+}
+
+
+
+//upload single file
+api/upload_single_file
+method POST
+form data
+{
+  file: file
+}
+
+
+//upload many files
+api/upload_multi_file
+method POST
+form data
+{
+  file: files
+}
+
+//delete notification by id
+api/notification/destroy/:id //id must be notification id
+method DELETE

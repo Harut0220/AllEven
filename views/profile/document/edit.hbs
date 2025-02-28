@@ -1,0 +1,99 @@
+ <link rel="stylesheet" href="/styles/document/create.css" />
+
+
+
+<div id="documantation">
+        <div id="documantation_cont">
+          <div id="documantation_header">
+            <p>
+              <a href="/admin/profile/users" class="linkA"> Главная </a> &gt;
+              <a href="/admin/profile/documents" class="linkA"> Документы </a> &gt;
+              <a href="" class="linkA"> Создание документов </a>
+            </p>
+          </div>
+          <div id="documantation_body">
+            <form id="documantation_innerCont1" method="POST" action="/admin/profile/document/update/{{document._id}}">
+              <div id="location">
+                <span>Редактировать</span>
+                <button class="btnYellow">Сохранить</button>
+              </div>
+              <hr class="hr_withMarginTop">
+               <div id="documantation_innerCont1_div1">
+                <div class="boxForLoadingDiv">
+                  <input type="radio" class="pointer" name="role" value="document" checked>
+                  для всех
+                </div>
+                {{!-- <div class="boxForLoadingDiv">
+                  <input type="radio" class="pointer" name="role" value="USER" {{#if (incl document.owners 'USER' 'name')}} checked {{/if}}>
+                  для посетителей
+                </div> --}}
+                <div class="boxForLoadingDiv">
+                  <input type="radio" class="pointer" name="role" value="USER" {{#if (incl document.owners 'USER' 'name')}} checked {{/if}}>
+                  для организаторов
+                </div>
+              </div>
+              <div id="docText">
+                     <textarea id="my-expressjs-tinymce-app" name="context"></textarea>
+              </div>
+            </form>
+            <div id="documantation_innerCont2">
+              <div class="documantation_innerCont2_div1">
+                <h6 class="document_h6">Документы для всех</h6>
+                <hr>
+                {{#if documents}}
+                  {{#each documents}}
+                    {{#if (incl this.owners 'document' 'name')}}
+                      <div class="docCont2_box">
+                         <a href="/admin/profile/document/edit/{{_id}}">
+                          <img src="/images/pics/docBoxImg.svg" class="docCont2_boxImg pointer">
+                        </a>
+                        <p class="docCont2_boxP">{{pathName path}}</p>
+                      </div>
+                    {{/if}}
+                  {{/each}}
+                {{/if}}
+              </div>
+              <div class="documantation_innerCont2_div1">
+                <h6 class="document_h6">Документы для организаторов</h6>
+                <hr>
+                {{#if documents}}
+                  {{#each documents}}
+                    {{#if (incl this.owners 'USER' 'name')}}
+                      <div class="docCont2_box">
+                        <a href="/admin/profile/document/edit/{{_id}}">
+                          <img src="/images/pics/docBoxImg.svg" class="docCont2_boxImg pointer">
+                        </a>
+                        <p class="docCont2_boxP">{{pathName path}}</p>
+                      </div>
+                    {{/if}}
+                  {{/each}}
+                {{/if}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notificationFooter">
+        <div class="notificationFooter1">
+          <div class="notificationFooter2">
+            <p>
+              <a href="/admin/profile/documents" class="notification_a active">Создание документов</a>
+            </p>
+            <div class="gic"></div>
+            <p>
+              <a href="/admin/profile/documents/subscribed-users" class="notification_a">Список подписавших пользователей</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <script type="application/javascript" src= "/tinymce/tinymce.min.js"></script>
+      <script src="/js/axios.js"></script>
+      <script type="application/javascript" src= "/js/my-tinymce-config.js"></script>
+      <script>
+        let p = "{{document.path}}"
+         axios.get(`/${p}`).then((d)=>{
+          document.getElementById("my-expressjs-tinymce-app").innerHTML = d.data
+        })
+      </script>

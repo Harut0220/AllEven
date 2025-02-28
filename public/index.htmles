@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, ya-title=#ffffff, ya-dock=#ffffff">
+  <meta name="theme-color" content="#00aca3">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#00aca3">
+  <title>AllEven</title>
+  <link rel="icon" type="image/x-icon" href="favicon.svg">
+  <link rel="stylesheet" href="https://alleven.ru/styles/reset.css" type="text/css">
+  <link rel="stylesheet" href="https://alleven.ru/styles/grid.css" type="text/css">
+  <link rel="stylesheet" href="https://alleven.ru/styles/hello.css" type="text/css">
+  <link rel="stylesheet" href="additional.css" type="text/css">
+
+</head>
+
+<body>
+  <header>
+
+  </header>
+  <main>
+    <div class="bg">
+      <div class="mobile">
+        <img class="logo" src="https://alleven.ru/img/allevent-fin-logo.svg" alt="">
+        <p class="desc">Узнай, что происходит вокруг тебя.<br>Участвуй и делись впечатлениями</p>
+        <a class="googlePlay" href="#"><img src="https://alleven.ru/img/google-play.svg" alt=""></a>
+        <a class="appStore" href="#"><img src="https://alleven.ru/img/app-store.svg" alt=""></a>
+        <div class="links">
+          <a href="/politika-confidecialnosti.html">Политика конфендициальности</a> /
+          <a href="/support.html">Помощь</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+
+  </footer>
+
+</body>

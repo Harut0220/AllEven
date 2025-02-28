@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="/styles/event.css">
+<style>
+        .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+</style>
+
+      <form action="">
+
+<div id="filter" style="display: none;">
+  <span  id="closeFilter" onclick="closeFilterModal()">&times;</span>
+        <div id="filterBox1" class="filterBoxOne">
+          <select name="category">
+            <option disabled selected>Выберите категорию</option>
+            {{#if eventCats.length}}
+              {{#companyCategoryArrays eventCats "_id" "name" "image"}}
+              <option value="{{id}}" {{#if (q.category)}} selected  {{/if}}>{{name}}</option>
+              {{/companyCategoryArrays}}
+            {{/if}}
+          </select>
+          <input placeholder="Название" name="name" value="{{q.name}}">
+          <button>Поиск</button>
+        </div>
+      {{!-- <div  class="filterBoxTwo"> --}}
+        {{!-- <p>По дате</p> --}}
+        {{!-- <input type="date" name="date_from"> --}}
+        {{!-- <input type="date" id="period"> --}}
+       
+      </div>
+    </div>
+          </form>
+
+
+
+    
+<div id="events" style="display: flex;">
+        <div class="eventMainBody">
+          <div class="eventHead">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/company/page">Услуги</a>  &gt; <a id="changeNavText">Запись</a></p>
+            </div>
+            <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+              Фильтр
+              <img src="/images/staticimg/Group(10).svg">
+            </div>
+          </div>
+          <div id="eventBody">
+            <div id="eventBodyHead">
+              {{!-- <p>Топ</p> --}}
+              {{!-- <form action="/admin/profile/company/destroy/many" method="POST"> --}}
+              {{!-- <button>
+                <img src="/images/staticimg/delete 1.svg">
+              </button> --}}
+            </div>
+            <div id="eventBodyContent">
+              <table id="table">
+                <thead>
+                  <tr>
+                    {{!-- <th class="td1" style="padding: 11px 8px; text-align: center">
+                      №
+                    </th> --}}
+                    <th class="td1">Услуга</th>
+                    <th class="td1">Имя</th>
+                    <th class="td1">Авансовый платеж</th>
+                    {{!-- <th class="td1">Ситуация</th> --}}
+                    <th class="td1">Дата</th>
+                    {{!-- <th class="td1">Место прохождения</th> --}}
+                    {{!-- <th class="td1">Рейтинг</th> --}}
+                    {{!-- <th class="td1">Редактировать</th> --}}
+                    {{!-- <th class="td1">Показать</th> --}}
+                  </tr>
+                </thead>
+                <tbody id="tbody1">
+                   {{#if events}}
+                      {{#optionsServicePays events "_id" "user" "service" "registerId" "prepayment" "prepaymentPrice" "payment" "paymentPrice" "date"}}
+                         <tr>
+                          <td class="td"  >{{getNestedValue service "type"}}</td>
+                          <td class="td" >{{getNestedValue user "name"}}{{getNestedValue user "surname"}}</td>
+                          <td class="td" >{{prepaymentPrice}} </td>
+                          <td class="td" >{{date}}</td>
+                          </tr>
+                      {{/optionsServicePays}}
+                    {{/if}}     
+                </tbody>
+              </table>
+            </div>
+            {{!-- </form> --}}
+          </div>
+        </div>
+      </div>
+      <script src="/js/helper.js"></script>
+      <script src="/js/axios.js"></script>
+
+      <script>
+                const geoCordLatit = "{{ event.latitude }}";
+        const geoCordLotit = "{{ event.longitude }}";
+        const geoPath = `https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+         axios.get(geoPath).then((d)=>{
+          const al = document.getElementById('addressLine');
+          al.innerHTML = d.data.features[0].properties.address_line2
+       })
+      </script>
+      

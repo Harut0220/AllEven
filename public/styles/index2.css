@@ -1,0 +1,76 @@
+@font-face {
+  font-family: customFont1;
+  src: url(../font/ofont.ru_Bombardier.ttf);
+}
+* {
+  font-family: customFont1 !important;
+  margin: 0;
+  padding: 0;
+}
+#Email {
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: 328px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 30px;
+  margin-top: 30px;
+}
+.Inp:focus {
+  outline: none;
+}
+.yellow {
+  width: 6.52px;
+  height: 6.52px;
+  position: absolute;
+  background: #fdb737;
+  right: 152px;
+  top: 24px;
+  border-radius: 50%;
+}
+.Message1 {
+  width: 100%;
+  height: 882px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #d9d9d930;
+  z-index: 3;
+  display: none;
+}
+.MessageText1 {
+  width: 368px;
+  height: 189.23px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid;
+  width: 368px;
+  height: 189.23px;
+  background: #ffffff;
+  border-radius: 20px;
+  flex-direction: column;
+}
+#MessageTextIcon1 {
+  width: 16px;
+  height: 50px;
+  margin-left: 260px;
+}
+.MessageText1 > p {
+  width: 245.53px;
+  height: 96px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  letter-spacing: 0.01em;
+  color: #5f6368;
+}

@@ -1,0 +1,81 @@
+    <link rel="stylesheet" href="/styles/style.css" type="text/css"/>
+    <link rel="stylesheet" href="/styles/style1.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+     <div class="Message">
+      <div class="MessageText">
+        <img
+          src="/images/img/Group%20931.svg"
+          id="MessageTextIcon"
+          onclick="RemoveMessage()"
+        />
+        <p>
+          Ваша жалоба отправлена, в течении 24 часов она будет рассмотрена.
+        </p>
+      </div>
+    </div>
+    <header>   
+        <div class="main">
+          <div class="lllll">          
+            <div id="myDIV">
+              <div id="myDIV1">
+              </div>
+              <div id="myDIV2">
+              </div>
+              <div id="myDIV3">
+              </div>
+              <div id="myDIV4">
+              </div>
+              <div id="myDIV5">
+              </div>
+          </div>
+          <div id="myDIVttt">
+              <div id="myDIV11">
+              </div>
+              <div id="myDIV22">
+              </div>
+              <div id="myDIV33">
+              </div>
+              <div id="myDIV44">
+              </div>
+               <div id="myDIV55">
+              </div>
+          </div>         
+          </div>
+        </div>
+        <div class="main2">
+          <img src="/images/img/Group%201216.svg"/>
+        <h2>
+            alleven 
+            <span style="color: red;">Пожаловаться на {{ lng report_type "ru" }} {{name}}</span>
+        </h2>
+        <form method="POST" action="/report">
+        <input type="text" name="id" value="{{ id }}" hidden>
+        <input type="text" name="report_type" value="{{ report_type }}" hidden>
+        <input type="text" name="name" class="Log" placeholder="имя" required/>
+        <input type="text" name="surname" class="Log" placeholder="фамилия" required/>
+        <input type="text" name="phone_number" class="Log" placeholder="номер телефона" required/>
+        <textarea name="text" id="" cols="30" rows="10" class="Log">сообщение</textarea>
+        <button>Отправить</button>
+        </form>     
+    </header>
+     <script src="/js/helper.js"></script>
+     <script src="/js/index2.js"></script>
+     <script>
+      let repNotif = getCookie('report_notif');
+
+      if(repNotif){
+        let cl = document.querySelector(".Message")
+        cl.style.display = 'flex'
+        delete_cookie('report_notif')
+      }
+
+      function RemoveMessage() {
+      const message = document.querySelector(".Message");
+      message.style.display = "none";
+    }
+
+
+     </script>

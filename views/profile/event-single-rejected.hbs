@@ -1,0 +1,152 @@
+<link rel="stylesheet" href="/styles/event.css" /><link
+  rel="preconnect"
+  href="https://fonts.googleapis.com"
+/>
+<style>
+        .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Exo&display=swap"
+  rel="stylesheet"
+/>
+
+<div id="events" style="display: flex;">
+    <div class="modal"><img src="/icon/icons8-verified-48.png" alt=""><span class="modalText"></span></div>
+
+  <div class="eventMainBody">
+    <div class="eventHead">
+      <div class="eventHeadFirstPart">
+        <p><a href="/">Главная</a>
+          &gt;
+          <a href="/admin/profile/events">События</a>
+          &gt;
+          <a id="changeNavText">Все событии</a></p>
+      </div>
+      {{! <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+              Фильтр
+              <img src="/images/staticimg/Group(10).svg">
+            </div> }}
+    </div>
+    <div id="allEvMainDiv">
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          <h4>События</h4>
+          {{getValue event "status"}}
+          {{#if (eq (getValue event "status") 2)}}
+          <form
+            action="/admin/profile/event/edit/{{getValue event "_id"}}"
+            method="POST" id="eventForm">
+            <input name="status" hidden value="1" />
+            <button type="button" class="buttonAllow" id="eevntForm" onclick="buttonFunc()">Одобрить</button>
+          </form>         
+          {{else}}
+            <span >Одобрено</span>
+          {{/if}}
+
+        </div>
+
+        <hr />
+        <div class="allEvBoxCont">
+          <div id="pics1">
+            {{#if images}}
+              {{#each images}}
+                <img
+                  src="/{{name}}"
+                  class="allEvImg"
+                  style="width: 118px;height:118px"
+                />
+              {{/each}}
+            {{/if}}
+            {{! <img src="/images/pics/image 32.svg" class="allEvImg" />
+            <img src="/images/pics/image 32 (1).svg" class="allEvImg" /> }}
+          </div>
+          <div class="allEvBoxContDiv">
+            <div id="boxPersonName">
+              <h6>{{getValue event "name"}}</h6>
+              <div id="emotions">
+                <div onclick="wereGoingToCome()">
+                  <img src="/images/pics/walking 1.svg" />
+                  <a>{{participants}}</a>
+                </div>
+                <div>
+                  <img src="/images/pics/Vector 80.svg" />
+                  {{favorites}}
+                </div>
+                <div>
+                  <img src="/images/pics/Vector(30).svg" />
+                  {{likes}}
+                </div>
+                <div>
+                  <img src="/images/pics/Vector (20).svg" />
+                  {{views}}
+                </div>
+              </div>
+            </div>
+
+            <div id="boxCatalog">
+              <p>{{category}}</p>
+              <a href="#" onclick="createClients()">Пришли на событие:
+                {{participants}}</a>
+            </div>
+            <div id="boxDescription">
+              <p>
+                <span>Описание </span>{{description}}</p>
+            </div>
+            <p class="boxP"><span>Дата:</span> {{started_time}}</p>
+            {{!-- <p class="boxP"><span>Время:</span> 18:30</p> --}}
+            <p class="boxP"><span>Телефон:</span> {{phone_number}}</p>
+            <p class="boxP"><span>Веб сайт:</span> {{website_link}}</p>
+            <p class="boxP boxPflex">
+              <span>Место прохождения:</span>
+              <a id="addressLine">{{address}}</a>
+              {{! <img
+                src="/images/pics/locationIcon.svg"
+                style="cursor: pointer"
+              /> }}
+            </p>
+            <p></p>
+            <p class="boxP">
+              <span>Ссылка на билеты:</span>
+              <a>
+                {{getValue event "tickets_link"}}
+              </a>
+            </p>
+            <p class="boxP">
+              <span class="biggerLetter">Почему я должен посетить?</span><br />
+              {{getValue event "description_visit"}}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="allEvBox">
+        <p id="deniedP">Причина отклонения События</p>
+        <hr />
+        <div id="fillResponseMessage">{{getValue event "rejectMessage"}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/axios.js"></script>
+<script>
+   function buttonFunc() {
+    // Տպում barev
+    const modal=document.querySelector('.modal');
+  modal.style.display = 'flex';
+ 
+    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
+    setTimeout(() => {
+      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
+      form.submit(); // Ուղարկում ենք form-ը
+    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+  }
+  //const geoCordLatit = "{{event.latitude}}"; const geoCordLotit = "{{event.longitude}}";
+  //const geoPath =
+  //`https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+  //axios.get(geoPath).then((d)=>{ const al =
+  //document.getElementById('addressLine'); al.innerHTML =
+  //d.data.features[0].properties.address_line2 })
+</script>
+<script src="/js/helper.js"></script>

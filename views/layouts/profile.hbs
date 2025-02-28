@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles/statistic.css" />
+    <link rel="stylesheet" href="/styles/Notification.css" />
+    <link rel="stylesheet" href="https://chatapi.trigger.ltd/Public/manifest.json">
+
+    {{!-- <link rel="stylesheet" href="../styles/profile.css"> --}}
+    <title>{{title}}</title>
+    <style>
+      .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+    </style>
+  </head>
+  <body>
+    <div class="Logo">
+      <img
+        src="/images/staticimg/Group%201211.svg"
+        onclick="location.href = '/admin/profile'"
+      />
+      <nav class="Search">
+        <div class="Icons">
+          <img
+            src="/images/staticimg/Group%20(1).svg"
+            onclick="toggleModal('SearchModal','flex')"
+            
+          />
+          <div id="notificationIcon" class="notificationIcon" onclick="notifList('notifModal','flex')">
+            <img
+             width="18px"
+              height="17px"
+              src="/images/staticimg/Notification.svg"
+              onclick="notifList('notifModal','flex')"
+            />
+            <div  style="position: absolute;width:10px;height:10px;border-radius:50%;font-size:10px;left: 9px;top:-2px;background:#fee798 " id="notificationCount">
+              <span style="margin:3px 3px" id="notificationCountSpan"></span>
+            </div>
+            <div
+              class="notificationModal"
+              id="notifModal"
+              style="display: none;"
+            >
+
+              {{! <div class="notificationModalChild">
+                <a href="">Lorem ipsum dolor sit amet consectetur adipisicing
+                  elit. Beatae voluptatibus sit dolor ut ea harum alias
+                  accusamus m Lorem ipsum dolor sit amet, consectetur
+                  adipisicing elit. Temporibus necessitatibus esse error labore
+                  atque tempora culpa unde velit maiores nulla, sapiente et,
+                  ipsa eligendi magni? Assumenda, ea! Necessitatibus, iste!
+                  Laudantium!</a>
+                <input
+                  class="notifModalRemove"
+                  type="image"
+                  name="category"
+                  src="/images/pics/delete 1.svg"
+                />
+              </div>
+              <div class="notificationModalChild">
+                <a href="#">Lorem ipsum dolor sit amet consectetur adipisicing
+                  elit. Beatae voluptatibus sit dolor ut ea harum alias
+                  accusamus m Lorem ipsum dolor sit amet, consectetur
+                  adipisicing elit. Temporibus necessitatibus esse error labore
+                  atque tempora culpa unde velit maiores nulla, sapiente et,
+                  ipsa eligendi magni? Assumenda, ea! Necessitatibus, iste!
+                  Laudantium!</a>
+                <input
+                  class="notifModalRemove"
+                  type="image"
+                  name="category"
+                  src="/images/pics/delete 1.svg"
+                />
+              </div>
+              <div class="notificationModalChild">
+                <a href="#">Lorem ipsum dolor sit amet consectetur adipisicing
+                  elit. Beatae voluptatibus sit dolor ut ea harum alias
+                  accusamus m Lorem ipsum dolor sit amet, consectetur
+                  adipisicing elit. Temporibus necessitatibus esse error labore
+                  atque tempora culpa unde velit maiores nulla, sapiente et,
+                  ipsa eligendi magni? Assumenda, ea! Necessitatibus, iste!
+                  Laudantium!</a>
+                <input
+                  class="notifModalRemove"
+                  type="image"
+                  name="category"
+                  src="/images/pics/delete 1.svg"
+                />
+              </div> }}
+
+            </div>
+          </div>
+
+          <p>{{user.name}} {{user.surname}}</p>
+          {{!-- {{test}} --}}
+          {{! <img src="/images/staticimg/Rectangle%2082.svg" /> }}
+          <div class="container" onclick="toggleMenu()">
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3"></div>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <header class="Header">
+      <div class="Header1">
+        <nav class="Menu">
+          <ul>
+            <li>
+              <img src="/images/staticimg/Profile.svg" class="menuIconImg" /><a
+                href="/admin/profile/users"
+                class="pages_link"
+              >Пользователи</a>
+            </li>
+            <li>
+              <img
+                src="/images/staticimg/Group%201107.svg"
+                class="menuIconImg"
+              />
+              <a
+                href="/admin/profile/event-categories"
+                class="pages_link"
+              >Категории</a>
+            </li>
+            <li><img src="/images/staticimg/Group.svg" class="menuIconImg" /><a
+                href="/admin/profile/events"
+                class="pages_link"
+              >События</a></li>
+                          <li><img src="/images/staticimg/Company.svg" class="menuIconImg" /><a
+                href="/admin/profile/company/page"
+                class="pages_link"
+              >Услуги</a></li>
+              <li><img src="/images/staticimg/Company.svg" class="menuIconImg" /><a
+                href="/admin/profile/company/online"
+                class="pages_link"
+              >Подключить монетизацию</a></li>
+                         {{!-- <li><img src="/images/staticimg/Company.svg" class="menuIconImg" /><a
+                href="/admin/profile/company/pays"
+                class="pages_link"
+              >Платежи</a></li> --}}
+                          <li><img src="/images/staticimg/Handshake1.png" class="menuIconImg" /><a
+                href="/admin/profile/meeting/page"
+                class="pages_link"
+              >Встречи</a></li>
+                          <li><img src="/images/menuImgActive/passport-svgrepo-com.svg" class="menuIconImg" /><a
+                href="/admin/profile/meeting/verify"
+                class="pages_link"
+              >Проверки паспорт</a></li>
+            <li>
+              <img
+                src="/images/staticimg/Group%201401.svg"
+                class="menuIconImg"
+              /><a href="/admin/profile/statistic" class="pages_link">
+                Статистика
+              </a>
+            </li>
+            <li>
+              <img src="/images/staticimg/Vector.svg" class="menuIconImg" /><a
+                href="/admin/profile/notification"
+                class="pages_link"
+              >Уведомления </a>
+            </li>
+            <li>
+              <img
+                src="/images/staticimg/Group%201397%20(1).svg"
+                class="menuIconImg"
+              /><a href="/admin/profile/documents" class="pages_link">Документы
+              </a>
+            </li>
+            <li>
+              <img
+                src="/images/staticimg/rubl.svg"
+                class="menuIconImg"
+              /><a href="/admin/profile/company/price/page" class="pages_link">Комиссия
+              </a>
+            </li>
+            <li>
+              <img src="/images/staticimg/Group.svg" class="menuIconImg" />
+              <a
+                href="/report"
+                class="pages_link"
+                >
+                Жалоба
+              </a>
+              </li>
+            <li>
+          </ul>
+          <form action="/admin/logout" method="post" id="logout_form">
+            <div class="Exit">
+              <img src="/images/staticimg/Frame.svg" />
+              {{! BELOW <button></button>    ->->->      <a></a> }}
+              <a class="menuA" id="logout_submit" style="cursor:pointer">
+                Выход</a>
+            </div>
+          </form>
+        </nav>
+      </div>
+      {{{body}}}
+      <form action="/admin/profile/users">
+        <div id="SearchModal" style="display: none;">
+          <p>Фильтр</p>
+          <div id="inputContainer">
+            <div id="filterBox1">
+              <input placeholder="Имя" name="name" value="{{q.name}}" />
+              <input
+                placeholder="Фамилия"
+                name="surname"
+                value="{{q.surname}}"
+              />
+              <input
+                placeholder="Номер телефона"
+                name="phone_number"
+                value="{{q.phone_number}}"
+              />
+              {{! <input placeholder="Статус"> }}
+            </div>
+            <div id="filterBox2">
+              <p>По дате регистрации</p>
+              <input type="date" name="date_from" value="{{q.date_from}}" />
+              <input type="date" name="date_to" value="{{q.date_to}}" />
+            </div>
+          </div>
+          <button type="submit">Поиск</button>
+        </div>
+      </form>
+    </header>
+    <script src="/js/helper.js"></script>
+    <script>
+      let loginForm = document.getElementById("logout_form");
+      document.getElementById("logout_submit").addEventListener("click",
+      function () { loginForm.submit(); });
+    </script>
+    <script src="/public/js/admin-notif.js"></script>
+    <script>
+
+      let pages_link = document.querySelectorAll(".pages_link"); 
+      for (let pl =0;pl < pages_link.length; pl++) {
+         if(location.href.includes(pages_link[pl].href)){
+          pages_link[pl].classList.add("activeLink") }
+      }
+      let imgsActive=["/images/menuImgActive/Profile.svg",
+      "/images/menuImgActive/Kategoria.svg",
+      "/images/menuImgActive/sobitya.svg",
+      "/images/staticimg/Company.svg",
+      "/images/staticimg/Company.svg",
+      "/images/staticimg/Handshake1.png",
+      "/images/menuImgActive/passport-svgrepo-com.svg",
+      "/images/menuImgActive/statistika.svg",
+      "/images/menuImgActive/notification.svg",
+      "/images/menuImgActive/documenti.svg",
+      "/images/staticimg/rubl.svg",
+      "/images/staticimg/Group.svg" ] 
+      let menuIconImg = document.querySelectorAll(".menuIconImg"); 
+      for(let i=0;i<pages_link.length-1;i++){
+      if(pages_link[i].getAttribute("class")=="pages_link activeLink"){
+      menuIconImg[i].src=imgsActive[i] } }
+    </script>
+  </body>
+</html>

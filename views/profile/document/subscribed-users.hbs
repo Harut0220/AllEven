@@ -1,0 +1,92 @@
+ <link rel="stylesheet" href="/styles/document/subscribed-users.css" />
+
+
+
+<div id="documantation">
+        <div id="documantation_cont">
+          <div id="documantation_header">
+            <p>
+              <a href="/" class="linkA"> Главная </a> &gt;
+              <a href="/admin/profile/documents" class="linkA"> Документы </a> &gt;
+              <a class="linkA"> Список подписавших пользователей </a>
+            </p>
+          </div>
+          <div id="clientsBody">
+            <div id="clientsBodyHead">
+              <p>Доступы</p>
+            </div>
+            <div id="clientsBodyContent">
+              <table id="table">
+                <thead>
+                  <tr>
+                    <th class="td100" style="padding: 11px 8px; text-align: center">
+                      №
+                    </th>
+                    <th class="td100">Имя Фамилия</th>
+                    <th class="td100">Номер Телефона</th>
+                    {{#if documents}}
+                      {{#each documents}}
+                        <th class="td100">Документ {{pathName path}}</th>
+                      {{/each}}
+                    {{/if}}
+                    {{!-- <th class="td100">Документ № или название</th>
+                    <th class="td100">Документ № или название</th>
+                    <th class="td100">Документ № или название</th>
+                    <th class="td100">Документ № или название</th>
+                    <th class="td100">Документ № или название</th> --}}
+                    <th class="td100">Профиль</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody1">
+                  {{#if users}}
+                    {{#each users}}
+                      <tr>
+                        <td class="td">{{inc @index}}</td>
+                        <td class="td tdName">{{name}} {{surname}}</td>
+                        <td class="td">{{phone_number}}</td>
+                        {{!-- <td class="td" style="text-align: center;">
+                          <img src="../pics/acceptIcon.svg" data-number="0" style="margin: 0px 0px -4px; cursor: pointer;">
+                        </td>
+                        <td class="td" style="text-align: center;">
+                          <img src="../pics/acceptIcon.svg" data-number="0" style="margin: 0px 0px -4px; cursor: pointer;">
+                        </td>
+                        <td class="td" style="text-align: center;">
+                          <img src="../pics/deniedIcon.svg" data-number="0" style="margin: 0px 0px -4px; cursor: pointer;">
+                        </td> --}}
+                          {{#if ../documents}}
+                            {{#each ../documents}}
+                            {{!-- {{ ../documents }} --}}
+                              <td class="td" style="text-align: center;">
+                                <img src="/images/pics/{{#if (eqArr ../documents _id )}}acceptIcon.svg{{else}}deniedIcon.svg{{/if}}" data-number="0" style="margin: 0px 0px -4px; cursor: pointer;">
+                              </td>
+                            {{/each}}
+                          {{/if}}
+                        <td class="td" style="text-align: center;">
+                          <a href="/admin/profile/users/{{_id}}">
+                           <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                          </a>
+                        </td>
+                      </tr>
+                    {{/each}}
+                  {{/if}}
+                  </table>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="notificationFooter">
+        <div class="notificationFooter1">
+          <div class="notificationFooter2">
+            <p>
+              <a href="/admin/profile/documents" class="notification_a ">Создание документов</a>
+            </p>
+            <div class="gic"></div>
+            <p>
+              <a href="/admin/profile/documents/subscribed-users" class="notification_a active">Список подписавших пользователей</a>
+            </p>
+          </div>
+        </div>
+      </div>

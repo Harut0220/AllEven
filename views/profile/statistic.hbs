@@ -1,0 +1,113 @@
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+/>
+<div class="Header2" style="margin-bottom:0">
+  <header class="Header22">
+    <p>Главная > Статистика</p>
+    <article class="ArticleStatistic">
+      <div class="Canvas1">
+        <div class="Canvas11">
+          <p>Пользователи</p>
+          <canvas id="myChart">
+          </canvas>
+        </div>
+      </div>
+      <div class="Canvas2">
+        <div class="Canvas11">
+          <p>Количество событий</p>
+          <div class="Canvas11Filter">
+            {{!-- <div>
+              <p>Месяц</p>
+              <img src="/images/staticimg/Group(10).svg" />
+            </div> --}}
+          </div>
+        </div>
+        <canvas id="myChart1"></canvas>
+      </div>
+      {{! <div class="Canvas1">
+              <div class="Canvas11">
+                <p>Статус событий</p>
+                <canvas
+                  id="myChart2"
+                  style="width: 100%; max-width: 600px"
+                ></canvas>
+              </div>
+            </div> }}
+    </article>
+  </header>
+      <div class="Canvas2" style="min-width: 95%;">
+        <div class="Canvas11">
+          <p>Количество Услуги</p>
+          <div class="Canvas11Filter">
+            {{!-- <div>
+              <p>Месяц</p>
+              <img src="/images/staticimg/Group(10).svg" />
+            </div> --}}
+          </div>
+        </div>
+        <canvas id="myChartcomp" style="max-width: 100%"></canvas>
+      </div>
+      <div class="Canvas2" style="min-width: 95%;">
+        <div class="Canvas11">
+          <p>Количество Встречи</p>
+          <div class="Canvas11Filter">
+            {{!-- <div>
+              <p>Месяц</p>
+              <img src="/images/staticimg/Group(10).svg" />
+            </div> --}}
+          </div>
+        </div>
+        <canvas id="myChartmeet" style="max-width: 100%"></canvas>
+      </div>
+  <article class="Article2">
+    <div class="Canvas3">
+      <div class="Canvas22">
+        <p>События по категориям</p>
+        <div class="Canvas11Filter">
+          {{!-- <div>
+            <p>Август</p>
+            <img src="/images/staticimg/Group(10).svg" />
+          </div> --}}
+        </div>
+        <canvas id="myChart3" style="max-width: 100%"></canvas>
+      </div>
+    </div>
+  </article>
+  <article class="Article3"></article>
+    <div class="Canvas3">
+      <div class="Canvas22">
+        <p>Услуги по категориям</p>
+        <div class="Canvas11Filter">
+          {{!-- <div>
+            <p>Август</p>
+            <img src="/images/staticimg/Group(10).svg" />
+          </div> --}}
+        </div>
+        <canvas id="myChart4" style="max-width: 100%"></canvas>
+      </div>
+    </div>
+  </article>
+    <article class="Article2"></article>
+    <div class="Canvas3">
+      <div class="Canvas22">
+        <p>Встречи</p>
+        <div class="Canvas11Filter">
+          {{!-- <div>
+            <p>Август</p>
+            <img src="/images/staticimg/Group(10).svg" />
+          </div> --}}
+        </div>
+        <canvas id="myChart5" style="max-width: 20%"></canvas>
+      </div>
+    </div>
+  </article>
+</div>
+<script>
+  let data = "{{json data}}"
+</script>
+
+<script src="/js/helper.js"></script>
+<script src="/js/chart/chart.js"></script>
+<script src="/js/chart/statistic.js"></script>

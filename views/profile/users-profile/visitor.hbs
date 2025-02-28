@@ -1,0 +1,199 @@
+<!-- Link Swiper's CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+/>
+{{! ========================= }}
+<link rel="stylesheet" href="/styles/visitor.css" />
+<div id="clients_1Div">
+  <div class="clientsMainBody">
+    <div class="clientsHead">
+      <div class="clientsHeadFirstPart">
+        <p>
+          <a href="/">Главная</a>
+          >
+          <a href="/" onclick="changeToAllEvents()">Пользователи</a>
+          >
+          <a href="">Профиль</a>
+        </p>
+      </div>
+    </div>
+    <div id="allEvMainDiv">
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          <h4>Профиль</h4>
+        </div>
+        <hr />
+        <div class="allEvBoxCont ChangedAllEvBoxCont">
+          <div id="personImgDiv">
+            {{#if singleUser.avatar}}
+              <img src="/{{singleUser.avatar}}" />
+            {{else}}
+              <img src="/images/profile/null_avatar.png" />
+            {{/if}}
+            <div>
+              <p>{{singleUser.name}} {{singleUser.email}}</p>
+              <p>Посетитель</p>
+            </div>
+          </div>
+          <p class="p2">{{singleUser.phone_number}}</p>
+          <p class="p2">{{singleUser.email}}</p>
+          {{#if singleUser.event_favorites}}
+            <div id="slideImagesBox">
+              <p class="p3">Избранные события</p>
+              <div id="picturesContainer">
+                <div class="swiper-button-prev swiper-button-prev1"></div>
+                <div class="swiper mySwiper1">
+                  <div class="swiper-wrapper squares">
+                    <div class="swiper-slide square">
+                      <img src="../Pictures/img.svg" alt="undefined" />
+                    </div>
+                    {{#each singleUser.event_favorites}}
+                      <div class="swiper-slide square">
+                        <img
+                          src="/{{images.0.name}}"
+                          class="imgItem"
+                          value="{{@index}}"
+                          type="event_favorites"
+                        />
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+                <div class="swiper-button-next swiper-button-next1"></div>
+              </div>
+            </div>
+          {{/if}}
+          {{#if singleUser.event_likes}}
+            <div id="slideImagesBox">
+              <p class="p3">Понравившиеся события</p>
+              <div id="picturesContainer">
+                <div class="swiper-button-prev swiper-button-prev2"></div>
+                <div class="swiper mySwiper2">
+                  <div class="swiper-wrapper squares">
+                    <div class="swiper-slide square">
+                      <img src="../Pictures/img.svg" alt="undefined" />
+                    </div>
+                    {{#each singleUser.event_likes}}
+                      <div class="swiper-slide square">
+                        <img
+                          src="/{{images.0.name}}"
+                          class="imgItem"
+                          value="{{@index}}"
+                          type="event_likes"
+                        />
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+                <div class="swiper-button-next swiper-button-next2"></div>
+              </div>
+            </div>
+          {{/if}}
+          {{#if singleUser.event_visits}}
+            <div id="slideImagesBox">
+              <p class="p3">Посетившие события</p>
+              <div id="picturesContainer">
+                <div class="swiper-button-prev swiper-button-prev3"></div>
+                <div class="swiper mySwiper3">
+                  <div class="swiper-wrapper squares">
+                    <div class="swiper-slide square">
+                      <img src="../Pictures/img.svg" alt="undefined" />
+                    </div>
+                    {{#each singleUser.event_visits}}
+                      <div class="swiper-slide square">
+                        <img
+                          src="/{{images.0.name}}"
+                          class="imgItem"
+                          value="{{@index}}"
+                          type="event_visits"
+                        />
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+                <div class="swiper-button-next swiper-button-next3"></div>
+              </div>
+            </div>
+          {{/if}}
+
+          <!-- ------------------------------------------------- -->
+        </div>
+      </div>
+
+      <div class="allEvBox">
+        <ul type="none" id="boxUl">
+          <li class="boxLi">
+            <a
+              class="a1"
+              id="gallery"
+              data-val=""
+              data-type=""
+              onclick="chnageView(this,'gallery')"
+            >Галерея</a>
+          </li>
+          <hr />
+          <li class="boxLi">
+            <a
+              class="a1"
+              id="comment"
+              data-val=""
+              data-type=""
+              onclick="chnageView(this,'comment')"
+            >Комментарии</a>
+          </li>
+        </ul>
+        <hr />
+        <div id="items_box"></div>
+        {{! <ul type="none" id="boxUl">
+                <li class="boxLi" onclick="createPhotos() ">
+                  <a href="#" class="a1 active">Галерея</a>
+                </li>
+                <hr />
+                <li class="boxLi" onclick="createComments()">
+                  <a href="#" class="a1">Комментарии</a>
+                </li>
+              </ul>
+              <hr />
+              <div class="allEvBoxCont ChangedAllEvBoxCont">
+                <p id="p1" class="p1">Добавленные фото/видео</p>
+                <div id="photos" class="photos"></div>
+              </div> }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal_1 STARTS -->
+
+<div id="SearchModal">
+  <p>Фильтр</p>
+  <div id="inputContainer">
+    <div id="filterBox1">
+      <input placeholder="Имя Фамилия" />
+      <input placeholder="Роль" />
+      <input placeholder="Номер телефона" />
+      <input placeholder="Статус" />
+    </div>
+    <div id="filterBox2">
+      <p>По дате регистрации</p>
+      <input type="date" />
+      <input type="date" id="period" />
+
+    </div>
+  </div>
+  <button>Поиск</button>
+</div>
+
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>var swiper = new Swiper(".mySwiper1", { slidesPerView: 4, spaceBetween:
+  11, slidesPerGroup: 1, loopFillGroupWithBlank: true, navigation: { nextEl:
+  ".swiper-button-next1", prevEl: ".swiper-button-prev1", }, }); var swiper1 =
+  new Swiper(".mySwiper2", { slidesPerView: 4, spaceBetween: 11, slidesPerGroup:
+  1, loopFillGroupWithBlank: true, navigation: { nextEl: ".swiper-button-next2",
+  prevEl: ".swiper-button-prev2", }, }); var swiper2 = new Swiper(".mySwiper3",
+  { slidesPerView: 4, spaceBetween: 11, slidesPerGroup: 1,
+  loopFillGroupWithBlank: true, navigation: { nextEl: ".swiper-button-next3",
+  prevEl: ".swiper-button-prev3", }, });
+</script>

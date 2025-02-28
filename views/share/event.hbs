@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/bootstrap@5.3.0.css">
+    <link rel="stylesheet" href="https://chatapi.trigger.ltd/Publi/manifest.json">
+
+    <title>{{title}}</title>
+
+    <meta property="og:site_name" content="AllEven">
+    <meta property="og:title" content="{{event.name}}" />
+    <meta property="og:description" content="{{event.category.name}}">
+    <meta property="og:image" itemprop="image" content="/{{imageHeader}}" />
+    <meta property="og:image:secure_url" itemprop="image" content="/{{imageHeader}}" />
+    <meta property="og:type" content="website" />
+
+
+    <meta name="twitter:title" content="{{event.name}}">
+    <meta name="twitter:description" content="{{event.category.name}}">
+    <meta name="twitter:image" content="/{{event.images.[0].name}}">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+    <body>
+        <div class="container">
+        <div class="card border-0" style="">
+            
+            <img id="imgCard" class="card-img-top" alt="Card image cap">
+            
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ event.name }}</h5>
+
+                {{#if event.description}}
+                <p class="card-text"><span>Описание: </span>{{event.description}}</p>
+                {{/if}}
+                
+                {{#if event.started_time}}
+                <p class="card-text"><span>Дата: </span>{{convertDate event.started_time}}</p>
+                {{/if}}
+
+                {{#if event.address}}
+                <p class="card-text"><span>Место прохождения:: </span>{{event.address}}</p>
+                {{/if}}
+
+                {{#if event.owner.phone_number}}
+                <p class="card-text"><span>Телефон: </span>{{event.owner.phone_number}}</p>
+                {{/if}}
+               
+            </div>
+        </div>
+        </div>
+
+        <div style="display: none" id="imgList">
+            {{!-- {{images}} --}}
+            {{#each event.images}}
+                <img id="imgList{{@index}}" class="card-img-top" src="/{{ name }}" alt="Card image cap">
+            {{/each}}
+        </div>
+    </body>
+
+    <script>
+
+
+        const img = document.getElementById('imgCard')
+        img.src=document.getElementById('imgList0').src;
+
+        let im = 1;
+
+
+        setInterval(() => {
+         img.src=document.getElementById('imgList' + im).src;
+
+         im++
+         
+         if(!document.getElementById('imgList' + im)){
+            im = 0;
+         }
+        }, 4000);
+
+
+    </script>
+</html>

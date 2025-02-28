@@ -1,0 +1,125 @@
+const eventCategory=[
+      {
+        name: "Выставки",
+        avatar: "categories/66ab246f-2150-4568-9393-d80b144c420f.png",
+        map_avatar: "categories/map/aa057fca-f466-4207-9b9d-97edb35e907e.png",
+        description: "Публичное представление достижений в области экономики, науки, техники, культуры, искусства и других областях общественной жизни.",
+        status: 1,
+      },
+      {
+        name: "Дегустация",
+        avatar: "categories/c9a5afbc-33b1-4921-8b3a-fe2547ce68bd.png",
+        map_avatar: "categories/map/8224ba70-4bbc-48eb-88bd-42fd4e31dbe6.png",
+        description: "Дегустация напитков, кулинарных изделий, ресторанных блюд. Как правило, дегустируют разное вино.",
+        status: 1,
+      },
+      {
+        name: "Детям",
+        avatar: "categories/363836b0-e075-4278-9b4c-7a79bda21804.png",
+        map_avatar: "categories/map/e9474eb3-b180-4477-9105-e2b71f3ec6f4.png",
+        description: "Детские праздники и специальные мероприятия для детей разных возрастов",
+        status: 1,
+      },
+      {
+        name: "Игры",
+        avatar: "categories/1c76872a-cfd9-4f1b-a397-3ff2e988e60c.png",
+        map_avatar: "categories/map/3f41e1d7-f81b-4f9f-b68b-906562fc0cdf.png",
+        description: "Разные игры для маленьких и больших компаний. Застольные и активные игры",
+        status: 1,
+      },
+      {
+        name: "Квест ",
+        avatar: "categories/e6663826-cbf6-4136-be4b-739c39c16ef2.png",
+        map_avatar: "categories/map/33245ff5-9c82-46c7-b31d-e8c9bd327a0a.png",
+        description: "Квест это приключение, как правило, игровое, во время которого участнику или участникам нужно пройти череду препятствий для достижения какой-либо цели.",
+        status: 1,
+      },
+      {
+        name: "Кино",
+        avatar: "categories/4e84dec6-bd9c-4c7f-a0f4-6c3217dcdcae.png",
+        map_avatar: "categories/map/1c9e02bb-d5f1-41b8-8251-a6864662b244.png",
+        description: "Последние новинки кинематографа. ",
+        status: 1,
+      },
+      {
+        name: "Концерт",
+        avatar: "categories/b80efcbc-fc2d-4b7d-ad04-84186df27973.png",
+        map_avatar: "categories/map/f26641bd-9797-4664-9c14-c0d50c415adc.png",
+        description: "Концерт  публичное исполнение музыкальных произведений, балетных, эстрадных и т. п. номеров по определённой",
+        status: 1,
+      },
+      {
+        name: "Мюзиклы ",
+        avatar: "categories/9c674211-a538-4327-8a74-f4a573f4a7b1.png",
+        map_avatar: "categories/map/7c58034d-fdba-44a8-8eb7-1b725186fd12.png",
+        description: " Музыкально-театральный сценический жанр, произведение и представление, сочетающее в себе не только музыкальное, драматическое",
+        status: 1,
+      },
+      {
+        name: "Необычное ",
+        avatar: "categories/bcaa9e99-3dc3-490c-9aa1-49255da2650e.png",
+        map_avatar: "categories/map/2584b227-4df0-4810-b459-3ccb1349ddbc.png",
+        description: " Дает  возможность создать интересное и не повторимое событие  ",
+        status: 1,
+      },
+      {
+        name: "Ночная жизнь ",
+        avatar: "categories/42e41b15-e044-4dee-9ffd-2c18357df3a7.png",
+        map_avatar: "categories/map/067eac29-33b6-4edd-99bb-3b3ff75690ab.png",
+        description: "Большие события, связанные с ночной жизнью. Дискотеки, ночные клубы, DJ-сеты и т.п.",
+        status: 1,
+      },
+      {
+        name: "Рестораны/кафе ",
+        avatar: "categories/f52d67b2-4b3c-43ed-a0c8-971666542811.png",
+        map_avatar: "categories/map/fbd91d83-de19-4a0c-9374-25a885adf7ca.png",
+        description: "Предназначены для общественного питания и отдыха. Кафе – это место, в котором можно перекусить.",
+        status: 1,
+      },
+      {
+        name: "Спорт",
+        avatar: "categories/c1cba8a0-ac11-4095-b045-4b02a717ab5f.png",
+        map_avatar: "categories/map/545e8896-ee82-4937-aeb1-3c9f4e11428a.png",
+        description: "Организованная по определённым правилам деятельность людей, состоящая в сопоставлении их физических и интеллектуальных способностей",
+        status: 1,
+      },
+      {
+        name: "Стендап ",
+        avatar: "categories/4b75cbb9-1fe5-4810-a05a-4278a3e0b727.png",
+        map_avatar: "categories/map/2ce4dee4-c2a5-4972-ae79-4769b1a734d7.png",
+        description: "Комедийное искусство, в котором комик выступает перед живой аудиторией, обычно говоря напрямую",
+        status: 1,
+      },
+      {
+        name: "Театр ",
+        avatar: "categories/9d342a68-b995-4d3c-8ddc-879a2ab8e3af.png",
+        map_avatar: "categories/map/d6c8f8ff-abe5-40eb-be34-fdd0a2e43fe0.png",
+        description: "Это вид искусства, сценическое представление драматических произведений, которое осуществляют актёры перед зрителями",
+        status: 1,
+      },
+      {
+        name: "Фестивали ",
+        avatar: "categories/d07b097e-fa2c-428d-beee-2bd72a5a4983.png",
+        map_avatar: "categories/map/41a5b2a6-1864-4873-b60a-8347a321b33c.png",
+        description: " Массовое празднество, показ (смотр) достижений музыкального, театрального, эстрадного, циркового или киноискусства",
+        status: 1,
+      },
+      {
+        name: "Шоу",
+        avatar: "categories/263a10ea-ec7b-49c9-b329-a69682612dd8.png",
+        map_avatar: "categories/map/479311bf-275e-41a8-9e79-1408bd5d961e.png",
+        description: "Яркое эстрадное представление. Нечто показное, рассчитанное на внешний эффект.",
+        status: 1,
+      },
+      {
+        name: "Экскурсия ",
+        avatar: "categories/48d9f860-8712-4085-8b0a-ef0968683414.png",
+        map_avatar: "categories/map/cebe1c17-dedd-4c1a-962e-bfeab1046afe.png",
+        description: " Это поездка или прогулка с целью посещения достопримечательностей в сопровождении экскурсовода.\r\n",
+        status:1,
+      }
+
+
+    ]
+
+    export default eventCategory;

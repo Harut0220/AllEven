@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="/styles/event.css">
+
+
+<div id="events" class="max-height-auto" style="display: flex;position: relative">
+  <div class="modal"><img src="/icon/icons8-verified-48.png" alt=""><span class="modalText"></span></div>
+        <div class="eventMainBody">
+          <div class="eventHead">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a>  &gt; <a id="changeNavText">Комиссия</a></p>
+            </div>
+          </div>
+          <div id="eventBody">
+            <div id="changeEvMainDiv">
+            <div id="changeEvMainDivContainer1">
+              <div id="changeEvBox_header">
+                <div id="allowDiv">
+                  <form action="/admin/profile/company/commission/edit/{{getValue event "_id"}}" method="POST" enctype="multipart/form-data" id="eventForm">
+
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div id="changeEvMainDivContainer2">
+              <div class="changeEvBox">
+                <div class="allEvBox_box2">
+                  <p class="changeHeadP" style="margin-bottom: -10px;">Цена</p>
+                  <div style="display: flex;align-items: center;">
+                    <input style="width: 70px;" type="number" class="inputAllow"  value="{{getValue event "price"}}" name="price">
+                    <img src="/images/staticimg/rubl.svg" alt="" style="width: 20px; height: 20px; margin-top:6px">
+                  </div>
+                  <button type="button" style="width: 100px;" class="buttonAllow" onclick="buttonFunc()">
+                   Изменить
+                  </button>
+                </div>
+              </div>
+            </div>
+            </form>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <script src="/js/axios.js"></script>
+      <script>
+
+      // Show the modal
+ function buttonFunc() {
+    // Տպում barev
+    const modal=document.querySelector('.modal');
+  modal.style.display = 'flex';
+ 
+    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
+    setTimeout(() => {
+      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
+      form.submit(); // Ուղարկում ենք form-ը
+    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+  }
+ 
+ 
+      </script>
+      <script src="/js/helper.js"></script>
+     

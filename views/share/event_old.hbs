@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/styles/share/event.css" />
+ 
+    <meta property="og:site_name" content="AllEven">
+    <meta property="og:title" content="{{event.name}}" />
+    <meta property="og:description" content="{{event.category.name}}">
+    <meta property="og:image" itemprop="image" content="https://alleven.ru/{{event.images.[0].name}}" />
+    <meta property="og:image:secure_url" itemprop="image" content="https://alleven.ru/{{event.images.[0].name}}" />
+    <meta property="og:type" content="website" />
+
+
+    <meta name="twitter:title" content="{{event.name}}">
+    <meta name="twitter:description" content="{{event.category.name}}">
+    <meta name="twitter:image" content="https://alleven.ru/{{event.images.[0].name}}">
+    <meta name="twitter:card" content="summary_large_image">
+
+
+  </head>
+  <body>
+    <div id="events">
+      <div class="eventMainBody">
+       
+          <div class="allEvBox">
+            {{#if event.images}}
+              <div id="pics1">
+                {{#each event.images}}
+                <img src="/{{ name }}" class="allEvImg" width="100px"/>
+                {{!-- <img src="image/image 32.svg" class="allEvImg" />
+                <img src="image/image 32.svg" class="allEvImg" /> --}}
+                {{/each}}
+              </div>
+            {{/if}}
+              <div class="allEvBoxContDiv">
+                <div id="boxDescription">
+                  <p><span>Описание </span>{{event.name}}  {{event.description}}</p>
+                </div>
+                <p class="boxP"><span>Дата:</span> {{convertDate event.started_time}}</p>
+                {{#if event.owner.phone_number}}
+                <p class="boxP"><span>Телефон: {{event.owner.phone_number}}</span></p>
+                {{/if}}
+                {{#if event.website_link}}
+                <p class="boxP"><span>Веб сайт: {{event.website_link}}</span></p>
+                {{/if}}
+                
+                {{#if event.address}}
+                <p class="boxP boxPflex">
+                  <span>Место прохождения:</span>
+                  <a id="addressLine">{{event.address}}</a>
+                </p>
+                {{/if}}
+
+                {{#if event.tickets_link}}
+                <p class="boxP">
+                  <span>Ссылка на билеты:</span>
+                  <a href="">{{event.tickets_link}} </a>
+                </p>
+                {{/if}}
+
+                {{#if event.description_visit}}
+                <p class="boxP">
+                  <span class="biggerLetter">Почему я должен посетить?</span
+                  >{{event.description_visit}}<br />
+                </p>
+                {{/if}}
+
+              </div>
+            </div>
+          </div>
+       
+      </div>
+    </div>
+      <script src="/js/axios.js"></script>
+       
+      <script>
+        const geoCordLatit = {{ event.latitude }};
+        const geoCordLotit = {{ event.longitude }};
+        const geoPath = `https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+         axios.get(geoPath).then((d)=>{
+          const al = document.getElementById('addressLine');
+          al.innerHTML = d.data.features[0].properties.address_line2
+        })
+      </script> 
+  </body>
+</html>

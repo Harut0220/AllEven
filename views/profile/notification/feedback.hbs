@@ -1,0 +1,106 @@
+<link rel="stylesheet" href="/styles/feedback.css">
+
+
+<div class="Header2">
+        <header class="Header22">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/notification">Уведомления</a>  &gt; <a id="changeNavText">Обратная связь</a></p>
+            </div>
+          <article class="Article1">
+            <div class="Notification" id="messages">
+              {{!-- <div class="Notification1">
+                <p>Ответ, пользователю</p>
+              </div>
+              <div class="profil">
+                <img src="/images/staticimg/Ellipse%2047.svg" class="profPic"/>
+                <div class="profilPic">
+                  <p class="name" id="name">Karen</p>
+                  <p class="organ">Организатор</p>
+                </div>
+              </div>
+              <div class="messageArea">
+                <div class="messageArea2"  id="messageArea2">
+                  <div class="day">вторник, 20 сентября</div>
+                  <div class="friendText">
+                    <div class="friendText1" id="friendText1">
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Perferendis iste fugit nisi tempore eligendi! Deserunt
+                        officiis laborum, placeat doloremque fuga odio dicta
+                        laboriosam vel rerum aperiam eligendi velit
+                        reprehenderit? Nulla!
+                      </p>
+                      <span>10:10</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form">
+                  <input
+                    type="text"
+                    class="inpSend"
+                    id="inpSend"
+                    placeholder="Добавить комментарий"
+                  /><img
+                  src="/images/staticimg/Vector (1).svg"
+                  onclick="saveNotification()"
+                />
+                </div>
+                
+              </div> --}}
+            </div>
+            <div class="saveNotification">
+              <div class="saveNotification1">
+                <p>Список уведомлений</p>
+              </div>
+              <div class="listNot" id="listNot">
+                {{#if feedbacks}}
+                  {{#each feedbacks}}
+                  <div class=" listProfil" onclick="viewMeaage('{{@index}}', '{{_id}}')">
+                    {{#if avatar}}
+                      <img src="/images/staticimg/Ellipse%2047.svg">
+                    {{/if}}
+                    <div class="listProfilPic">
+                      <p class="listProfilname">{{#if user}}{{user.name}}{{else}}Я{{/if}}</p>
+                      <span class="listProfilJam">{{convertDateHours createdAt}}</span>
+                      <p class="listProfilText">{{topic}}</p>
+                    </div>
+                  </div>
+                  {{/each}}
+                {{/if}}
+            </div>
+            
+          </article>
+        </header>
+        <div class="notificationFooter">
+          <div class="notificationFooter1">
+             <div class="notificationFooter2">
+      <p>
+        <a href="/admin/profile/notification" class="createNot">Создание
+          уведомлений</a>
+      </p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/categories" class="newType">Новые
+          категории</a></p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/feedback" class="contact">Обратная
+          связь</a></p>
+    </div>
+          </div>
+        </div>
+        </div>
+       
+      </div>
+      <script>
+        let items = "{{ json feedbacks }}"
+
+         fetch(`${location.href}?type=json`)
+        .then(response => response.json())
+        .then(async (json) => {
+          console.log(json)
+          items = json.feedbacks
+        })
+
+      </script>
+      <script src="/js/helper.js"></script>
+      <script src="/js/feedback.js"></script>
+    

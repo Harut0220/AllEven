@@ -1,0 +1,149 @@
+@font-face {
+  font-family: customFont1;
+  src: url(../font/ofont.ru_Bombardier.ttf);
+}
+* {
+  font-family: customFont1 !important;
+  margin: 0;
+  padding: 0;
+}
+.Reg {
+  width: 50%;
+  height: 882px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.RegLogo {
+  width: 123.4px;
+  height: 122.99px;
+  background: linear-gradient(180deg, #00b4a9 2.17%, #0e8a80 97.37%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 30px;
+}
+.Reg h2 {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+  color: #00ada6;
+  margin-top: 40px;
+}
+.Reg input {
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: 328px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 30px;
+  margin-top: 30px;
+}
+.Inp:focus {
+  outline: none;
+}
+small {
+  color: red;
+}
+.Reg button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  gap: 10px;
+  width: 328px;
+  height: 40px;
+  background: #00ada6;
+  border-radius: 30px;
+  border: none;
+  margin-top: 50px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  cursor: pointer;
+}
+.RegEnd {
+  display: flex;
+  margin-top: 20px;
+  height: auto;
+  width: 225px;
+  justify-content: space-around;
+  align-items: center;
+}
+.RegEnd p {
+  width: 185px;
+  height: 24px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #a3a3a3;
+  white-space: nowrap;
+}
+.RegEnd a {
+  width: 89px;
+  height: 24px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #00ada6;
+}
+.Message {
+  width: 100%;
+  height: 882px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #d9d9d930;
+  z-index: 3;
+  display: none;
+}
+.MessageText {
+  width: 368px;
+  height: 189.23px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid;
+  width: 368px;
+  height: 189.23px;
+  background: #ffffff;
+  border-radius: 20px;
+  flex-direction: column;
+}
+#MessageTextIcon {
+  width: 16px;
+  height: 16px;
+  margin-left: 250px;
+}
+.MessageText > p {
+  width: 245.53px;
+  height: 96px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  letter-spacing: 0.01em;
+  color: #5f6368;
+}
+@media only screen and (max-width: 600px) {
+  .Reg {
+    width: 90%;
+  }
+}

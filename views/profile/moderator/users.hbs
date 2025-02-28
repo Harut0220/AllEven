@@ -1,0 +1,125 @@
+  
+  <link rel="stylesheet" href="/styles/moderator/users.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+   
+
+
+  <div id="clients">
+        <div class="clientsMainBody">
+          <div class="clientsHead">
+            <div class="clientsHeadFirstPart">
+              <p>
+                <a href="/">Главная</a> >
+                <a href="/">Пользователи</a>
+              </p>
+            </div>
+            <!-- <div id="clientsHeadSecondPart" onclick="filterShow()">
+              Фильтр
+              <img src="../pics/Group(10).svg" />
+            </div> -->
+          </div>
+          <div id="clientsBody">
+            <div id="clientsBodyHead">
+              <p>Доступы</p>
+            </div>
+            <div id="clientsBodyContent">
+              <table id="table">
+                <thead>
+                  <tr>
+                    <th
+                      class="td100"
+                      style="padding: 11px 8px; text-align: center"
+                    >
+                      №
+                    </th>
+                    <th class="td100">Имя Фамилия</th>
+                    <th class="td100">Номер Телефона</th>
+                    <th class="td100">Email</th>
+                    <th class="td100">Дата регистрации</th>
+                    <th class="td100">Роль</th>
+                    <th class="td100">Профиль</th>
+                    <th class="td100">Блокировать</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody1">
+                  {{#if users.length}}
+                    {{#each users}}
+                       <tr>
+                          <td class="td"> {{inc @index}}</td>
+                          <td class="td tdName">{{ name }}  {{surname}}</td>
+                          <td class="td">{{phone_number}}</td>
+                          <td class="td">{{email}}</td>
+                          <td class="td">{{convertDate createdAt}}</td>
+                          <td class="td">{{roles.name}}</td>
+                          <td class="td" style="text-align: center;">
+                            <a href="/admin/profile/users/{{_id}}">
+                            <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                            </a>
+                          </td>
+                          <form action="/admin/profile/users/block/{{_id}}" method="POST">
+                          <td class="td" style="text-align: center;">
+                            <input class="slide" type="image" style="margin: 0px 0px -1px; cursor: pointer;" name="category" value="Car Cleaning Products" alt="Car Cleaning Products" src="/images/pics/{{#if (eq block 0)}}ban 1.svg{{else}}pngegg.png{{/if}}">
+                            {{!-- <img src="/images/pics/ban 1.svg" data-number="0" style="margin: 0px 0px -4px; cursor: pointer;"> --}}
+                            </td>
+                            </form>
+                        </tr>
+                    {{/each}}
+                  {{/if}}
+                 
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Modal_1 STARTS -->
+
+    {{!-- <div id="SearchModal">
+      <p>Фильтр</p>
+      <div id="inputContainer">
+        <div id="filterBox1">
+          <input placeholder="Имя Фамилия" />
+          <input placeholder="Роль" />
+          <input placeholder="Номер телефона" />
+          <input placeholder="Статус" />
+        </div>
+        <div id="filterBox2">
+          <p>По дате регистрации</p>
+          <input type="date" />
+          <input type="date" id="period" />
+          <div id="divCheckbox">
+            <input type="checkbox" id="checkbox1" onclick="period()" />
+            <span id="span1">период</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="search()">Поиск</button>
+    </div> --}}
+
+    <!------------------- Modal_1 ENDS --------------------->
+
+    <!--------- MODAL_2 __STARTS__ ------------>
+
+    <div id="denyDivBackDiv">
+      <div id="denyDiv">
+        <div id="denyDivCont1">
+          <img src="../pics/GroupX.svg" onclick="banClose()" />
+        </div>
+        <div id="denyDivCont2">
+          <p id="fillName">
+            Вы действительно хотите заблокировать пользователя <span id="chooseName">“Имя Фамилия”</span>?
+          </p>
+          <div style="display: flex; gap: 17px">
+            <button class="buttonAllow whiteBtn" onclick="banClose()">Нет</button>
+            <button class="buttonAllow" onclick="banClient()">Да</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{!-- <script src="/js/moderator/users.js"></script> --}}

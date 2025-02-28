@@ -1,0 +1,39 @@
+@font-face {
+  font-family: customFont1;
+  src: url(../font/ofont.ru_Bombardier.ttf);
+}
+* {
+  font-family: customFont1 !important;
+}
+#Pass1,
+#PassRep1 {
+  padding: 16px 184px 16px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: 328px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 30px;
+  margin-top: 30px;
+}
+#Pass1,
+#PassRep1:focus {
+  outline: none;
+}
+#Err1,
+#Err2 {
+  color: red;
+}
+.yellow {
+  width: 6.52px;
+  height: 6.52px;
+  position: absolute;
+  background: #fdb737;
+  right: 152px;
+  top: 24px;
+  border-radius: 50%;
+}

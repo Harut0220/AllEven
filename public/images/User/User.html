@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="User.css" />
+    <!-- CSS only -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+      crossorigin="anonymous"
+    />
+    <style>
+            .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+    </style>
+  </head>
+
+  <body>
+    <div id="editContainer">
+      <div id="editDiv">
+        <div class="main_editDiv">
+          <div class="load_img_1">
+            <label class="title_"> Добавить категорию</label>
+            <img id="closePage1" src="../staticimg/x.svg" />
+          </div>
+          <div class="load_img">
+            <label class="custom-file-upload">
+              <div class="load">
+                <div class="load-1">
+                  <div id="display-image"></div>
+                </div>
+
+                <div class="load-2">
+                  <div class="load-2-1">
+                    <input
+                      type="file"
+                      id="image-input"
+                      accept="image/jpeg, image/png, image/jpg"
+                    />
+                    <img
+                      id="uploadImg"
+                      src="../staticimg/upload.svg"
+                      width="28px"
+                    />
+                    <div class="load-2-2">
+                      <div class="load-icon-1">Загрузить другую иконку</div>
+                      <div id="load-icon-2-2">
+                        Размер иконки должен быть 404x404px
+                      </div>
+                      <span id="loadImgError"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+          <form onsubmit="return false">
+            <select id="selectStatus">
+              <option selected>Активный</option>
+              <option>Неактивный</option>
+            </select>
+            <input
+              placeholder="Название категории"
+              id="categoryName"
+              onchange="clear()"
+            />
+            <!--Количество слов 15-->
+            <span id="error"></span>
+
+            <textarea
+              id="textarea_1"
+              name="textarea_1"
+              rows="10"
+              cols="10"
+              placeholder="Описание"
+              style="resize: none"
+            ></textarea>
+            <!--Количество слов 100 -->
+            <span id="descriptionError"></span>
+            <button id="butns" onclick="AddValid()">Сохранить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="editContainer2">
+      <div id="editDiv">
+        <div class="main_editDiv">
+          <div class="load_img_1">
+            <label class="title_"> Редактировать категорию</label>
+            <img id="closePage" src="../staticimg/x.svg" />
+          </div>
+          <div class="load_img">
+            <label class="custom-file-upload">
+              <div class="load">
+                <div class="load-1">
+                  <div id="display-image2"></div>
+                </div>
+                <div class="load-2">
+                  <div class="load-2-1">
+                    <input
+                      type="file"
+                      id="image-input2"
+                      accept="image/jpeg, image/png, image/jpg"
+                    />
+                    <img
+                      id="uploadImg"
+                      src="../staticimg/upload.svg"
+                      width="28px"
+                    />
+                    <div class="load-2-2">
+                      <div class="load-icon-1">Загрузить другую иконку</div>
+                      <div id="load-icon-2">
+                        Размер иконки должен быть 404x404px
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+          <form onsubmit="return false">
+            <input
+              id="editCategoryName"
+              placeholder="Название категории"
+              onchange="clear()"
+            />
+            <select id="select_2">
+              <option selected>Активный</option>
+              <option>Неактивный</option>
+            </select>
+            <textarea
+              id="textarea_"
+              id="w3review"
+              name="w3review"
+              rows="4"
+              cols="50"
+              placeholder="Описание"
+              style="resize: none"
+            ></textarea>
+            <span id="descriptionError2"></span>
+            <button onclick="EditValid()" id="btns">Сохранить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <header>
+      <img src="../staticimg/Group%201211.svg" />
+      <nav class="Search">
+        <div class="Icons">
+          <img src="../staticimg/Group%20(1).svg" />
+          <img src="../staticimg/Notification.svg" />
+          <p>Имя Фамилия</p>
+          <img src="../staticimg/Rectangle%2082.svg" />
+        </div>
+      </nav>
+    </header>
+    <div class="footer">
+      <div class="main-Menu">
+        <nav class="Menu">
+          <ul>
+            <li>
+              <img src="../staticimg/Profile.svg" /><a href="">Пользователи</a>
+            </li>
+            <li>
+              <img src="../staticimg/Group%201107.svg" />
+              <a href="">Категории</a>
+            </li>
+            <li><img src="../staticimg/Group.svg" /><a href="">События</a></li>
+            <li><img src="../../images/img/CalendarCheck.svg" /><a href="">Услуги</a></li>
+            <li><img src="/images/staticimg/Handshake.png" /><a href="">Встречи</a></li>
+            <li>
+              <img src="../staticimg/Group%201401.svg" /><a href="">
+                Статистика
+              </a>
+            </li>
+            <li>
+              <img src="../staticimg/Vector.svg" /><a href="">Уведомления </a>
+            </li>
+            <li>
+              <img src="../staticimg/Group%201397%20(1).svg" /><a href=""
+                >Документы
+              </a>
+            </li>
+          </ul>
+          <div class="Exit">
+            <img src="../staticimg/Frame.svg" /><a href=""> Выход</a>
+          </div>
+        </nav>
+      </div>
+      <div class="CategoryPage">
+        <div class="Content">
+          <a class="PageTitle" href="#">Главная</a> / Категории
+        </div>
+        <div class="TableConteiner">
+          <div class="btn-tr">
+            <button onclick="UploadFile()">Добавить</button>
+          </div>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="No" scope="col">
+                  <img src="../staticimg/No.svg" />
+                </th>
+                <th class="icons" scope="col">Иконка</th>
+                <th class="name" scope="col">Название категории</th>
+                <th class="description" scope="col">Описание категории</th>
+                <th class="status" scope="col">Статус</th>
+                <th class="edit" scope="col">Редактировать</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+      crossorigin="anonymous"
+    ></script>
+    <script src="User.js"></script>
+  </body>
+</html>

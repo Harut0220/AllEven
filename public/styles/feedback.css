@@ -1,0 +1,292 @@
+@font-face {
+  font-family: customFont1;
+  src: url(../font/ofont.ru_Bombardier.ttf);
+}
+* {
+  font-family: customFont1 !important;
+}
+.Notification {
+  justify-content: center;
+}
+.Notification1 {
+  width: 95%;
+  justify-content: center;
+  height: 55px;
+}
+.Notification1 > p {
+  width: 100%;
+  border: none;
+}
+
+.contact {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  text-decoration-line: underline;
+  color: #01877d;
+}
+.newType,
+.createNot {
+  color: #a3a3a3;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  text-decoration-line: underline;
+}
+.profil {
+  width: 100%;
+  height: 102.95px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dadada52;
+  border-top: 1px solid #dadada;
+}
+.profilPic {
+  width: 85%;
+  height: 102px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-left: 20px;
+}
+.profil > img {
+  width: 74.31px;
+  height: 74.31px;
+  border-radius: 50%;
+}
+.name {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 30px;
+  color: #575757;
+}
+.organ {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 30px;
+  color: #575757;
+}
+.messageArea {
+  width: 100%;
+  height: 562px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+}
+.messageArea2 {
+  width: 95%;
+  height: 570.51px;
+  overflow-y: auto;
+}
+.day {
+  display: flex;
+  height: 64.06px;
+  justify-content: center;
+  align-items: center;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  color: #575757;
+}
+.friendText {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: start;
+  flex-direction: column;
+}
+.friendText1 {
+  /* width: 45%; */
+  display: flex;
+  height: auto;
+
+  align-items: flex-end;
+  justify-content: center;
+}
+.friendText1 > p {
+  width: 100%;
+  border-radius: 10px;
+  background: #fee698cf;
+  min-height: 20.71px;
+  margin-top: 22px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  word-wrap: break-word;
+}
+
+.friendText1 span,
+.myText1 span {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  color: #817f7f;
+}
+.friendText1 span {
+  margin-left: 5px;
+}
+.myText1 span {
+  margin-right: 5px;
+}
+.myText {
+  width: 99%;
+  height: auto;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+.myText1 {
+  /* width: 45%; */
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.myTextVal {
+  width: 95%;
+  min-height: 20.71px;
+  background: #14ddd575;
+  border-radius: 10px;
+  margin-top: 22px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  word-wrap: break-word;
+}
+
+.form {
+  display: flex;
+  width: 95%;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+.inpSend {
+  box-sizing: border-box;
+  padding-left: 20px;
+  gap: 16px;
+  width: 100%;
+  height: 40px;
+  border: 1px solid #dadada;
+  border-radius: 30px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 21px;
+  margin-bottom: 10px;
+}
+.form img {
+  position: absolute;
+}
+
+.form img {
+  padding-bottom: 10px;
+  min-width: 27px;
+  left: 95%;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+}
+
+.listNot {
+  width: 95%;
+  height: 650px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+.listProfil {
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid #dadada;
+  display: flex;
+}
+.listProfilPic {
+  width: 85%;
+  height: 70px;
+  margin-left: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.listProfil > img {
+  width: 37.84px;
+  height: 37.84px;
+  border-radius: 50%;
+  margin-top: 15px;
+}
+.listProfilname {
+  width: 90%;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
+  color: #575757;
+}
+.listProfilJam {
+  width: 10%;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  color: #817f7f;
+}
+.listProfilText {
+  width: 100%;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: #575757;
+}
+.notificationFooter2 a {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: #a3a3a3;
+  text-decoration: none;
+}
+.yellow {
+  width: 6.52px;
+  height: 6.52px;
+  position: absolute;
+  background: #fdb737;
+  right: 152px;
+  top: 24px;
+  border-radius: 50%;
+}
+.notificationFooter2 > p > .createNot,
+.newType {
+  color: #a3a3a3;
+  text-decoration: none;
+}
+.notificationFooter2 .contact {
+  text-decoration-line: underline;
+  color: #01877d;
+}
+
+@media only screen and (max-width: 1024px) {
+  .notificationFooter {
+    width: 100%;
+  }
+  .notificationFooter2 {
+    width: 80%;
+  }
+  .listProfilPic {
+    width: 65%;
+  }
+}

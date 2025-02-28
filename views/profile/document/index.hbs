@@ -1,0 +1,119 @@
+<link rel="stylesheet" href="/styles/document/index.css" />
+
+<div id="documantation">
+  <div id="documantation_cont">
+    <div id="documantation_header">
+      <p>
+        <a href="/" class="linkA"> Главная </a>
+        &gt;
+        <a href="/admin/profile/documents" class="linkA"> Документы </a>
+        &gt;
+        <a class="linkA"> Создание документов </a>
+      </p>
+    </div>
+    <form
+      action="/admin/profile/document/store"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <div id="documantation_body">
+        <div id="documantation_innerCont1">
+          <hr class="hr_withMarginTop" />
+          <div id="documantation_innerCont1_div1">
+            <div class="boxForLoadingDiv">
+              <div class="document_chooseFile_box">
+                <img class="pointer" src="/images/pics/surface1.svg" />
+                <input
+                  type="file"
+                  id="document_chooseFile"
+                  class="pointer"
+                  accept=".docx"
+                  name="file"
+                />
+                <span>Загрузить</span>
+              </div>
+            </div>
+            <div class="boxForLoadingDiv">
+              <input type="radio" class="pointer" name="role" value="document" />
+              для всех
+            </div>
+            <div class="boxForLoadingDiv">
+              <input
+                type="radio"
+                class="pointer"
+                name="role"
+                value="USER"
+              />
+              для организаторов
+            </div>
+            {{!-- <div class="boxForLoadingDiv">
+              <input type="radio" class="pointer" name="role" value="USER" />
+              Всем
+            </div> --}}
+          </div>
+          <button class="btnYellow">Открыть</button>
+        </div>
+        <div id="documantation_innerCont2">
+          <div class="documantation_innerCont2_div1">
+            <h6 class="document_h6">Документы для всех</h6>
+            <hr />
+            {{#if documents}}
+              {{#each documents}}
+                {{#if (incl this.owners "document" "name")}}
+                  <div class="docCont2_box">
+                    <a href="/admin/profile/document/edit/{{_id}}">
+                      <img
+                        src="/images/pics/docBoxImg.svg"
+                        class="docCont2_boxImg pointer"
+                      />
+                    </a>
+                    <p class="docCont2_boxP">{{pathName path}}</p>
+                  </div>
+                {{/if}}
+              {{/each}}
+            {{/if}}
+          </div>
+          <div class="documantation_innerCont2_div1">
+            <h6 class="document_h6">Документы для организаторов</h6>
+            <hr />
+            {{#if documents}}
+              {{#each documents}}
+                {{#if (incl this.owners "USER" "name")}}
+                  <div class="docCont2_box">
+                    <a href="/admin/profile/document/edit/{{_id}}">
+                      <img
+                        src="/images/pics/docBoxImg.svg"
+                        class="docCont2_boxImg pointer"
+                      />
+                    </a>
+                    <p class="docCont2_boxP">{{pathName path}}</p>
+                  </div>
+                {{/if}}
+              {{/each}}
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="notificationFooter">
+  <div class="notificationFooter1">
+    <div class="notificationFooter2">
+      <p>
+        <a
+          href="/admin/profile/documents"
+          class="notification_a activ1"
+        >Создание документов</a>
+      </p>
+      <div class="gic"></div>
+      <p>
+        <a
+          href="/admin/profile/documents/subscribed-users"
+          class="notification_a activ2"
+        >Список подписавших пользователей</a>
+      </p>
+    </div>
+  </div>
+</div>

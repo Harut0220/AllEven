@@ -1,0 +1,338 @@
+     <link rel="stylesheet" href="/styles/admin/users.css" />
+     <link rel="stylesheet" href="/styles/pagination.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <script src="/js/admin/users.js"></script>
+
+
+    <div id="clientAdminContainer">
+        <div id="clients" >
+          <div class="clientsMainBody">
+            <div class="clientsHead">
+              <div class="clientsHeadFirstPart">
+                <p>
+                  <a href="/admin/profile/users">Главная</a> >
+                  <a href="/admin/profile/users">Пользователи</a>
+                </p>
+              </div>
+               <div class="users-navbar">
+                  <div class="users-navbar-buttons">
+                    <button id="role1" class="main-btn" onclick="getByRole('ADMIN')">
+                      Oрганизаторы({{users.moderators.length}})
+                    </button>
+                    <button id="role2" class="main-btn" onclick="getByRole('USER')">Посетитель({{users.visitors.length}})</button>
+                    <button class="main-btn" onclick="getByRole()">сбросить</button>
+                  </div>
+                  <div class="date-inputs-box">
+                    <label for="table_date_input" >
+                      <input class="table_date_input" id="table_date_input" type="date" style="opacity: 0; visibility: hidden;" onchange="userFilter(0, this.value)" />
+                      <img src="/images/img/calendar.svg" id="table_date_input_date" alt="" />
+                    </label>
+                    <label for="table_date_input1" >
+                      <input class="table_date_input" id="table_date_input1" type="date" style="opacity: 0; visibility: hidden;" onchange="userFilter(1, this.value)"/>
+                      <img src="/images/img/calendar.svg" alt="" />
+                    </label>
+                  </div>
+
+                </div>
+          
+            </div>
+            <div id="clientsBody">
+              <div id="clientsBodyHead">
+                <p>Доступы модератора</p>
+              </div>
+              <div class="clientsBodyContent cl1">
+                <table id="table">
+                  <thead>
+                    <tr>
+                      <th
+                        class="td100"
+                        style="padding: 11px 8px; text-align: center"
+                      >
+                        №
+                      </th>
+                      <th class="td100">Имя Фамилия</th>
+                      <th class="td100">Номер Телефона</th>
+                      <th class="td100">Email</th>
+                      <th class="td100">Дата регистрации</th>
+                      <th class="td100">Роль</th>
+                      <th class="td100">Профиль</th>
+                      <th class="td100">Подтвердить</th>
+                      <th class="td100">Удалить</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody2">
+                    {{#if users.moderators.length}}
+                    {{#each users.moderators}}
+                    <tr>
+                      <td class="td"> {{inc @index}}</td>
+                      <td class="td tdName">{{ name }}  {{surname}}</td>
+                      <td class="td">{{phone_number}}</td>
+                      <td class="td">{{email}}</td>
+                      <td class="td">{{convertDate createdAt}}</td>
+                      <td class="td">{{lng roles.name "ru"}}</td>
+                      <td class="td" style="text-align: center;">
+                        <a href="/admin/profile/users/{{_id}}">
+                        <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                        </a>
+                        </td>
+                        <form action="/admin/profile/users/block/{{_id}}" method="POST">
+                  
+                      <td class="td"><div style="display: flex; justify-content: center;">
+                        <label class="switch">
+                        <input class="checkbox" type="checkbox" {{#if (eq block 0)}} checked {{/if}} onChange="this.form.submit()" name="block">
+                        
+                        <span class="slider round"></span>
+                        </label></div></td></form>
+                         <form action="/admin/profile/users/destroy/{{_id}}" method="POST">
+                      <td class="td" style="text-align: center;">
+                         <input class="slide" type="image" style="margin: 0px 0px -1px; cursor: pointer;" name="category" value="Car Cleaning Products" alt="Car Cleaning Products" src="/images/pics/delete 1.svg">
+                        {{!-- <img src="/images/pics/delete 1.svg" style="margin: 0px 0px -1px; cursor: pointer;"  onclick="this.form.submit()"> --}}
+                        </td>
+                        </form>
+                    </tr>
+                    {{/each}}
+                  {{/if}}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------------------------------------------------------------------- -->
+
+        <div id="clients" >
+          <div class="clientsMainBody">
+            <div id="clientsBody">
+              <div id="clientsBodyHead">
+                <p>Доступы пользователя</p>
+              </div>
+              <div class="clientsBodyContent cl2">
+                <table id="table">
+                  <thead>
+                    <tr>
+                      <th
+                        class="td100"
+                        style="padding: 11px 8px; text-align: center"
+                      >
+                        №
+                      </th>
+                      <th class="td100">Имя Фамилия</th>
+                      <th class="td100">Номер Телефона</th>
+                      <th class="td100">Email</th>
+                      <th class="td100">Дата регистрации</th>
+                      <th class="td100">Роль</th>
+                      <th class="td100">Профиль</th>
+                      <th class="td100">Блокировать</th>
+                      <th class="td100">Удалить</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody1">
+                    <p style="display: none;" id="page">{{q.page}}</p>
+                    <p style="display: none;" id="usersCount">{{usersCount}}</p>
+                    {{#if users.users.length}}
+                    {{#each users.users}}
+                        <tr>
+                          <td class="td">{{inc @index}}</td>
+                          <td class="td tdName">
+                            {{name}} {{surname}}
+                          </td>
+                          <td class="td">
+                            {{phone_number}}
+                          </td>
+                          <td class="td">
+                            {{email}}
+                          </td>
+                          <td class="td">
+                            {{convertDate createdAt}}
+                          </td>
+                          <td class="td">
+                             {{lng roles.name "ru"}}
+                          </td>
+                          <td class="td" style="text-align: center;">
+                            <a href="/admin/profile/users/{{_id}}">
+                              <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                            </a>
+                          </td>
+                          <td class="td" style="text-align: center;">
+                            <form action="/admin/profile/users/block/{{_id}}" method="POST">
+                              {{#if (eq block 0)}}
+                                <input class="slide" type="image" style="margin: 0px 0px -4px; cursor: pointer;" src="/images/pics/ban 1.svg">
+                              {{else}}
+                                <input class="slide" type="image" style="margin: 0px 0px -4px; cursor: pointer;" src="/images/pics/acceptIcon.svg">
+                              {{/if}}
+                             </form>
+                          </td>
+                          <td class="td" style="text-align: center;">
+                             <form action="/admin/profile/users/destroy/{{_id}}" method="POST">
+                               <input class="slide" type="image" style="margin: 0px 0px -1px; cursor: pointer;" name="category" value="Car Cleaning Products" alt="Car Cleaning Products" src="/images/pics/delete 1.svg">
+                            </form>
+                          </td>
+                        </tr>
+                        {{/each}}
+                        {{/if}}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          {{!------------ Pagination ------------}}
+          <div class="pagination">
+              <a href="">
+                <img
+                  class="prev"
+                  src="/images/pagiantion/chev-left-gray.svg"
+                  alt=""
+                  onclick="changePage()"
+                />
+              </a>
+              <div class="pagination-content">
+                {{!-- <a href="#" onclick="getUsers(1)" class="userPages item">1</a>
+                <a href="#" onclick="getUsers(2)" class="userPages item">2</a>
+                <a href="#" onclick="getUsers(3)" class="userPages item">3</a>
+                <a href="#" onclick="getUsers(4)" class="userPages item">4</a>
+                <a href="#" onclick="getUsers(5)" class="userPages item">5</a>
+                <a href="#" onclick="getUsers(6)" class="userPages item">6</a> --}}
+              </div>
+              <a href="">
+                <img
+                  class="next"
+                  style="rotate: 180deg"
+                  src="/images/pagiantion/chev-left-gray.svg"
+                  alt=""
+                  onclick="changePage()"
+                />
+              </a>
+          </div>
+          {{!--==========================--}}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Modal_1 STARTS -->
+
+    {{!-- <div id="SearchModal">
+      <p>Фильтр</p>
+      <div id="inputContainer">
+        <div id="filterBox1">
+          <input placeholder="Имя Фамилия" />
+          <input placeholder="Роль" />
+          <input placeholder="Номер телефона" />
+          <input placeholder="Статус" />
+        </div>
+        <div id="filterBox2">
+          <p>По дате регистрации</p>
+          <input type="date" />
+          <input type="date" id="period" />
+          <div id="divCheckbox">
+            <input type="checkbox" id="checkbox1" onclick="period()" />
+            <span id="span1">период</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="search()">Поиск</button>
+    </div> --}}
+
+    <!------------------- Modal_1 ENDS --------------------->
+
+    <!--------- MODAL_2 __STARTS__ ------------>
+
+    <div id="denyDivBackDiv">
+      <div id="denyDiv">
+        <div id="denyDivCont1">
+          <img src="/images/pics/GroupX.svg" onclick="banClose()" />
+        </div>
+        <div id="denyDivCont2">
+          <p id="fillName">
+            Вы действительно хотите заблокировать пользователя
+            <span id="chooseName">“Имя Фамилия”</span>?
+          </p>
+          <div style="display: flex; gap: 17px">
+            <button class="buttonAllow whiteBtn" onclick="banClose()">
+              Нет
+            </button>
+            <button class="buttonAllow" onclick="banClient()">Да</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-------- Modal_2 ENDS -------->
+
+
+    <!--------- MODAL_3 __STARTS__ ------------>
+
+    <div id="denyDivBackDiv1">
+      <div id="denyDiv">
+        <div id="denyDivCont1">
+          <img src="/images/pics/GroupX.svg" onclick="deleteOpen1()" />
+        </div>
+        <div id="denyDivCont2">
+          <p id="fillName">
+            Вы действительно хотите заблокировать пользователя
+            <span id="chooseName1">“Имя Фамилия”</span>?
+          </p>
+          <div style="display: flex; gap: 17px">
+            <button class="buttonAllow whiteBtn" onclick="deleteClose()">
+              Нет
+            </button>
+            <button class="buttonAllow" onclick="deleteClient()">Да</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function activePage() {
+        if(window.location.search == "?role=USER") {
+          const elem = document.getElementById("role1");
+          elem.setAttribute('style', "--bg: #fee798")
+        }else if(window.location.search == "?role=USER") {
+          const elem = document.getElementById("role2");
+          elem.setAttribute('style', "--bg: #fee798")
+        }
+        const usersCount = document.getElementById("usersCount").innerHTML
+        const pagination = document.getElementsByClassName("pagination-content")[0];
+        for(let i = 0; i < Math.ceil(+usersCount/10); i++) {
+          const linkElement = document.createElement('a');
+          linkElement.href = '#';
+          linkElement.textContent = i+1;
+          linkElement.classList.add("userPages");
+          linkElement.classList.add("item");
+          linkElement.setAttribute('onclick', `getUsers(${i+1})`);
+
+          pagination.appendChild(linkElement);
+        }
+        const active = document.getElementById("page").innerHTML
+        const pages = document.getElementsByClassName("userPages");
+        if(pages.length == 1){
+          document.getElementsByClassName("pagination")[0].setAttribute('style', 'display: none;')
+        }
+        for(const page of pages) {
+          if(page.innerHTML === active) {
+            page.classList.add("active")
+          }
+        }
+        if(!active || active == null) {
+          pages[0] ? pages[0].classList.add("active") : null
+        }
+
+      
+      })();
+
+      (function () {
+        const date_inputs = document.querySelectorAll(".table_date_input")
+        date_inputs.forEach(date_input => {
+          date_input.closest("label").addEventListener("click", () => {
+            date_input.showPicker()
+          })
+        })
+      })()
+
+
+    </script>
+

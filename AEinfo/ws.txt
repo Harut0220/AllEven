@@ -1,0 +1,2 @@
+//Notification socket
+ws://alleven.ru/notification/user_id // user_id - auth user id

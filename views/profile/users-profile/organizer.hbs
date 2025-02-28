@@ -1,0 +1,589 @@
+<!-- Link Swiper's CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+/>
+{{! ========================= }}
+<link rel="stylesheet" href="/styles/organizer.css" />
+<link rel="stylesheet" href="/styles/visitor.css" />
+<div id="clients_1Div">
+  <div class="clientsMainBody">
+    <div class="clientsHead">
+      <div class="clientsHeadFirstPart">
+        <p>
+          <a href="/">Главная</a>
+          >
+          <a href="/" onclick="changeToAllEvents()">Пользователи</a>
+          >
+          <a href="">Профиль</a>
+        </p>
+      </div>
+    </div>
+    <div id="allEvMainDiv">
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          <h4>Профиль</h4>
+        </div>
+        <hr />
+        <div class="allEvBoxCont ChangedAllEvBoxCont">
+          <div id="personImgDiv">
+            {{#if singleUser.avatar}}
+              <img src="/{{singleUser.avatar}}" />
+            {{else}}
+              <img src="/images/profile/null_avatar.png" />
+            {{/if}}
+            <div>
+              <p>{{singleUser.name}} {{singleUser.surname}}</p>
+              {{!-- <p>Организатор</p> --}}
+            </div>
+          </div>
+          <p class="p2">{{singleUser.phone_number}}</p>
+          <p class="p2">{{singleUser.email}}</p>
+          <div id="slideImagesBox">
+            <p class="p3">Организованные события</p>
+            {{! <div id="slideImages"> }}
+            {{! <i class="bi bi-chevron-left"></i> }}
+            {{!-- <div id="sliderDiv">
+                <!-- <img src="/images/pics/Rectangle 66.svg" /> -->
+                {{#if singleUser.events}}
+                  {{#each singleUser.events}}
+                    <img
+                      src="/storage/{{images.0.name}}"
+                      class="imgItem"
+                      value="{{@index}}"
+                    />
+                  {{/each}}
+                {{/if}}
+              </div> --}}
+
+         
+
+            <div id="picturesContainer">
+              <div class="swiper-button-prev swiper-button-prev5"></div>
+              <div class="swiper mySwiper5">
+                <div class="swiper-wrapper squares">
+                  {{!-- <div class="swiper-slide square">
+                    <img src="../Pictures/img.svg" alt="undefined" />
+                  </div> --}}
+                  {{#if events}}
+                    {{#each events}}
+                      <div class="swiper-slide square">
+                        <img
+                          src="/{{images.0.name}}"
+                          class="imgItem"
+                          value="{{@index}}"
+                        />
+                      </div>
+                    {{/each}}
+                  {{/if}}
+                </div>
+              </div>
+              <div class="swiper-button-next swiper-button-next5"></div>
+            </div>
+            {{! <i class="bi bi-chevron-right"></i> }}
+          </div>
+          {{! </div> }}
+          <div id="addedCatalog">
+            <p class="p3">Добавленные категории</p>
+            <div id="forView">
+              {{! <p class="p4">Категории на рассмотрении</p> }}
+              <div id="catalogContainer1">
+                {{#if singleUser.event_categories}}
+                  {{#each singleUser.event_categories}}
+                    <div class="catalogBox">
+                      <img src="/{{avatar}}" />
+                      <div>
+                        <p class="p3">{{name}}</p>
+                        <p class="p5">{{description}}</p>
+                      </div>
+                      {{! <div class="iconsGroup">
+                          <img src="/images/pics/Vector1(1).svg" />
+                          <img src="/images/pics/delete 1.svg" />
+                        </div> }}
+                    </div>
+                    {{! <div class="catalogBox">
+                        <img src="/images/pics/boxImg.svg" />
+                        <div>
+                          <p class="p3">Рестораны/кафе</p>
+                          <p class="p5">
+                            Повседневная практика показывает, что укрепление и
+                            развитие структуры играет важную роль
+                          </p>
+                        </div>
+                        <div class="iconsGroup">
+                          <img src="/images/pics/Vector1(1).svg" />
+                          <img src="/images/pics/delete 1.svg" />
+                        </div>
+                      </div> }}
+                  {{/each}}
+                {{/if}}
+              </div>
+            </div>
+            {{! <div id="acceptedCatalog">
+                    <p class="p4">Одобренные категории</p>
+                    <div id="catalogContainer1">
+                      <div class="catalogBox">
+                        <img src="/images/pics/boxImg.svg" />
+                        <div>
+                          <p class="p3">Рестораны/кафе</p>
+                          <p class="p5">
+                            Повседневная практика показывает, что укрепление и
+                            развитие структуры играет важную роль
+                          </p>
+                        </div>
+                        <div class="iconsGroup">
+                        </div>
+                      </div>
+                    </div>
+                  </div> }}
+          </div>
+        </div>
+      </div>
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          <h4>События</h4>
+        </div>
+        <hr />
+        <div id="event_view">
+
+        </div>
+        {{!-- {{#if singleUser.events}}
+                {{#each singleUser.events}}
+              <div class="allEvBoxCont">
+                <div id="pics1">
+                  <img src="/storage/{{images.[0].name}}" class="allEvImg" />
+                  <!-- <img src="/images/staticimg/image 32.svg" class="allEvImg" />
+                      <img src="/images/staticimg/image 32 (1).svg" class="allEvImg" /> -->
+                </div>
+                <div class="allEvBoxContDiv">
+                  <div id="boxPersonName">
+                    <h6>{{name}}</h6>
+                    <div id="emotions">
+                      <div>
+                        <img src="/images/pics/walking 1.svg" />
+                        <a>200</a>
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector 80.svg" />
+                        480
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector(30).svg" />
+                        300
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector (20).svg" />
+                        5000
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="boxCatalog">
+                    <p>Категория</p>
+                    <a href="#">Пришли на событие: 520</a>
+                  </div>
+                  <div id="boxDescription">
+                    <p>
+                      <span>Описание </span>{{ description }}
+                    </p>
+                  </div>
+                  <p class="boxP"><span>Дата:</span> {{started_time}}-14.07.2022</p>
+                  <p class="boxP"><span>Время:</span> 18:30</p>
+                  <p class="boxP"><span>Телефон:</span>{{phone_number}}</p>
+                  <p class="boxP"><span>Веб сайт:</span> www.alleven.com</p>
+                  <p class="boxP boxPflex">
+                    <span>Место прохождения:</span>
+                    <img
+                      src="/images/pics/locationIcon.svg"
+                      style="cursor: pointer"
+                    />
+                  </p>
+                  <p></p>
+                  <p class="boxP">
+                    <span>Ссылка на билеты:</span>
+                    <a
+                      href="{{tickets_link}}"
+                    >
+                      {{ tickets_link }}
+                    </a>
+                  </p>
+                  <p class="boxP">
+                    <span class="biggerLetter">Почему я должен посетить?</span
+                    ><br />
+                    Повседневная практика показывает, что укрепление Развитие
+                    структуры играет важную роль в формировании соответствующий
+                    условий Повседневная практика показывает, что укрепление
+                    Развитие структуры играет важную роль в формировании
+                    соответствующий условий
+                  </p>
+                </div>
+              </div>
+                {{/each}}
+               {{/if}} --}}
+      </div>
+    </div>
+  </div>
+
+    <div id="allEvMainDiv">
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          {{!-- <h4>Встречи</h4> --}}
+        </div>
+        <hr />
+        <div class="allEvBoxCont ChangedAllEvBoxCont">
+          <div id="personImgDiv">
+          </div>
+          <div id="slideImagesBox">
+            <p class="p3">Организованные Встречи</p>
+            {{! <div id="slideImages"> }}
+            {{! <i class="bi bi-chevron-left"></i> }}
+            {{!-- <div id="sliderDiv">
+                <!-- <img src="/images/pics/Rectangle 66.svg" /> -->
+                {{#if singleUser.events}}
+                  {{#each singleUser.events}}
+                    <img
+                      src="/storage/{{images.0.name}}"
+                      class="imgItem"
+                      value="{{@index}}"
+                    />
+                  {{/each}}
+                {{/if}}
+              </div> --}}
+
+         
+
+            <div id="picturesContainer">
+              <div class="swiper-button-prev swiper-button-prev3"></div>
+              <div class="swiper mySwiper3">
+                <div class="swiper-wrapper squares">
+                  {{!-- <div class="swiper-slide square">
+                    <img src="../Pictures/img.svg" alt="undefined" />
+                  </div> --}}
+                  {{#if meetings}}
+                    {{#each meetings}}
+                      <div class="swiper-slide square">
+                        {{!-- <span>{{images.0.path}}</span> --}}
+                        <img
+                          src="/{{images.0.path}}"
+                          class="imgItemMeet"
+                          value="{{@index}}"
+                        />
+                      </div>
+                    {{/each}}
+                  {{/if}}
+                </div>
+              </div>
+              <div class="swiper-button-next swiper-button-next3"></div>
+            </div>
+            {{! <i class="bi bi-chevron-right"></i> }}
+          </div>
+          {{! </div> }}
+          <div id="addedCatalog">
+            {{!-- <p class="p3">Добавленные категории</p> --}}
+            {{! <div id="acceptedCatalog">
+                    <p class="p4">Одобренные категории</p>
+                    <div id="catalogContainer1">
+                      <div class="catalogBox">
+                        <img src="/images/pics/boxImg.svg" />
+                        <div>
+                          <p class="p3">Рестораны/кафе</p>
+                          <p class="p5">
+                            Повседневная практика показывает, что укрепление и
+                            развитие структуры играет важную роль
+                          </p>
+                        </div>
+                        <div class="iconsGroup">
+                        </div>
+                      </div>
+                    </div>
+                  </div> }}
+          </div>
+        </div>
+      </div>
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          
+        </div>
+        <hr />
+        <br>
+        <h4>Встречи</h4>
+        <div id="meet_view">
+
+        </div>
+        {{!-- {{#if singleUser.events}}
+                {{#each singleUser.events}}
+              <div class="allEvBoxCont">
+                <div id="pics1">
+                  <img src="/storage/{{images.[0].name}}" class="allEvImg" />
+                  <!-- <img src="/images/staticimg/image 32.svg" class="allEvImg" />
+                      <img src="/images/staticimg/image 32 (1).svg" class="allEvImg" /> -->
+                </div>
+                <div class="allEvBoxContDiv">
+                  <div id="boxPersonName">
+                    <h6>{{name}}</h6>
+                    <div id="emotions">
+                      <div>
+                        <img src="/images/pics/walking 1.svg" />
+                        <a>200</a>
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector 80.svg" />
+                        480
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector(30).svg" />
+                        300
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector (20).svg" />
+                        5000
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="boxCatalog">
+                    <p>Категория</p>
+                    <a href="#">Пришли на событие: 520</a>
+                  </div>
+                  <div id="boxDescription">
+                    <p>
+                      <span>Описание </span>{{ description }}
+                    </p>
+                  </div>
+                  <p class="boxP"><span>Дата:</span> {{started_time}}-14.07.2022</p>
+                  <p class="boxP"><span>Время:</span> 18:30</p>
+                  <p class="boxP"><span>Телефон:</span>{{phone_number}}</p>
+                  <p class="boxP"><span>Веб сайт:</span> www.alleven.com</p>
+                  <p class="boxP boxPflex">
+                    <span>Место прохождения:</span>
+                    <img
+                      src="/images/pics/locationIcon.svg"
+                      style="cursor: pointer"
+                    />
+                  </p>
+                  <p></p>
+                  <p class="boxP">
+                    <span>Ссылка на билеты:</span>
+                    <a
+                      href="{{tickets_link}}"
+                    >
+                      {{ tickets_link }}
+                    </a>
+                  </p>
+                  <p class="boxP">
+                    <span class="biggerLetter">Почему я должен посетить?</span
+                    ><br />
+                    Повседневная практика показывает, что укрепление Развитие
+                    структуры играет важную роль в формировании соответствующий
+                    условий Повседневная практика показывает, что укрепление
+                    Развитие структуры играет важную роль в формировании
+                    соответствующий условий
+                  </p>
+                </div>
+              </div>
+                {{/each}}
+               {{/if}} --}}
+      </div>
+    </div>
+    <div id="allEvMainDiv">
+      <div class="allEvBoxComp">
+        <div id="allEvBox_header">
+          {{!-- <h4>Встречи</h4> --}}
+        </div>
+        <hr />
+        <div class="allEvBoxCont ChangedAllEvBoxCont">
+          <div id="personImgDiv">
+          </div>
+          <div id="slideImagesBox">
+            <p class="p3">Организованные Услуги</p>
+            {{! <div id="slideImages"> }}
+            {{! <i class="bi bi-chevron-left"></i> }}
+            {{!-- <div id="sliderDiv">
+                <!-- <img src="/images/pics/Rectangle 66.svg" /> -->
+                {{#if singleUser.events}}
+                  {{#each singleUser.events}}
+                    <img
+                      src="/storage/{{images.0.name}}"
+                      class="imgItem"
+                      value="{{@index}}"
+                    />
+                  {{/each}}
+                {{/if}}
+              </div> --}}
+
+         
+
+            <div id="picturesContainer">
+              <div class="swiper-button-prev swiper-button-prev4"></div>
+              <div class="swiper mySwiper4">
+                <div class="swiper-wrapper squares">
+                  {{!-- <div class="swiper-slide square">
+                    <img src="../Pictures/img.svg" alt="undefined" />
+                  </div> --}}
+                  {{#if company}}
+                    {{#each company}}
+                      <div class="swiper-slide square">
+                        {{!-- <span>{{images.0.path}}</span> --}}
+                        <img
+                          src="/{{images.0.url}}"
+                          class="imgItemComp"
+                          value="{{@index}}"
+                        />
+                      </div>
+                    {{/each}}
+                  {{/if}}
+                </div>
+              </div>
+              <div class="swiper-button-next swiper-button-next4"></div>
+            </div>
+            {{! <i class="bi bi-chevron-right"></i> }}
+          </div>
+          {{! </div> }}
+          <div id="addedCatalog">
+            {{!-- <p class="p3">Добавленные категории</p> --}}
+            {{! <div id="acceptedCatalog">
+                    <p class="p4">Одобренные категории</p>
+                    <div id="catalogContainer1">
+                      <div class="catalogBox">
+                        <img src="/images/pics/boxImg.svg" />
+                        <div>
+                          <p class="p3">Рестораны/кафе</p>
+                          <p class="p5">
+                            Повседневная практика показывает, что укрепление и
+                            развитие структуры играет важную роль
+                          </p>
+                        </div>
+                        <div class="iconsGroup">
+                        </div>
+                      </div>
+                    </div>
+                  </div> }}
+          </div>
+        </div>
+      </div>
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          
+        </div>
+        <hr />
+        <br>
+        <h4>Услуга</h4>
+        <div id="comp_view">
+
+        </div>
+        {{!-- {{#if singleUser.events}}
+                {{#each singleUser.events}}
+              <div class="allEvBoxCont">
+                <div id="pics1">
+                  <img src="/storage/{{images.[0].name}}" class="allEvImg" />
+                  <!-- <img src="/images/staticimg/image 32.svg" class="allEvImg" />
+                      <img src="/images/staticimg/image 32 (1).svg" class="allEvImg" /> -->
+                </div>
+                <div class="allEvBoxContDiv">
+                  <div id="boxPersonName">
+                    <h6>{{name}}</h6>
+                    <div id="emotions">
+                      <div>
+                        <img src="/images/pics/walking 1.svg" />
+                        <a>200</a>
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector 80.svg" />
+                        480
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector(30).svg" />
+                        300
+                      </div>
+                      <div>
+                        <img src="/images/pics/Vector (20).svg" />
+                        5000
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="boxCatalog">
+                    <p>Категория</p>
+                    <a href="#">Пришли на событие: 520</a>
+                  </div>
+                  <div id="boxDescription">
+                    <p>
+                      <span>Описание </span>{{ description }}
+                    </p>
+                  </div>
+                  <p class="boxP"><span>Дата:</span> {{started_time}}-14.07.2022</p>
+                  <p class="boxP"><span>Время:</span> 18:30</p>
+                  <p class="boxP"><span>Телефон:</span>{{phone_number}}</p>
+                  <p class="boxP"><span>Веб сайт:</span> www.alleven.com</p>
+                  <p class="boxP boxPflex">
+                    <span>Место прохождения:</span>
+                    <img
+                      src="/images/pics/locationIcon.svg"
+                      style="cursor: pointer"
+                    />
+                  </p>
+                  <p></p>
+                  <p class="boxP">
+                    <span>Ссылка на билеты:</span>
+                    <a
+                      href="{{tickets_link}}"
+                    >
+                      {{ tickets_link }}
+                    </a>
+                  </p>
+                  <p class="boxP">
+                    <span class="biggerLetter">Почему я должен посетить?</span
+                    ><br />
+                    Повседневная практика показывает, что укрепление Развитие
+                    структуры играет важную роль в формировании соответствующий
+                    условий Повседневная практика показывает, что укрепление
+                    Развитие структуры играет важную роль в формировании
+                    соответствующий условий
+                  </p>
+                </div>
+              </div>
+                {{/each}}
+               {{/if}} --}}
+      </div>
+    </div>
+</div>
+
+<!-- Modal_1 STARTS -->
+
+<div id="SearchModal">
+  <p>Фильтр</p>
+  <div id="inputContainer">
+    <div id="filterBox1">
+      <input placeholder="Имя Фамилия" />
+      <input placeholder="Роль" />
+      <input placeholder="Номер телефона" />
+      <input placeholder="Статус" />
+    </div>
+    <div id="filterBox2">
+      <p>По дате регистрации</p>
+      <input type="date" />
+      <input type="date" id="period" />
+
+    </div>
+  </div>
+  <button>Поиск</button>
+</div>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+  let items = "{{json events}}"; let phone = "{{singleUser.phone_number}}";
+  let meetings="{{json meetings}}";
+  var swiper = new Swiper(".mySwiper5", { slidesPerView: 4, spaceBetween:11,
+  slidesPerGroup: 1, loopFillGroupWithBlank: true, navigation: {
+  nextEl:".swiper-button-next5", prevEl: ".swiper-button-prev5", }, });
+
+    var swiper4 = new Swiper(".mySwiper4", { slidesPerView: 4, spaceBetween:11,
+  slidesPerGroup: 1, loopFillGroupWithBlank: true, navigation: {
+  nextEl:".swiper-button-next4", prevEl: ".swiper-button-prev4", }, });
+
+      var swiper3 = new Swiper(".mySwiper3", { slidesPerView: 4, spaceBetween:11,
+  slidesPerGroup: 1, loopFillGroupWithBlank: true, navigation: {
+  nextEl:".swiper-button-next3", prevEl: ".swiper-button-prev3", }, });
+</script>
+<script src="/js/helper.js"></script>
+<script src="/js/organizer.js"></script>

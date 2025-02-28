@@ -1,0 +1,194 @@
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+/>
+
+<style>
+        .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+</style>
+{{! ========================= }}
+<link rel="stylesheet" href="/styles/organizer.css" />
+<link rel="stylesheet" href="/styles/visitor.css" />
+<link rel="stylesheet" href="/styles/event-show.css">
+<style>
+    .center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+</style>
+<div class="Header">
+  <div id="allEvents">
+    <div class="eventMainBody">
+      <div class="eventHead">
+        <div class="eventHeadFirstPart">
+          <p>
+            <a href="#">Главная</a> > <a href="#">Все события</a> >
+            <a href="#">Событие</a>
+          </p>
+        </div>
+      </div>
+      <div id="allEvMainDiv">
+        <div class="allEvBox">
+          <div id="allEvBox_header">
+            <h4>События</h4>
+            <p>
+                                {{#if (eq event.status 0)}}на модерации
+                    {{else}}Одобрено
+                    {{/if}}</p>
+          </div>
+
+          <hr />
+          <div class="allEvBoxCont">
+            <div id="pics1">
+              {{#each event.images}}
+              <img src="/{{ name }}" class="allEvImg" />
+              {{/each}}
+            </div>
+            <div class="allEvBoxContDiv">
+              <div id="boxPersonName">
+                <h6>{{event.name}}</h6>
+                <div id="emotions">
+                  <div>
+                    <img src="/images/pics/walking 1.svg" />
+                    <a>{{event.participants.length}}</a>
+                  </div>
+                  <div>
+                    <img src="/images/pics/Vector 80.svg" />
+                    {{ event.favorites.length }}
+                  </div>
+                  <div>
+                    <img src="/images/pics/Vector(30).svg" />
+                    {{ event.likes.length }}
+                  </div>
+                  <div>
+                    <img src="/images/pics/Vector (20).svg" />
+                    {{ event.views.length }}
+                  </div>
+                </div>
+              </div>
+
+              <div id="boxCatalog">
+                <p>{{event.category.name}}</p>
+                <a href="">Пришли на событие: {{event.participants.length}}</a>
+              </div>
+              <div id="boxDescription">
+                <p>
+                  <span>Описание</span> {{ event.description }}
+                </p>
+              </div>
+              <p class="boxP"><span>Дата: </span> {{convertDate event.started_time}} </p>
+              {{!-- <p class="boxP"><span>Время:</span>{{convertDate event.started_time}}</p> --}}
+              <p class="boxP"><span>Телефон: </span>{{event.owner.phone_number}}</p>
+              <p class="boxP"><span>Веб сайт: </span>{{event.tickets_link}}</p>
+              <p class="boxP boxPflex">
+                <span>Место прохождения: </span>
+                {{ event.address }}
+              </p>
+              <p></p>
+              <p class="boxP">
+                <span>Ссылка на билеты:</span>
+                <a
+                  href="{{event.tickets_link}}"
+                >
+                {{event.tickets_link}}
+                </a>
+              </p>
+              <p class="boxP">
+                <span class="biggerLetter">Почему я должен посетить?</span
+                ><br />
+                {{ event.description_visit }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="allEvBox">
+          <ul type="none" id="boxUl">
+            <li class="boxLi a1 active" data-target="gallery">Галерея</li>
+            <hr />
+            <li class="boxLi a1" data-target="comments">Комментарии</li>
+            <hr />
+            <li class="boxLi a1" data-target="visitors">
+              Список посетивших
+            </li>
+          </ul>
+          <hr />
+
+          <div
+            id="gallery"
+            class="allEvBoxCont ChangedAllEvBoxCont active"
+            style="overflow-y: hidden"
+          >
+            <div id="photos" class="photos">
+              {{#each event.impression_images}}
+              <div class="emptyPhotosImg">
+                <img src="/{{ path }}" class="img" />
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          <div
+            id="comments"
+            class="allEvBoxCont ChangedAllEvBoxCont"
+            style="overflow-y: hidden"
+          >
+            <p id="p1" class="p1">Оставленные комментарии</p>
+            <div id="photos" class="comments">
+              {{#each event.comments}}
+              <div class="comment-box">
+                <div class="content">
+                  <img src="/{{user.avatar}}" class="img" />
+                  <div class="c">
+                    <div class="b">
+                      <p class="text">{{user.name}}</p>
+                      <span class="span2"
+                        >{{likes.length}}
+                        <img src="/images/staticimg/heart.svg" />
+                      </span>
+                    </div>
+                    <p class="desc">
+                      {{text}}
+                    </p>
+                  </div>
+                </div>
+                {{!-- <div class="under-box">
+                  <span class="tm">30 мин.</span>
+                  <div class="del">Удалить</div>
+                </div> --}}
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          <div
+            id="visitors"
+            class="allEvBoxCont ChangedAllEvBoxCont"
+            style="overflow-y: hidden"
+          >
+            <p id="p1" class="p1">Пришли на событие: {{event.participants.length}}</p>
+            <div id="photos" class="clients">
+              {{#each participants }}
+              
+              <div class="visiter">
+                <img src="/{{getValue user "avatar"}}" />
+                <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
+              </div>
+              {{/each}}
+              <p class="p1" id="p10">Собирались посетить: {{event.views.length}}</p>
+              {{#each views}}
+              <div class="visiter">
+                <img src="/{{getValue user "avatar"}}" />
+                <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="/js/helper.js"></script>

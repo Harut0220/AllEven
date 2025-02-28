@@ -1,0 +1,173 @@
+<link rel="stylesheet" href="/styles/event.css">
+
+
+<div id="events" class="max-height-auto" style="display: flex;position: relative">
+  <div class="modal"><img src="/icon/icons8-verified-48.png" alt=""><span class="modalText"></span></div>
+        <div class="eventMainBody">
+          <div class="eventHead">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/events">События</a>  &gt; <a id="changeNavText">Все событии</a></p>
+            </div>
+            {{!-- <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+              Фильтр
+              <img src="/images/staticimg/Group(10).svg">
+            </div> --}}
+          </div>
+          <div id="eventBody">
+            {{!-- <div id="eventBodyHead">
+              <p>Топ</p>
+              <img src="/images/staticimg/delete 1.svg">
+            </div> --}}
+            <div id="changeEvMainDiv">
+            <div id="changeEvMainDivContainer1">
+              <div id="changeEvBox_header">
+                <h4>Новое Событие</h4>
+                <div id="allowDiv">
+                  <button class="buttonAllow whiteBtn" onclick="toggleModal('denyDiv','block')">
+                    Отклонить
+                  </button>
+                  <form action="/admin/profile/event/edit/{{getValue event "_id"}}" method="POST" enctype="multipart/form-data" id="eventForm">
+                  <button type="button" class="buttonAllow" onclick="buttonFunc()">
+                    {{#if (eq (getValue event "status") 0)}}Одобрить
+                    {{else}}Изменить
+                    {{/if}}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div id="changeEvMainDivContainer2">
+              <div class="changeEvBox">
+                <div class="changeEvBoxCont">
+                  <div id="pics1">
+                    {{#if images}}
+                        {{#each images}}
+                            <div class="changeEvDiv" style="background-image: url('/{{name}}')">
+                                <img src="/images/pics/GroupX.svg" class="removeButton" onclick="removeimage(this)" attr_id="{{_id}}">
+                            </div>
+                        {{/each}}
+                    {{/if}}
+                    {{!-- <div
+                      class="changeEvDiv"
+                    >
+                      <img src="/images/pics/GroupX.svg" />
+                    </div>
+                    <div
+                      class="changeEvDiv"
+                    >
+                      <img src="/images/pics/GroupX.svg" />
+                    </div>  --}}
+                  </div>
+                  <div class="changeEvBoxContDiv">
+                    <input type="text" class="inputAllow" placeholder="Название событий" value="{{getValue event "name"}}" name="name">
+                    <span style="margin-top: 15px;">Категория</span>
+                    <select class="inputAllow" name="category">
+                      <option selected="" disabled="" hidden="">{{category}}</option>
+                      {{#if eventCats}}
+                        {{#each eventCats}}
+                          <option value="{{_id}}">{{name}}</option>
+                        {{/each}}
+                      {{/if}}
+                    </select>
+                    <div id="boxDescription">
+                      <textarea id="textarea" name="description textarea_description">{{getValue event "description" }}</textarea>
+                    </div>
+                    <div class="changeEvSMBox">
+                      <p>Дата и время начала события</p>
+                      <div>
+                        <input type="datetime" class="dataInp" value="{{getValue event "started_time"}}" name="started_time">
+                        {{!-- <input class="time" type="time" value="20:00"> --}}
+                      </div>
+                    </div>
+                    <div class="changeEvSMBox">
+                      {{!-- <p>Дата присоединения к событию</p> --}}
+                      {{!-- <div>
+                        <input type="datetime" class="dataInp" value="{{convertDateTime event.joinng_time}}" name="joinng_time">
+                      </div> --}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="changeEvBox">
+                <div class="allEvBox_box2">
+                  <p class="changeHeadP">Место события</p>
+                  <div class="flex_JC_Space-between">
+                    <p class="changeText" id="addressLine">{{getValue event "address"}}</p>
+                    <img src="/images/pics/locationIcon.svg" style="cursor: pointer">
+                  </div>
+                </div>
+                <div class="allEvBox_box2">
+                  <p class="changeHeadP">Ссылка на билеты</p>
+                  <div class="head">
+                    <label for="">  Сделать ссылку активной </label>
+                    <input type="checkbox" name="tickets_link_active" {{#if (getValue event "tickets_link_active")}} checked {{/if}} value="1">
+                  </div>
+                  <div class="input-img-box">
+                    <input type="text" class="inputAllow inp10" placeholder="Вставьте ссылку" value="{{getValue event "tickets_link" }}" name="tickets_link">
+                    <img class="imageText1" src="/images/pics/text1.svg" alt="" srcset="">
+                  </div>
+                  <div class="input-img-box">
+                    <input type="text" class="inputAllow inp10" placeholder="Ссылка на веб сайт" value="{{getValue event "website_link" }}" name="website_link">
+                    <img class="imageText1" src="/images/pics/text1.svg" alt="" srcset="">
+                  </div>
+
+                  <textarea id="textarea1" name="description_visit">{{getValue event "description"}}</textarea>
+                </div>
+              </div>
+            </div>
+            </form>
+          </div>
+          </div>
+        </div>
+      </div>
+      <div  id="denyDiv"  style="width:100%;height:870px;background:#12121255;position:absolute;display:none">
+      <div id='denyDivChild' >
+        <form action="/admin/profile/event/reject/{{getValue event "_id"}}" method="POST">
+        <div id="denyDivCont1">
+          <p>Причина отклонения События</p>
+          <img src="/images/pics/GroupX.svg" onclick="toggleModal('denyDiv','flex')">
+        </div>
+        <div id="denyDivCont2">
+          <textarea id="denyTextarea" cols="20" rows="10" placeholder="Причина" name="status"></textarea>
+          <button >Отправить</button>
+        </div>
+        </form>
+      </div></div>
+
+      <script src="/js/axios.js"></script>
+      <script>
+
+      // Show the modal
+ function buttonFunc() {
+    // Տպում barev
+    const modal=document.querySelector('.modal');
+  modal.style.display = 'flex';
+ 
+    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
+    setTimeout(() => {
+      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
+      form.submit(); // Ուղարկում ենք form-ը
+    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+  }
+
+   
+        //const geoCordLatit = "{{ event.latitude }}";
+        //const geoCordLotit = "{{ event.longitude}}";
+        //const geoPath = `https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+         //axios.get(geoPath).then((d)=>{
+         // const al = document.getElementById('addressLine');
+        //  al.innerHTML = d.data.features[0].properties.address_line2
+       // })
+
+      function removeimage(el){
+        let id = el.getAttribute('attr_id');
+        el.parentNode.remove()
+         axios.delete(`/admin/profile/event/image/${id}`).then((d)=>{
+          
+        })
+      }
+ 
+ 
+      </script>
+      <script src="/js/helper.js"></script>
+     

@@ -1,0 +1,22 @@
+# dotenv environment variable files
+.env
+
+# Dependency directories
+node_modules/
+
+# storage directories
+storage/
+
+public/storage
+
+public/storage/
+
+# ssl certificates
+certificates/
+
+# go builds
+go_services/upload
+
+
+config/
+config

@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="/styles/moderator/moderator.css" />
+<div id="clients_3Div">
+  <div class="clientsMainBody">
+    <div class="clientsHead">
+      <div class="clientsHeadFirstPart">
+        <p>
+          <a href="/">Главная</a>
+          >
+          <a href="/">Пользователи</a>
+          >
+          <a href="">Мой Профиль</a>
+        </p>
+      </div>
+    </div>
+    <div id="allEvMainDiv">
+      <div class="allEvBox">
+        <div id="allEvBox_header">
+          <h4>Профиль модератора</h4>
+          <img
+            src="/images/pics/Vector1(1).svg"
+            onclick="toggleModal('editBox','flex')"
+          />
+        </div>
+        <hr />
+        <div class="allEvBoxCont ChangedAllEvBoxCont">
+          <div class="client3Cont1">
+            <p class="p2">{{singleUser.name}} {{singleUser.surname}}</p>
+            <p class="p3">Модератор</p>
+          </div>
+          <div class="client3Cont1">
+            <p class="p4">{{singleUser.phone_number}}</p>
+            <p class="p4">{{singleUser.email}}</p>
+          </div>
+          <!-- ------------------------------------------------- -->
+        </div>
+      </div>
+
+      <div class="allEvBox" id="editBox" style="display:none">
+        <form
+          action="/admin/profile/users/update/{{singleUser._id}}"
+          method="POST"
+        >
+          <div id="allEvBox_header">
+            <h4>Профиль модератора</h4>
+            <button id="saveBtn">Сохранить</button>
+          </div>
+          <hr />
+          <div class="allEvBoxCont ChangedAllEvBoxCont">
+            <div class="client3Cont1">
+              <input
+                class="nameInp"
+                value="{{singleUser.name}}"
+                name="name"
+                placeholder="имя"
+              />
+              <input
+                class="nameInp"
+                value="{{singleUser.surname}}"
+                name="surname"
+                placeholder="фамилия"
+              />
+            </div>
+            <div class="client3Cont1">
+              <input
+                class="nameInp"
+                value="{{singleUser.phone_number}}"
+                name="phone_number"
+                placeholder="номер телефона"
+              />
+              <input
+                class="nameInp"
+                value="{{singleUser.email}}"
+                name="email"
+                placeholder="Эл. адрес"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal_1 STARTS -->
+
+<div id="SearchModal">
+  <p>Фильтр</p>
+  <div id="inputContainer">
+    <div id="filterBox1">
+      <input placeholder="Имя Фамилия" />
+      <input placeholder="Роль" />
+      <input placeholder="Номер телефона" />
+      <input placeholder="Статус" />
+    </div>
+    <div id="filterBox2">
+      <p>По дате регистрации</p>
+      <input type="date" />
+      <input type="date" id="period" />
+
+    </div>
+  </div>
+  <button>Поиск</button>
+</div>

@@ -1,0 +1,134 @@
+<link rel="stylesheet" href="/styles/event.css">
+<style>
+        .menuIconImg{
+    width: 15px;
+    filter: brightness(0) invert(1);}
+</style>
+
+      <form action="">
+
+<div id="filter" style="display: none;">
+  <span  id="closeFilter" onclick="closeFilterModal()">&times;</span>
+        <div id="filterBox1" class="filterBoxOne">
+          <select name="category">
+            <option disabled selected>Выберите категорию</option>
+            {{#if eventCats.length}}
+              {{#companyCategoryArrays eventCats "_id" "name" "image"}}
+              <option value="{{id}}" {{#if (q.category)}} selected  {{/if}}>{{name}}</option>
+              {{/companyCategoryArrays}}
+            {{/if}}
+          </select>
+          <input placeholder="Название" name="name" value="{{q.name}}">
+          <button>Поиск</button>
+        </div>
+      {{!-- <div  class="filterBoxTwo"> --}}
+        {{!-- <p>По дате</p> --}}
+        {{!-- <input type="date" name="date_from"> --}}
+        {{!-- <input type="date" id="period"> --}}
+       
+      </div>
+    </div>
+          </form>
+
+
+
+    
+<div id="events" style="display: flex;">
+        <div class="eventMainBody">
+          <div class="eventHead">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/company/page">Услуги</a>  &gt; <a id="changeNavText">Все Услуги</a></p>
+            </div>
+            <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+              Фильтр
+              <img src="/images/staticimg/Group(10).svg">
+            </div>
+          </div>
+          <div id="eventBody">
+            <div id="eventBodyHead">
+              {{!-- <p>Топ</p> --}}
+              <form action="/admin/profile/company/destroy/many" method="POST">
+              <button>
+                <img src="/images/staticimg/delete 1.svg">
+              </button>
+            </div>
+            <div id="eventBodyContent">
+              <table id="table">
+                <thead>
+                  <tr>
+                    <th class="td1" style="padding: 11px 8px; text-align: center">
+                      №
+                    </th>
+                    <th class="td1">Категория</th>
+                    <th class="td1">Название Услуги</th>
+                    <th class="td1">Организатор</th>
+                    <th class="td1">Статус</th>
+                    {{!-- <th class="td1">Ситуация</th> --}}
+                    {{!-- <th class="td1">Дата/период</th> --}}
+                    <th class="td1">Место прохождения</th>
+                    <th class="td1">Рейтинг</th>
+                    <th class="td1">Редактировать</th>
+                    <th class="td1">Показать</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody1">
+                   {{#if events}}
+                      {{#optionsCompanyArrays events "_id" "companyName" "owner" "startHour" "endHour" "rating" "category" "address" "likes" "status"}}
+                         <tr>
+                          <td class="td">
+                              <input type="checkbox" style="text-align: center; width: 16px; height: 16px;" name="des_events" value="{{id}}">
+                          </td>
+                          <td class="td">{{getNestedValue category "name"}}</td>
+                          <td class="td">{{name}}</td>
+                          <td class="td">{{getNestedValue owner "name" }} {{getNestedValue owner "surname" }} </td>
+                          <td class="td">
+                           
+                            {{#if (eq status 0)}}Hа модерации
+                            {{else if (eq status 1)}}Одобрено
+                            {{else if (eq status 2)}}Отклонено
+                            {{!-- {{else}}Отклонено --}}
+                            {{/if}}
+                            </td>
+                          {{!-- <td class="td">{{lng situation "ru"}}</td> --}}
+                          {{!-- <td class="td">{{startHour}}-{{endHour}}</td> --}}
+                          <td class="td">{{address}}</td>
+                          <td class="td"><img style="margin-bottom:-2px;margin-right:8px" src="/images/staticimg/heart.svg">{{likes.length}}</td>
+                          <td class="td" style="text-align:center;">
+                            {{#if (notEq status 3) }}
+                              <a href="/admin/profile/company/single/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/staticimg/Vector1(1).svg" style="width: 15px; height: 16px; cursor: pointer;">
+                              </a>
+                            {{else}}
+                            <a href="/admin/profile/company/show/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/pics/Vector 202.svg" style="width: 15px; height: 16px; cursor: pointer;">
+                              </a>
+                            {{/if}}
+                          </td>
+                          <td class="td">
+                            <a href="/admin/profile/company/show/{{id}}" style="display: flex;align-items: center;justify-content: center;">
+                                  <img src="/images/pics/Vector 202.svg" style="width: 15px; height: 16px; cursor: pointer;">
+                            </a>
+                          </td>
+                          </tr>
+                      {{/optionsCompanyArrays}}
+                    {{/if}}     
+                </tbody>
+              </table>
+            </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <script src="/js/helper.js"></script>
+      <script src="/js/axios.js"></script>
+
+      <script>
+                const geoCordLatit = "{{ event.latitude }}";
+        const geoCordLotit = "{{ event.longitude }}";
+        const geoPath = `https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+         axios.get(geoPath).then((d)=>{
+          const al = document.getElementById('addressLine');
+          al.innerHTML = d.data.features[0].properties.address_line2
+       })
+      </script>
+      

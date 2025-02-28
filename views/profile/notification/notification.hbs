@@ -1,0 +1,93 @@
+ <link rel="stylesheet" href="/styles/Notification.css" />
+
+
+ <div class="Header2">
+        <header class="Header22">
+           <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/notification">Уведомления</a></p>
+            </div>
+          <article class="Article1">
+            <div class="Notification">
+              <div class="Notification1">
+                <p>{{#if notif}}Редактирования уведомлений{{else}}Создать уведомление{{/if}}</p>
+              </div>
+              <form class="Form" method="POST" action="/admin/profile/notification/{{#if notif}}update/{{notif._id}}{{else}}store{{/if}}">
+                <textarea
+                  placeholder="Текст уведомлений"
+                  class="textArea"
+                  name="message"
+                >{{#if notif}} {{notif.message}} {{/if}}</textarea>
+              <div class="Whom">
+                <p>Кому</p>
+                <select class="WhomInp" name="role">
+                  {{!-- <option disabled selected>Выберите</option> --}}
+                  {{!-- <option value="all" selected >Всем</option> --}}
+                  <option value="USER" {{#if (inclOne notif.sent 'USER' 'name')}} selected {{/if}}>Всем</option>
+                  {{!-- <option value="USER" {{#if (inclOne notif.sent 'USER' 'name')}} selected {{/if}}>Посетителям</option> --}}
+                </select>
+              </div>
+              <div class="TypeNotification">
+                <p>Тип уведомлений</p>
+                <select class="TypeNotification1" name="type">
+                  <option disabled selected>Выберите</option>
+                  <option value="system" {{#if (eq notif.type 'system')}} selected {{/if}}>По системным работам</option>
+                  <option value="general" {{#if (eq notif.type 'general')}} selected {{/if}}>Общие</option>
+                  <option value="advertising" {{#if (eq notif.type 'advertising')}} selected {{/if}}>Реклама</option>
+                </select>
+              </div>
+              <div class="date">
+                <p>Дата и время отправления</p>
+                <form class="Form1">
+                  <input type="datetime-local" class="dataInp" name="date_time" {{#if notif}} value="{{notif.date_time}}" {{/if}}/>
+              </div>
+              {{!-- <div class="date">
+                <p>Время отправления</p>
+                <form class="Form2">
+                  <input class="time" type="time" value="13:30" />
+              </div> --}}
+              <div class="Whom3">
+                <button >Сохранить</button>
+              </div>
+               </form>
+            </div>
+                <div class="saveNotification">
+                  <div class="saveNotification1">
+                    <p>Запланированные</p>
+                  </div>
+                  {{#if planNotif}}
+                    {{#each planNotif}}
+                      <div class="addsaveNotification">
+                        <div class="notificationResult">
+                          <p class="notificationText">{{ message }}</p>
+                          <div style="width: 40%; text-align: center;">
+                            <form action="/admin/profile/notification/destroy/{{_id}}" method="POST">
+                              <input type="image" src="/images/staticimg/delete%201.svg">
+                            </form>
+                          </div>
+                          <p class="notificationInfo">,{{convertDate date_time}}, {{lng type "ru"}}</p>
+                          </div>
+                      </div>
+                    {{/each}}
+                  {{/if}}
+                </div>
+          </article>
+        </header>
+        <div class="notificationFooter">
+          <div class="notificationFooter1">
+              <div class="notificationFooter2">
+      <p>
+        <a href="/admin/profile/notification" class="createNot">Создание
+          уведомлений</a>
+      </p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/categories" class="newType">Новые
+          категории</a></p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/feedback" class="contact">Обратная
+          связь</a></p>
+    </div>
+          </div>
+        </div>
+</div>
+
+<script src="/js/Notification.js"></script>

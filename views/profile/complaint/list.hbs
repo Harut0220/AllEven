@@ -1,0 +1,72 @@
+<link rel="stylesheet" href="/styles/NotificationArxiv.css">
+
+
+
+<div class="Header2">
+        <header class="Header22">
+          <div class="createNotification">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/report">Жалоба</a></p>
+            </div>
+            {{!-- <a href="">Создать</a> --}}
+          </div>
+        </header>
+        <div class="notificationArea">
+          <table class="allNotification">
+            <tr>
+                <th class="th0">№</th>
+                <th class="th1">имя</th>
+                <th class="th2">фамилия</th>
+                <th class="th3">номер телефона</th>
+                <th class="th4">сообщение</th>
+                <th class="th5">Подобнее</th>
+            </tr>
+            {{#if datas}}
+                {{#each datas}}
+                    <tr>
+                        <td class="td0">{{inc @index}}</td>
+                        <td class="td1">{{name}}</td>
+                        <td class="td2">{{surname}}</td>
+                        <td class="td3">{{phone_number}}</td>
+                        <td class="td4">{{text}}</td>
+                        <td class="td5">
+                            {{#if event}}
+                                {{ event.name }}
+                                <br>
+                                <a href="/admin/profile/event/single/{{ event._id }}">
+                                 <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                                </a>
+                                {{else if comment}}
+                                    {{ comment.text }}
+                                    <br>
+                                    <a href="/admin/profile/event/single/{{ comment.event }}">
+                                    <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                                    </a>
+                                {{else if impression}}
+                                    <a href="/admin/profile/event/single/{{ impression.event }}">
+                                    <img src="/images/pics/Vector 202.svg" style="margin: 0px 0px -1px; cursor: pointer;">
+                                    </a>
+                                {{else}}
+                            {{/if}}
+                        </td>
+                {{/each}}
+            {{/if}}
+            </table>
+        </div>
+        <div class="notificationFooter">
+          <div class="notificationFooter1">
+              <div class="notificationFooter2">
+      <p>
+        <a href="/admin/profile/notification" class="createNot">Создание
+          уведомлений</a>
+      </p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/categories" class="newType">Новые
+          категории</a></p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/feedback" class="contact">Обратная
+          связь</a></p>
+    </div>
+          </div>
+        </div>
+      </div>

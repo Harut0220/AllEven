@@ -1,0 +1,408 @@
+@font-face {
+  font-family: customFont1;
+  src: url(../font/ofont.ru_Bombardier.ttf);
+}
+* {
+  font-family: customFont1 !important;
+  margin: 0;
+  padding: 0;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  height: 100vh;
+  width: 100%;
+}
+.main {
+  display: flex;
+  width: 50%;
+  height: auto;
+  justify-content: center;
+  background: linear-gradient(180deg, #01877d 0%, #00ada6 100%);
+  align-items: center;
+  overflow: hidden;
+}
+#myDIVttt {
+  transform-origin: top center;
+  width: 500px;
+  height: 250px;
+  border-bottom-left-radius: 250px;
+  border-bottom-right-radius: 250px;
+  background-image: url("../images/img/Mask_group-1.png");
+  background-position: 53% 0%;
+  background-size: 779px 302px;
+  background-repeat: no-repeat;
+  color: white;
+  animation: mymove 40s infinite;
+  z-index: 0;
+}
+#myDIV {
+  transform-origin: bottom center;
+  width: 500px;
+  height: 250px;
+  border-top-left-radius: 250px;
+  border-top-right-radius: 250px;
+  position: relative;
+  background-position: 53% 100%;
+  background-size: 784px 314px;
+  background-repeat: no-repeat;
+  background-image: url("../images/img/Mask_group.png");
+  color: white;
+  animation: mymove 40s infinite;
+}
+
+#myDIVttt::after {
+  content: "";
+  position: absolute;
+  background-image: url("../images/img/Group-1399.png");
+  width: 80px;
+  height: 80px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  top: -48px;
+  left: 208px;
+  z-index: 10000000000000000;
+  animation: mymovell 40s infinite;
+}
+
+#myDIV1 {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-1.png");
+  border-radius: 12%;
+  top: 20px;
+  right: 50px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove1 40s infinite;
+}
+#myDIV2 {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-2.png");
+  border-radius: 12%;
+  top: 150px;
+  right: -30px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove2 40s infinite;
+}
+#myDIV3 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-3.png");
+  border-radius: 12%;
+  top: 150px;
+  right: 450px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove3 40s infinite;
+  background-color: transparent;
+}
+#myDIV4 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-4.png");
+  border-radius: 12%;
+  top: 22px;
+  right: 370px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove4 40s infinite;
+  background-color: transparent;
+}
+#myDIV5 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-5.png");
+  border-radius: 12%;
+  top: -40px;
+  right: 210px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove5 40s infinite;
+  background-color: transparent;
+}
+/* ------------------- */
+#myDIV11 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group-6.png");
+  border-radius: 12%;
+  top: 20px;
+  right: -30px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove1 40s infinite;
+  background-color: transparent;
+}
+#myDIV22 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group 1217.png");
+  border-radius: 12%;
+  top: 150px;
+  right: 50px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove2 40s infinite;
+  background-color: transparent;
+}
+#myDIV33 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group 1360.png");
+  border-radius: 12%;
+  top: 150px;
+  right: 370px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove3 40s infinite;
+  background-color: transparent;
+}
+#myDIV44 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group 1236.png");
+  border-radius: 12%;
+  top: 20px;
+  right: 450px;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove4 40s infinite;
+  background-color: transparent;
+}
+#myDIV55 {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("../images/img/Group 1362.png");
+  border-radius: 12%;
+  top: 210px;
+  right: 210px;
+  position: absolute;
+  background-color: transparent;
+  width: 80px;
+  height: 80px;
+  color: white;
+  animation: mymove5 40s infinite;
+}
+@keyframes mymove {
+  50% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes mymove1 {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes mymove2 {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes mymove3 {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes mymove4 {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes mymove5 {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes mymovell {
+  50% {
+    transform: rotate(-360deg);
+  }
+}
+
+.main2 {
+  width: 50%;
+  height: 882px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.logo {
+  width: 123.4px;
+  height: 122.99px;
+  background: linear-gradient(180deg, #00b4a9 2.17%, #0e8a80 97.37%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 30px;
+}
+
+.logoImg {
+  width: 53.04px;
+  height: 86.58px;
+}
+.main2 > h2 {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+  color: #00ada6;
+  margin-top: 40px;
+}
+.Log {
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: 328px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 30px;
+  margin-top: 30px;
+}
+.Log:focus {
+  outline: none;
+}
+.Check {
+  display: flex;
+  margin-top: 30px;
+  height: auto;
+  width: 280px;
+  justify-content: space-between;
+  align-items: center;
+}
+.Check input {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #dadada;
+}
+.Check span {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #a3a3a3;
+}
+.Remind {
+  width: 110px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.Check p {
+  width: 130px;
+  height: 24px;
+
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 24px;
+  color: #00ada6;
+}
+.main2 button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  gap: 10px;
+  width: 328px;
+  height: 40px;
+  background: #00ada6;
+  border-radius: 30px;
+  border: none;
+  margin-top: 50px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  cursor: pointer;
+}
+.LinkReg {
+  display: flex;
+  margin-top: 20px;
+  height: auto;
+  width: 225px;
+  justify-content: space-around;
+  align-items: center;
+}
+.LinkReg p {
+  width: 163px;
+  height: 24px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #a3a3a3;
+  white-space: nowrap;
+}
+.LinkReg a {
+  width: 89px;
+  height: 24px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #00ada6;
+}
+.restorePassword {
+  color: #00ada6;
+}
+@media only screen and (max-width: 600px) {
+  .main {
+    width: 100%;
+    height: auto;
+  }
+  .main2 {
+    width: 100%;
+  }
+  .Log {
+    width: 100%;
+  }
+  .main2 button {
+    width: 100%;
+  }
+  .item {
+    width: 80%;
+  }
+}
+@media only screen and (max-width: 1000px) {
+  .main {
+    width: 100%;
+    height: 600px;
+  }
+  .main2 {
+    width: 100%;
+  }
+}

@@ -1,0 +1,83 @@
+<link rel="stylesheet" href="/styles/NotificationArxiv.css">
+
+
+
+<div class="Header2">
+        <header class="Header22">
+          <div class="createNotification">
+            <div class="eventHeadFirstPart">
+              <p><a href="/">Главная</a> &gt; <a href="/admin/profile/notification">Уведомления</a>  &gt; <a id="changeNavText">Создание уведомлений</a></p>
+            </div>
+            <a href="/admin/profile/notification/create">Создать</a>
+          </div>
+        </header>
+        <div class="notificationArea">
+          <table class="allNotification">
+            <tr>
+                <th class="th0">№</th>
+                <th class="th1">Текст уведомления </th>
+                <th class="th2">Тип уведомления</th>
+                <th class="th3">Кому</th>
+                <th class="th4">Дата и Время</th>
+                <th class="th6">Статус</th>
+                <th class="th7">Вкл/Выкл</th>
+                <th class="th8">Редак.</th>
+            </tr>
+            {{#if notifics}}
+                {{#each notifics}}
+                    <tr>
+                        <td class="td0">{{inc @index}}</td>
+                        <td class="td1">{{message}}</td>
+                        <td class="td2">{{lng type "ru"}}</td>
+                        {{#if sent.[0].name }}
+                          {{#if sent.[1].name}}
+                            <td class="td3">{{lng 'all' 'ru'}}</td>
+                          {{else}}
+                            <td class="td3">{{lng sent.[0].name 'ru'}}</td>
+                          {{/if}}
+                        {{else}}
+                          <td class="td3">{{lng 'all' 'ru'}}</td>
+                        {{/if}}
+                        <td class="td4">
+                        {{#if date_time}}
+                          <input type="datetime" class="dataInp" value="{{date_time}}" disabled/>
+                        {{/if}}
+                        </td>
+                        <td class="td6">{{#if (eq status 1)}}Запланирован{{else if (eq status 0)}}Отключен{{else if (eq status 2)}}Отправлен{{/if}}</td>
+                        <td class="td7">
+                          {{#if (notEq status 2)}}
+                            <form class="NotifForm" action="/admin/profile/notification/change/status/{{_id}}" method="POST">
+                              <label class="switch">
+                                  <input type="checkbox" {{#if (eq status 1)}}checked{{/if}} onchange="this.form.submit()">
+                                  <span class="slider round"></span> 
+                              </label>
+                            </form>
+                          {{/if}}
+                        </td>
+                        <td class="td8">
+                            <a href="/admin/profile/notification/edit/{{_id}}">
+                                <img src="/images/staticimg/Vector2.svg">
+                            </a>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
+            </table>
+        </div>
+        <div class="notificationFooter">
+          <div class="notificationFooter1">
+              <div class="notificationFooter2">
+      <p>
+        <a href="/admin/profile/notification" class="createNot">Создание
+          уведомлений</a>
+      </p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/categories" class="newType">Новые
+          категории</a></p>
+      <div class="gic"></div>
+      <p><a href="/admin/profile/notification/feedback" class="contact">Обратная
+          связь</a></p>
+    </div>
+          </div>
+        </div>
+      </div>
