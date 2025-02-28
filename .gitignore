@@ -18,5 +18,5 @@ certificates/
 go_services/upload
 
 
-config/
-config
+config/firebase
+config/firebase/
