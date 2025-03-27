@@ -56,6 +56,8 @@ import servicesRegistrations from "../../../models/services/servicesRegistration
 import companyService from "../../../models/company/companyService.js";
 import companyHotDealRegistrations from "../../../models/company/companyHotDealRegistration.js";
 import meetingCommentAnswerLike from "../../../models/meeting/meetingCommentAnswerLike.js";
+import companyParticipants from "../../../models/company/companyParticipants.js";
+import Report from "../../../models/Report.js";
 // import EventCommentLikes from "../../../models/event/EventCommentLikes.js";
 const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 
@@ -128,6 +130,18 @@ class ProfileController {
     const meetingsDb = await meetingModel.find({ user: user1.id });
 
     setTimeout(async () => {
+      await Report.deleteMany({})
+      const CompanyParticipantsDb = await companyParticipants.find({
+        user: user1.id,
+      });
+
+      for (let z = 0; z < CompanyParticipantsDb.length; z++) {
+        await companyModel.findByIdAndUpdate(
+          CompanyParticipantsDb[z].companyId,
+          { $pull: { participants: CompanyParticipantsDb[z]._id } }
+        );
+      }
+      await companyParticipants.deleteMany({ user: user1.id });
       const EventAnswerLikeDb = await EventCommentAnswerLike.find({
         user: user1.id,
       });
@@ -297,6 +311,7 @@ class ProfileController {
         });
         await hotDeal.remove();
       }
+      await companyHotDeals.deleteMany({ user: user1.id });
       await companyHotDealRegistrations.deleteMany({ user: user1.id });
 
       for (let i = 0; i < CompanyAnswerLikeDb.length; i++) {

@@ -106,7 +106,10 @@ const event = async (req,res,next) => {
     //     }
 
     await validator(req.body, validationRule, {}, (err, status) => {
+        
         if (!status) {
+            console.log(err,"err");
+            
             return res.status(412)
                 .send({
                     success: false,

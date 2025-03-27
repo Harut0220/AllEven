@@ -33,7 +33,10 @@ const Notification = new Schema(
         "like",
         "Записались на услуги",
         "Подтверждение событий",
-        "Отклонение событий"
+        "Отклонение событий",
+        "Отклонение услуги",
+        "Присоединение",
+        "Записались на горящие предложения"
       ],
       default: "system",
     },
@@ -49,20 +52,20 @@ const Notification = new Schema(
       type: String,
       required: true,
     },
-    // event: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: "Event",
-    // },
-    // meeting: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: "Meeting",
-    // },
-    // company: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: "Company",
-    // },
-    createId:{type:mongoose.Schema.ObjectId,required:false},
-    service: {
+    eventId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Event",
+    },
+    meetingId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Meeting",
+    },
+    companyId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Company",
+    },
+    // createId:{type:mongoose.Schema.ObjectId,required:false},
+    serviceId: {
       type: mongoose.Schema.ObjectId,
       ref: "company_service",
     },
@@ -88,7 +91,7 @@ const Notification = new Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Role",
     },
-    event_situation: {
+    situation: {
       type: String,
       required: false,
     },
@@ -103,7 +106,7 @@ const Notification = new Schema(
     navigate:{
       type:Boolean,
       default:false
-    }
+    },
   },
   {
     timestamps: true,

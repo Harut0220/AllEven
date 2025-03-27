@@ -7,7 +7,6 @@ fbSocket.onopen = function(e) {
 };
 
 function generateMes(data){
-  // console.log('generateMes: ', data);
   let ms = ''
   if(data.length){
       for(let m=0;m<data.length;m++){
@@ -33,7 +32,6 @@ function generateMes(data){
 }
 
 const generateDiv = function(data){
-  // console.log(data);
   return`<div class="Notification1">
     <p>Ответ, пользователю</p>
     </div>
@@ -76,7 +74,6 @@ async function storeMessage(url = '/admin/profile/notification/feedback/store', 
     body: JSON.stringify(data)
   });
   let d = await response.json()
-  // console.log(d)
   return d;
 }
 
@@ -108,7 +105,6 @@ function saveNotification(id, user = null){
 }
 
 function addToList(data){
-  // console.log('data: ', data);
   let div = `<div class=" listProfil" onclick="viewMeaage(${items.length - 1})">
     <div class="listProfilPic">
       <p class="listProfilname">${data.user.name}</p>

@@ -57,10 +57,14 @@
     "nodemailer": "^6.7.8",
     "nodemailer-express-handlebars": "^5.0.0",
     "path": "^0.12.7",
+    "punycode": "^2.3.1",
     "sharp": "^0.31.2",
     "tinymce": "^6.2.0",
     "uuid": "^9.0.0",
     "validatorjs": "^3.22.1",
     "ws": "^8.9.0"
-  }
+  },
+  "resolutions": {
+  "punycode": "^2.0.0"
+}
 }

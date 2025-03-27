@@ -3,7 +3,7 @@ import Notification from "../../../models/Notification.js";
 import meetingVerify from "../../../models/meeting/meetingVerify.js";
 import User from "../../../models/User.js";
 import meetingModel from "../../../models/meeting/meetingModel.js";
-import moment from "moment";
+import moment from "moment-timezone";
 import notifEvent from "../../../events/NotificationEvent.js";
 import jwt from "jsonwebtoken";
 import meetingFavorit from "../../../models/meeting/meetingFavorit.js";
@@ -16,8 +16,90 @@ import meetingRating from "../../../models/meeting/meetingRating.js";
 import ImpressionsMeeting from "../../../models/ImpressionsMeeting.js";
 import meetingCommentAnswer from "../../../models/meeting/meetingCommentAnswer.js";
 import { link } from "fs";
+import meetingParticipant from "../../../models/meeting/meetingParticipant.js";
+import meetingDidNotComeUser from "../../../models/meeting/meetingDidNotComeUser.js";
 
 const meetingController = {
+  in_place: async (req, res) => {
+    try {
+      const { id, couse } = req.body;
+      console.log(couse, "couse");
+
+      let meetingId = id;
+      const notif = await Notification.findById(id);
+      if (notif) {
+        meetingId = notif.meetingId;
+      }
+      await Notification.updateMany(
+        {
+          event: id,
+          type: "confirm_come",
+        },
+        {
+          $set: {
+            confirmed: true,
+          },
+        },
+        { new: true }
+      );
+      const meeting = await meetingModel.findById(meetingId);
+      const meetingParticipantsDb=await meetingParticipant.findOne({user:req.user.id,meetingId})
+      await meetingModel.findByIdAndUpdate(meetingId,{$pull:{did_not_come_meetings:meetingParticipantsDb._id}})
+      if (!meeting) {
+        return res.json({ status: false, message: "событие не найдено" });
+      }
+
+      const evLink = `alleven://myMeeting/${meeting._id}`;
+
+      const userName = req.user.name ? req.user.name : "";
+      const userSurname = req.user.surname ? req.user.surname : "";
+      const meetDidNotCome=new meetingDidNotComeUser({
+        user:req.user.id,
+        meeting:meeting._id,
+        couse
+      })
+      await meetDidNotCome.save()
+      // await this.EventService.storeDidNotCome({
+      //   user: req.user.id,
+      //   event: eventId,
+      //   couse,
+      // });
+
+      const date_time = moment.tz(process.env.TZ).format();
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: event.owner._id.toString(),
+        type: "message",
+        navigate: true,
+        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${meeting.purpose}.`,
+        eventId: event._id.toString(),
+        link: evLink,
+        date_time,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+
+      if (event && event.owner && event.owner._id) {
+        notifEvent.emit(
+          "send",
+          event.owner._id.toString(),
+          JSON.stringify({
+            type: "message",
+            eventId,
+            date_time,
+            navigate: true,
+            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${meeting.purpose}`,
+            link: evLink,
+            date_time,
+          })
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "Server Error" });
+    }
+  },
   myImpressions: async (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader.split(" ")[1];
@@ -235,33 +317,36 @@ const meetingController = {
       const meetingDb = await meetingModel
         .findById(meeting_id)
         .populate({ path: "user", select: "_id notifMeeting" });
-      const evLink = `alleven://meetingDetail/${meeting_id}`;
 
-      const dataNotif = {
-        status: 2,
-        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        user: meetingDb.user._id.toString(),
-        type: "impression",
-        message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
-        createId: meeting_id,
-        // categoryIcon: meetingDb.category.avatar, //sarqel
-        link: evLink,
-      };
-      const nt = new Notification(dataNotif);
-      await nt.save();
-      if (meetingDb.user.notifMeeting) {
-        notifEvent.emit(
-          "send",
-          meetingDb.user._id.toString(),
-          JSON.stringify({
-            type: "impression",
-            createId: meeting_id,
-            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
-            // categoryIcon: meetingDb.category.avatar, //sarqel
-            link: evLink,
-          })
-        );
+      if (meetingDb.user._id.toString() !== user.id) {
+        const evLink = `alleven://myMeeting/${meeting_id}`;
+
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: meetingDb.user._id.toString(),
+          type: "impression",
+          navigate: true,
+          message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
+          meetingId: meeting_id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        if (meetingDb.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            meetingDb.user._id.toString(),
+            JSON.stringify({
+              type: "impression",
+              meetingId: meeting_id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
+              link: evLink,
+            })
+          );
+        }
       }
 
       const ifImpressions = await ImpressionsMeeting.findOne({
@@ -302,7 +387,7 @@ const meetingController = {
         .send({ updated: result.bool, success: true, data: result.result });
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "An error occurred" });
+      return res.status(500).send({ message: "Server Error" });
     }
   },
   myParticipant: async (req, res) => {
@@ -318,7 +403,7 @@ const meetingController = {
       }
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "An error occurred" });
+      return res.status(500).send({ message: "Server Error" });
     }
   },
   destroyVerify: async (req, res) => {
@@ -329,6 +414,7 @@ const meetingController = {
   verifies: async (req, res) => {
     const result = await meetingVerify.find();
     const template = "profile/meetingVerify";
+    result.reverse();
     return res.render(template, {
       layout: "profile",
       title: "Users Verify",
@@ -456,6 +542,10 @@ const meetingController = {
         populate: { path: "user", select: "name avatar surname" },
       })
       .populate({
+        path: "impression_images",
+        populate: { path: "user", select: "name avatar surname" },
+      })
+      .populate({
         path: "participantSpot",
         populate: { path: "user", select: "name avatar surname" },
       })
@@ -473,6 +563,9 @@ const meetingController = {
       .populate({ path: "user", select: "-password" })
       .populate("likes");
     const participants = meeting.participants;
+    const impression_imagesDb = await meetingImpressionImage.find({
+      meeting: id,
+    });
     res.render(template, {
       layout: "profile",
       title: "Meeting Show",
@@ -481,12 +574,13 @@ const meetingController = {
       images: meeting.images,
       participants,
       participantSpot: meeting.participantSpot,
-      paricipantsLength: meeting.participants.length,
+      paricipantsLength: meeting.participantSpot.length,
       views: meeting.view,
       likes: meeting.likes.length,
       favorites: favorites.length,
       comments: comments,
       status: meeting.status,
+      impressionImages: meeting.impression_images,
     });
   },
   like: async (req, res) => {
@@ -536,12 +630,12 @@ const meetingController = {
   },
   reject: async (req, res) => {
     let status = req.body.status;
-    let event = await meetingService.reject(req.params.id, { status });
-    const userMeet = await User.findById(event.user);
-    const meetVerifyDb = await meetingVerify.findOne({ user: event.user });
+    let meeting = await meetingService.reject(req.params.id, { status });
+    const userMeet = await User.findById(meeting.user);
+    const meetVerifyDb = await meetingVerify.findOne({ user: meeting.user });
     const template = "profile/meeting-verify-page-rejected";
 
-    // const evLink = `alleven://eventDetail/${event_id}`;
+    // const evLink = `alleven://myEvent/${event_id}`;
     // notifEvent.emit(
     //   "send",
     //   registerDb.user._id.toString(),
@@ -562,18 +656,18 @@ const meetingController = {
       layout: "profile",
       title: "Verification",
       user: req.user,
-      event,
+      event: meeting,
       userMeet,
     });
   },
   edite: async (req, res) => {
     try {
       const id = req.params.id;
-      const event = await meetingModel.findById(id);
+      const meetingDb = await meetingModel.findById(id);
       res.render("profile/meeting-edit", {
         layout: "profile",
         title: "Meeting Edit",
-        event,
+        event: meetingDb,
       });
     } catch (error) {
       console.error(error);
@@ -585,11 +679,11 @@ const meetingController = {
 
       const id = req.params.id;
       let template = "profile/meeting-single";
-      const event = await meetingModel
+      const meetingDb = await meetingModel
         .findByIdAndUpdate(id, { $set: { status: 1 } })
         .populate("images");
-      const user = await User.findById(event.user);
-      if (event.status && event.status != 0 && event.status != 1) {
+      const user = await User.findById(meetingDb.user);
+      if (meetingDb.status && meetingDb.status != 0 && meetingDb.status != 1) {
         template += "-rejected";
       }
       if (data.date || data.address || data.purpose || data.description) {
@@ -599,6 +693,37 @@ const meetingController = {
         editMeet.address = data.address;
         editMeet.date = data.date;
         await editMeet.save();
+      }
+
+      const evLink = `alleven://myMeeting/${meetingDb._id}`;
+      const dataNotif = {
+        status: 2,
+        date_time: new Date(),
+        user: user._id.toString(),
+        type: "Новая встреча",
+        message: `Ваша встреча ${meetingDb.purpose} опубликована на карте.`,
+        categoryIcon: meetingDb.images[0].path,
+        navigate: true,
+        meetingId: meetingDb._id,
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+
+      if (user.notifMeeting) {
+        notifEvent.emit(
+          "send",
+          user._id,
+          JSON.stringify({
+            type: "Новая встреча",
+            meetingId: meetingDb._id,
+            navigate: true,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Ваша встреча ${meetingDb.purpose} опубликована на карте.`,
+            categoryIcon: meetingDb.images[0].path,
+            link: evLink,
+          })
+        );
       }
 
       // res.render(template, {
@@ -667,7 +792,7 @@ const meetingController = {
     try {
       const id = req.params.id;
       let template = "profile/meeting-participants";
-      const event = await meetingModel
+      const meetingDb = await meetingModel
         .findById(id)
         .populate("images")
         .populate("participants");
@@ -676,7 +801,7 @@ const meetingController = {
         layout: "profile",
         title: "Participants",
         user: req.user,
-        event: event.participants,
+        event: meetingDb.participants,
         // images: event.images,
       });
     } catch (error) {
@@ -690,7 +815,6 @@ const meetingController = {
 
       const user = jwt.decode(token);
 
-      // const user = { id: "656ecb2e923c5a66768f4cd3" };
       const { id } = req.body;
       const result = await meetingService.addParticipant(user.id, id);
 
@@ -703,26 +827,26 @@ const meetingController = {
     try {
       const id = req.params.id;
       let template = "profile/meeting-single";
-      const event = await meetingModel.findById(id).populate("images");
-      const user = await User.findById(event.user);
+      const meetingDb = await meetingModel.findById(id).populate("images");
+      const user = await User.findById(meetingDb.user);
       const urlPoint = { url: "http:/localhost:3000/" };
-      if (event.status && event.status != 0 && event.status != 1) {
+      if (meetingDb.status && meetingDb.status != 0 && meetingDb.status != 1) {
         template += "-rejected";
       }
 
       res.render(template, {
         layout: "profile",
         title: "Meeting Single",
-        status: event.status,
+        status: meetingDb.status,
         user: req.user,
         userMeet: user,
-        event,
-        images: event.images,
-        participants: event.participants.length,
-        favorit: event.favorites.length,
+        event: meetingDb,
+        images: meetingDb.images,
+        participants: meetingDb.participants.length,
+        favorit: meetingDb.favorites.length,
         urlPoint: "http:/localhost:3000/",
-        likes: event.likes.length,
-        view: event.view.length,
+        likes: meetingDb.likes.length,
+        view: meetingDb.view.length,
       });
     } catch (error) {
       console.error(error);
@@ -754,10 +878,12 @@ const meetingController = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: userDb._id.toString(),
+          meetingId: resDb._id,
+          navigate: false,
           type: "confirm_passport",
           link: `alleven://verifyDetail/${resDb._id}`,
-          categoryIcon: "/icon/Passport.png",
-          message: `Ваша личность успешно подтверждена. Теперь вы можете создавать встречи.`,
+          // categoryIcon: "/icon/Passport.png",
+          message: `Ваш профиль успешно верифицирован. Теперь вы можете создавать встречи.`,
         };
         const nt = new Notification(dataNotif);
         await nt.save();
@@ -767,11 +893,12 @@ const meetingController = {
             userDb._id.toString(),
             JSON.stringify({
               type: "confirm_passport",
-              navigate:false,
+              navigate: false,
+              meetingId: resDb._id,
               link: `alleven://verifyDetail/${resDb._id}`,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Ваша личность успешно подтверждена. Теперь вы можете создавать встречи.`,
-              categoryIcon: "/icon/Passport.png",
+              message: `Ваш профиль успешно верифицирован. Теперь вы можете создавать встречи.`,
+              // categoryIcon: "/icon/Passport.png",
             })
           );
         }
@@ -827,13 +954,12 @@ const meetingController = {
   // },
   verify: async (req, res) => {
     try {
-      const data = req.body;
       const authHeader = req.headers.authorization;
 
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
 
-      const result = await meetingService.verify(data, user.id);
+      const result = await meetingService.verify(req.body, user.id);
       const userDb = await User.findById(user.id);
       if (userDb.statusMeeting === "Verified") {
         return res
@@ -854,22 +980,20 @@ const meetingController = {
         })
         .populate({ path: "user", select: "-password -fcm_token" });
 
-      const evLink = `alleven://eventDetail/${db._id}`;
-
       notifEvent.emit(
         "send",
         "ADMIN",
         JSON.stringify({
-          type: "Новая встреча",
-          message: "event",
-          data: db,
+          type: "confirm_passport",
+          message: meetingVerify.user.name,
+          data: meetingVerify,
         })
       );
 
       return res.status(200).send(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "An error occurred" });
+      return res.status(500).send({ message: "Server Error" });
     }
   },
   // adminVerify:async(req,res)=>{
@@ -886,6 +1010,40 @@ const meetingController = {
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {
         const result = await meetingService.addMeeting(meeting, user.id, phone);
+        const meetingDb = await meetingModel
+          .findById(result[1]._id)
+          .populate("images");
+        const evLink = `alleven://myMeeting/${meetingDb._id}`;
+        const dataNotif = {
+          status: 2,
+          date_time: new Date(),
+          user: userDb._id.toString(),
+          type: "Новая встреча",
+          message: `Ваше встреча ${meetingDb.purpose} находится на модерации`,
+          categoryIcon: meetingDb.images[0].path,
+          navigate: true,
+          meetingId: meetingDb._id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+
+        if (userDb.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            userDb._id.toString(),
+            JSON.stringify({
+              type: "Новая встреча",
+              meetingId: meetingDb._id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `Ваше встреча ${meetingDb.purpose} находится на модерации`,
+              categoryIcon: meetingDb.images[0].path,
+              link: evLink,
+            })
+          );
+        }
+
         const dat = result[1].date + ":00";
 
         const eventTime = moment.tz(dat, process.env.TZ);
@@ -908,15 +1066,43 @@ const meetingController = {
             for (let i = 0; i < meetingDb.participants.length; i++) {
               const element = meetingDb.participants[i].user;
               if (element.fcm_token[0]) {
-                const evLink = `alleven://meetingDetail/${meetingDb._id}`;
+                // const evLink = `alleven://singleEvent/${eventDb._id}`;
+                // const date_time = moment.tz(process.env.TZ).format();
+                // const dataNotif = {
+                //   status: 2,
+                //   date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                //   user: "6763ec4fbed192bc99eaf23d",
+                //   type: "confirm_come",
+                //   navigate:true,
+                //   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                //   categoryIcon: eventDb.category.avatar,
+                //   eventId: eventDb._id.toString(),
+                //   link: evLink,
+                // };
+                // const nt = new Notification(dataNotif);
+                // await nt.save();
+                // notifEvent.emit(
+                //   "send",
+                //   "6763ec4fbed192bc99eaf23d",
+                //   JSON.stringify({
+                //     type: "confirm_come",
+                //     date_time,
+                //     navigate: true,
+                //     eventId: eventDb._id.toString(),
+                //     message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                //     categoryIcon: eventDb.category.avatar,
+                //     link: evLink,
+                //   })
+                // );
+                const evLink = `alleven://myMeeting/${meetingDb._id}`;
                 const dataNotif = {
                   status: 2,
                   date_time: new Date(),
                   user: element._id.toString(),
-                  type: "participation",
+                  type: "confirm_come",
                   message: `Ваше событие ${d.name} находится на модерации`,
-                  categoryIcon: meetingDb.images[0].path,
-                  createId: meetingDb._id,
+                  meetingId: meetingDb._id,
+                  navigate: true,
                   link: evLink,
                 };
                 const nt = new Notification(dataNotif);
@@ -929,13 +1115,13 @@ const meetingController = {
                     "send",
                     element._id,
                     JSON.stringify({
-                      type: "participation",
-                      createId: meetingDb._id,
+                      type: "confirm_come",
+                      meetingId: meetingDb._id,
+                      navigate: true,
                       date_time: moment
                         .tz(process.env.TZ)
                         .format("YYYY-MM-DD HH:mm"),
                       message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
-                      categoryIcon: meetingDb.images[0].path,
                       link: evLink,
                     })
                   );
@@ -961,7 +1147,7 @@ const meetingController = {
             for (let i = 0; i < meetingDb.participantSpot.length; i++) {
               const element = meetingDb.participantSpot[i].user;
               if (element.fcm_token[0]) {
-                const evLink = `alleven://meetingDetail/${meetingDb._id}`;
+                const evLink = `alleven://myMeeting/${meetingDb._id}`;
                 const dataNotif = {
                   status: 2,
                   date_time: moment
@@ -969,11 +1155,12 @@ const meetingController = {
                     .format("YYYY-MM-DD HH:mm"),
                   user: element._id.toString(),
                   type: "participationSpot",
-                  message: `Ваше событие ${d.name} находится на модерации`,
-                  categoryIcon: meetingDb.images[0].path,
-                  createId: meetingDb._id,
+                  message: `Встреча ${meetingDb.purpose} началось.`,
+                  // categoryIcon: meetingDb.images[0].path,
+                  meetingId: meetingDb._id,
                   link: evLink,
                 };
+                //Ваше событие ${d.name} находится на модерации
                 const nt = new Notification(dataNotif);
                 await nt.save();
                 console.log(`Встреча ${meetingDb.purpose} началось.`);
@@ -983,12 +1170,12 @@ const meetingController = {
                     element._id.toString(),
                     JSON.stringify({
                       type: "participationSpot",
-                      createId: meetingDb._id,
+                      meetingId: meetingDb._id,
                       date_time: moment
                         .tz(process.env.TZ)
                         .format("YYYY-MM-DD HH:mm"),
                       message: `Встреча ${meetingDb.purpose} началось.`,
-                      categoryIcon: meetingDb.images[0].path,
+                      // categoryIcon: meetingDb.images[0].path,
                       link: evLink,
                     })
                   );
@@ -1007,13 +1194,14 @@ const meetingController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "An error occurred" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   editMeeting: async (req, res) => {
     try {
       const id = req.params.id;
       const meeting = req.body;
+
       const result = await meetingService.editMeeting(id, meeting);
       if (!result) {
         res.status(400).send({ message: "Event not found" });
@@ -1021,7 +1209,7 @@ const meetingController = {
       res.status(200).send(result);
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "An error occurred" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   index: async (req, res) => {
@@ -1093,13 +1281,12 @@ const meetingController = {
       meetingsRes = await meetingModel.find().populate("user");
     }
     meetingsRes.sort((a, b) => {
-
       return (
         moment(b.createdAt).format("YYYY-MM-DD HH:MM") -
         moment(a.createdAt).format("YYYY-MM-DD HH:MM")
       );
     });
-    meetingsRes.reverse()
+    meetingsRes.reverse();
     res.render("profile/meeting", {
       layout: "profile",
       title: "Meeting",

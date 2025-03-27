@@ -51,7 +51,7 @@
             alleven 
             <span style="color: red;">Пожаловаться на {{ lng report_type "ru" }} {{name}}</span>
         </h2>
-        <form method="POST" action="/report">
+        <form method="POST" action="/api/report">
         <input type="text" name="id" value="{{ id }}" hidden>
         <input type="text" name="report_type" value="{{ report_type }}" hidden>
         <input type="text" name="name" class="Log" placeholder="имя" required/>

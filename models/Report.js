@@ -22,13 +22,41 @@ const Report = new Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Event', 
     },
-    comment:{
+    company:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Company', 
+    },
+    meeting:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Meeting', 
+    },
+    event_comment:{
         type: mongoose.Schema.ObjectId,
         ref: 'event_comment', 
     },
-    impression:{
+    company_comment:{
         type: mongoose.Schema.ObjectId,
-        ref: 'event_impression_image', 
+        ref: 'company_comment', 
+    },
+    meeting_comment:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'meeting_comment', 
+    },
+    event_impression:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'event_impression_image',
+    },
+    company_impression:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'company_impression_image',
+    },
+    meeting_impression:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'meeting_impression_image',
+    },
+    report_type:{
+        type: String,
+        required : true,
     },
 
 })

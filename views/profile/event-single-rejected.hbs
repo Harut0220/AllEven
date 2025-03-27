@@ -1,11 +1,60 @@
-<link rel="stylesheet" href="/styles/event.css" /><link
+<link rel="stylesheet" href="/styles/event.css" />
+<link
   rel="preconnect"
   href="https://fonts.googleapis.com"
 />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
         .menuIconImg{
     width: 15px;
     filter: brightness(0) invert(1);}
+
+        .center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+#imageModal{
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.391);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imgaeModal_block{
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  margin: 0 auto;
+  position: relative;
+}
+#modalImage{
+width: 100%;
+    height: 100%;}
+#div_x{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+#closeModal{
+    font-size: 30px;
+    padding: 10px;
+    position: absolute;
+    right: 5px;
+    top: -10px;
+}
+
+#closeModal>span{
+
+}
 </style>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
@@ -25,16 +74,11 @@
           &gt;
           <a id="changeNavText">Все событии</a></p>
       </div>
-      {{! <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
-              Фильтр
-              <img src="/images/staticimg/Group(10).svg">
-            </div> }}
     </div>
     <div id="allEvMainDiv">
-      <div class="allEvBox">
+      <div class="allEvBox" style="width: 50%;" >
         <div id="allEvBox_header">
           <h4>События</h4>
-          {{getValue event "status"}}
           {{#if (eq (getValue event "status") 2)}}
           <form
             action="/admin/profile/event/edit/{{getValue event "_id"}}"
@@ -45,25 +89,19 @@
           {{else}}
             <span >Одобрено</span>
           {{/if}}
-
         </div>
-
         <hr />
         <div class="allEvBoxCont">
           <div id="pics1">
             {{#if images}}
               {{#each images}}
-                <img
-                  src="/{{name}}"
-                  class="allEvImg"
-                  style="width: 118px;height:118px"
-                />
+                <div class="changeEvDiv" style="background-image: url('/{{name}}')" onclick="openImageModal('{{name}}')">
+                    <img src="/images/pics/GroupX.svg"  class="removeButton" onclick="removeimage(this)" attr_id="{{_id}}">
+                </div>
               {{/each}}
             {{/if}}
-            {{! <img src="/images/pics/image 32.svg" class="allEvImg" />
-            <img src="/images/pics/image 32 (1).svg" class="allEvImg" /> }}
           </div>
-          <div class="allEvBoxContDiv">
+          <div class="allEvBoxContDiv" style="overflow-y: auto; padding:5px" >
             <div id="boxPersonName">
               <h6>{{getValue event "name"}}</h6>
               <div id="emotions">
@@ -96,16 +134,11 @@
                 <span>Описание </span>{{description}}</p>
             </div>
             <p class="boxP"><span>Дата:</span> {{started_time}}</p>
-            {{!-- <p class="boxP"><span>Время:</span> 18:30</p> --}}
             <p class="boxP"><span>Телефон:</span> {{phone_number}}</p>
             <p class="boxP"><span>Веб сайт:</span> {{website_link}}</p>
             <p class="boxP boxPflex">
               <span>Место прохождения:</span>
               <a id="addressLine">{{address}}</a>
-              {{! <img
-                src="/images/pics/locationIcon.svg"
-                style="cursor: pointer"
-              /> }}
             </p>
             <p></p>
             <p class="boxP">
@@ -121,7 +154,7 @@
           </div>
         </div>
       </div>
-      <div class="allEvBox">
+      <div class="allEvBox" style="width: 50%;">
         <p id="deniedP">Причина отклонения События</p>
         <hr />
         <div id="fillResponseMessage">{{getValue event "rejectMessage"}}</div>
@@ -130,17 +163,39 @@
   </div>
 </div>
 <script src="/js/axios.js"></script>
+      <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" onclick="closeFunc()" >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
 <script>
+      const imgModal=document.getElementById('modalImage')
+
+  function openImageModal(path){
+    imgModal.src=`/${path}`
+    const imageModal=document.getElementById('imageModal')
+    imageModal.style.display='flex'
+    imageModal.style.position='absolute'
+    imageModal.style.margin='0 auto'
+  }
+
+  function closeFunc(e){
+          const imageModal=document.getElementById('imageModal')
+        imageModal.style.display='none'
+  }
    function buttonFunc() {
-    // Տպում barev
     const modal=document.querySelector('.modal');
   modal.style.display = 'flex';
  
-    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
     setTimeout(() => {
-      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
-      form.submit(); // Ուղարկում ենք form-ը
-    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+      const form = document.getElementById('eventForm');
+      form.submit(); 
+    }, 1000); 
   }
   //const geoCordLatit = "{{event.latitude}}"; const geoCordLotit = "{{event.longitude}}";
   //const geoPath =

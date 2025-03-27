@@ -39,10 +39,10 @@
             <div class="eventHeadFirstPart">
               <p><a href="/">Главная</a> &gt; <a href="/admin/profile/company/page">Услуги</a>  &gt; <a id="changeNavText">Запись</a></p>
             </div>
-            <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
+            {{!-- <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
               Фильтр
               <img src="/images/staticimg/Group(10).svg">
-            </div>
+            </div> --}}
           </div>
           <div id="eventBody">
             <div id="eventBodyHead">
@@ -56,28 +56,20 @@
               <table id="table">
                 <thead>
                   <tr>
-                    {{!-- <th class="td1" style="padding: 11px 8px; text-align: center">
-                      №
-                    </th> --}}
+                    <th class="td1">Компания</th>
                     <th class="td1">Услуга</th>
                     <th class="td1">Имя</th>
-                    <th class="td1">Авансовый платеж</th>
-                    {{!-- <th class="td1">Ситуация</th> --}}
                     <th class="td1">Дата</th>
-                    {{!-- <th class="td1">Место прохождения</th> --}}
-                    {{!-- <th class="td1">Рейтинг</th> --}}
-                    {{!-- <th class="td1">Редактировать</th> --}}
-                    {{!-- <th class="td1">Показать</th> --}}
                   </tr>
                 </thead>
                 <tbody id="tbody1">
                    {{#if events}}
-                      {{#optionsServicePays events "_id" "user" "service" "registerId" "prepayment" "prepaymentPrice" "payment" "paymentPrice" "date"}}
+                      {{#optionsServicePays events "_id" "name" "surname" "companyName" "serviceName" "date" "status"}}
                          <tr>
-                          <td class="td"  >{{getNestedValue service "type"}}</td>
-                          <td class="td" >{{getNestedValue user "name"}}{{getNestedValue user "surname"}}</td>
-                          <td class="td" >{{prepaymentPrice}} </td>
-                          <td class="td" >{{date}}</td>
+                          <td class="td" {{#if (eq status 0)}} style="color: red;"{{else}} style="color: black;" {{/if}} >{{companyName}}</td>
+                          <td class="td" {{#if (eq status 0)}} style="color: red;"{{else}} style="color: black;" {{/if}}  >{{serviceName}}</td>
+                          <td class="td" {{#if (eq status 0)}} style="color: red;"{{else}} style="color: black;" {{/if}} >{{name}} {{surname}}</td>
+                          <td class="td" {{#if (eq status 0)}} style="color: red;"{{else}} style="color: black;" {{/if}} >{{date}}</td>
                           </tr>
                       {{/optionsServicePays}}
                     {{/if}}     

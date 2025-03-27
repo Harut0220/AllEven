@@ -4,7 +4,7 @@ const categoryCompany=[
         avatar:`/companyCategory/MaskGroup.jpg`
     },
     {
-        name:"Медицинская услуги",
+        name:"Медицинские услуги",
         avatar:`/companyCategory/Medic.jpg`
     },
     {
@@ -16,7 +16,7 @@ const categoryCompany=[
         avatar:`/companyCategory/Manikyur.jpg`
     },
     {
-        name:"Масаж",
+        name:"Масcаж",
         avatar:`/companyCategory/Masaj.jpg`
     },
     {

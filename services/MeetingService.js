@@ -7,7 +7,7 @@ import MeetingVerify from "../models/meeting/meetingVerify.js";
 import MeetingParticipants from "../models/meeting/meetingParticipant.js";
 import User from "../models/User.js";
 import meetingFavorit from "../models/meeting/meetingFavorit.js";
-// import moment from "moment";
+// import moment from "moment-timezone";
 import jwt from "jsonwebtoken";
 // import meetingComment from "../models/meeting/meetingComment.js";
 import Role from "../models/Role.js";
@@ -32,6 +32,9 @@ import companyModel from "../models/company/companyModel.js";
 import meetingImpressionImage from "../models/meeting/meetingImpressionImage.js";
 import ImpressionsMeeting from "../models/ImpressionsMeeting.js";
 import AnswerLikes from "../models/meeting/meetingCommentAnswerLike.js";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import Report from "../models/Report.js";
 
 const meetingService = {
   myParticipant: async (user) => {
@@ -100,7 +103,8 @@ const meetingService = {
     if (Array.isArray(des_events)) {
       for (let i = 0; i < des_events.length; i++) {
         const meeting = await meetingModel.findById(des_events[i]);
-
+        await Notification.deleteMany({ meetingId: des_events[i] });
+        await Report.deleteMany({ meeting: des_events[i] });
         if (!meeting) {
           throw new Error("Meeting not found");
         }
@@ -122,6 +126,7 @@ const meetingService = {
 
           await meetingCommentAnswer.deleteMany({ commentId: comment._id });
         }
+        await ImpressionsMeeting.deleteMany({ meeting: des_events[i] });
 
         await meetingComment.deleteMany({ meetingId: des_events[i] });
         await meetingImages.deleteMany({ meetingId: des_events[i] });
@@ -143,7 +148,8 @@ const meetingService = {
     }
     if (typeof des_events === "string") {
       const meeting = await meetingModel.findById(des_events);
-
+      await Notification.deleteMany({ meetingId: des_events });
+      await Report.deleteMany({ meeting: des_events });
       if (!meeting) {
         throw new Error("Meeting not found");
       }
@@ -163,6 +169,7 @@ const meetingService = {
 
         await meetingCommentAnswer.deleteMany({ commentId: comment._id });
       }
+      await ImpressionsMeeting.deleteMany({ meeting: des_events });
 
       await meetingComment.deleteMany({ meetingId: des_events });
       await meetingImages.deleteMany({ meetingId: des_events });
@@ -247,8 +254,6 @@ const meetingService = {
   },
   meetings: async (authHeader, longitude, latitude) => {
     if (authHeader && longitude && latitude) {
-      console.log(authHeader,"token");
-      
       const token = authHeader.split(" ")[1];
       const userToken = jwt.decode(token);
       const user = userToken.id;
@@ -278,8 +283,7 @@ const meetingService = {
         return distance;
       }
       // const userDb=await User.findById(user.id)
-      // console.log(userDb,"userDb");
-      
+
       const meetings = await meetingModel
         .find({ user: { $ne: user }, status: { $eq: 1 } })
         .populate({ path: "user", select: "-password" })
@@ -381,7 +385,7 @@ const meetingService = {
         });
         element.isFavorite = findFavorite ? true : false;
       }
-      
+
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
@@ -587,11 +591,7 @@ const meetingService = {
         upcoming: separatedEvents.upcoming,
         // passed: filter,
       };
-    } else if (
-      authHeader &&
-      longitude &&
-      latitude
-    ) {
+    } else if (authHeader && longitude && latitude) {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const myLatitude = 55.7558;
@@ -735,7 +735,7 @@ const meetingService = {
         });
         element.isFavorite = findFavorite ? true : false;
       }
-      
+
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
@@ -753,7 +753,9 @@ const meetingService = {
     const commentDb = await meetingComment.findByIdAndUpdate(answerId, {
       $pull: { answer: answerId },
     });
-    const commentAnswerDb = await meetingCommentAnswer.findById(answerId);
+    const commentAnswerDb = await meetingCommentAnswer
+      .findById(answerId)
+      .populate("user");
     await commentAnswerDb.remove();
     const commentAnswerLikesDb = await AnswerLikes.find({
       answerId,
@@ -773,11 +775,46 @@ const meetingService = {
         answerId,
         date: moment.tz(process.env.TZ).format(),
       });
-      const commentAnswerDb = await meetingCommentAnswer.findByIdAndUpdate(
-        answerId,
-        { $push: { likes: commentAnswerLikesDb._id } }
-      );
+      const commentAnswerDb = await meetingCommentAnswer
+        .findByIdAndUpdate(answerId, {
+          $push: { likes: commentAnswerLikesDb._id },
+        })
+        .populate("user");
       await commentAnswerLikesDb.save();
+      const commentDb = await meetingComment.findById(commentId);
+      const updatedMeeting = await meetingModel
+        .findById(commentDb.meetingId)
+        .populate("user");
+      if (commentAnswerDb.user._id.toString() !== user) {
+        const evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: commentAnswerDb.user._id.toString(),
+          type: "message",
+          navigate: true,
+          message: `У вас новое сообщение.`,
+          meetingId: updatedMeeting._id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        if (commentAnswerDb.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            commentAnswerDb.user._id.toString(),
+            JSON.stringify({
+              type: "message",
+              meetingId: updatedMeeting._id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `У вас новое сообщение.`,
+              link: evLink,
+            })
+          );
+        }
+      }
+
       return { message: "Лайк добавлен" };
     } else {
       const commentAnswerLikesDb = await AnswerLikes.findById(
@@ -792,7 +829,6 @@ const meetingService = {
     }
   },
   addRating: async (user, meetingId, rating) => {
-    
     const ratingIf = await meetingRating.find({ user, meetingId });
     if (!ratingIf.length) {
       const date = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
@@ -831,7 +867,9 @@ const meetingService = {
       const userDb = await User.findById(user);
       const companyDb = await meetingModel
         .findById(meetingId)
-        .populate("images");
+        .populate("images")
+        .populate("user")
+        .exec();
       if (ifImpressions) {
         await ImpressionsMeeting.findByIdAndUpdate(ifImpressions._id, {
           // $set: { rating },
@@ -853,9 +891,41 @@ const meetingService = {
         });
         await meetingImpression.save();
       }
-      const updatedMeeting=await meetingModel.findById(meetingId).select("ratings")
-      const ratings=updatedMeeting.ratings
-      return { message: "Рейтинг добавлен",ratings, averageRating };
+      const updatedMeeting = await meetingModel
+        .findById(meetingId)
+        .select("ratings");
+      const ratings = updatedMeeting.ratings;
+      if (companyDb.user._id.toString() !== user) {
+        const evLink = `alleven://myMeeting/${companyDb._id}`;
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: companyDb.user._id.toString(),
+          type: "message",
+          navigate: true,
+          message: `У вас новое сообщение.`,
+          meetingId: companyDb._id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        if (companyDb.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            companyDb.user._id.toString(),
+            JSON.stringify({
+              type: "message",
+              meetingId: companyDb._id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `У вас новое сообщение.`,
+              link: evLink,
+            })
+          );
+        }
+      }
+
+      return { message: "Рейтинг добавлен", ratings, averageRating };
     } else {
       return { message: "Рейтинг уже добавлен" };
     }
@@ -889,16 +959,63 @@ const meetingService = {
     const answerDb = await meetingCommentAnswer
       .findById(commentAnswerDb._id)
       .populate("user");
-    const commentDb = await meetingComment.findByIdAndUpdate(
-      commentId,
-      { $push: { answer: commentAnswerDb._id } },
-      { new: true }
-    );
+    const commentDb = await meetingComment
+      .findByIdAndUpdate(
+        commentId,
+        { $push: { answer: commentAnswerDb._id } },
+        { new: true }
+      )
+      .populate("user");
+
+    const updatedMeeting = await meetingModel
+      .findById(commentDb.meetingId)
+      .populate("user")
+      .exec();
+    if (user !== commentDb.user._id.toString()) {
+      const evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: commentDb.user._id.toString(),
+        type: "message",
+        navigate: true,
+        message: `У вас новое сообщение.`,
+        meetingId: updatedMeeting._id,
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+      if (commentDb.user.notifMeeting) {
+        notifEvent.emit(
+          "send",
+          commentDb.user._id.toString(),
+          JSON.stringify({
+            type: "message",
+            meetingId: updatedMeeting._id,
+            navigate: true,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `У вас новое сообщение. `,
+            link: evLink,
+          })
+        );
+      }
+    }
+
     return { message: "Комментарий добавлен", answer: answerDb };
   },
   participantSpot: async (user, meetingId) => {
+    const userDb = await User.findById(user);
     const resIf = await meetingParticipant.find({ user, meetingId });
+    const notif = await Notification.findOne({
+      user: user,
+      meetingId,
+      type: "confirm_come",
+    });
 
+    if (notif) {
+      notif.confirmed = true;
+      await notif.save();
+    }
     if (resIf.length) {
       const spotDb = new meetingParticipantSpot({ user, meetingId });
       await spotDb.save();
@@ -915,6 +1032,34 @@ const meetingService = {
         .populate("likes")
         .populate("participantSpot");
 
+      const evLink = `alleven://myMeeting/${meetingId}`;
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: updatedMeeting.user._id.toString(),
+        type: "Присоединение",
+        navigate: true,
+        message: `Пользователь ${userDb.name} пришел на ваше встрече ${updatedMeeting.purpose}. `,
+        meetingId,
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+      if (updatedMeeting.user.notifMeeting) {
+        notifEvent.emit(
+          "send",
+          updatedMeeting.user._id.toString(),
+          JSON.stringify({
+            type: "Присоединение",
+            meetingId,
+            navigate: true,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Пользователь ${userDb.name} пришел на ваше встрече ${updatedMeeting.purpose}. `,
+            link: evLink,
+          })
+        );
+      }
+
       return { message: "Вас добавлен в список на место" };
     } else {
       return { message: "Вас нет в списке участников" };
@@ -924,7 +1069,10 @@ const meetingService = {
     const result = await meetingModel
       .findById(id)
       .populate({ path: "user", select: "-password" })
-      .populate("participants")
+      .populate({
+        path: "participants",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
       .populate("likes")
       .populate("images")
       .populate("participantSpot")
@@ -966,7 +1114,10 @@ const meetingService = {
         { new: true }
       )
       .populate({ path: "user", select: "name surname avatar" })
-      .populate("participants")
+      .populate({
+        path: "participants",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
       .populate("likes")
       .populate("images")
       .populate("participantSpot")
@@ -1456,34 +1607,35 @@ const meetingService = {
           path: "user",
           select: "_id name surname avatar notifMeeting",
         });
-      const evLink = `alleven://meetingDetail/${meetingId}`;
 
-      const dataNotif = {
-        status: 2,
-        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        user: meetingDb.user._id.toString(),
-        type: "like",
-        message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
-        createId: meetingId,
-        categoryIcon: "/icon/like.png",
-        link: evLink,
-      };
-      const nt = new Notification(dataNotif);
-      await nt.save();
+      if (meetingDb.user._id.toString() !== user) {
+        const evLink = `alleven://myMeeting/${meetingId}`;
 
-      if (meetingDb.user.notifMeeting) {
-        notifEvent.emit(
-          "send",
-          meetingDb.user._id.toString(),
-          JSON.stringify({
-            type: "like",
-            createId: meetingId,
-            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            categoryIcon: "/icon/like.png",
-            message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
-            link: evLink,
-          })
-        );
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: meetingDb.user._id.toString(),
+          type: "like",
+          message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
+          meetingId: meetingId,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+
+        if (meetingDb.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            meetingDb.user._id.toString(),
+            JSON.stringify({
+              type: "like",
+              meetingId: meetingId,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
+              link: evLink,
+            })
+          );
+        }
       }
 
       return { message: true, likes: meetingDb.likes };
@@ -1508,187 +1660,50 @@ const meetingService = {
         { $set: { statusMeeting: "noVerified" } },
         { new: true }
       );
-      const store = async (data) => {
-        let ex_notif_type = false;
-        if (data.user && data.type) {
-          // const findAndLean = async (id) => {
-          //   return await User.findById(id)
-          //     .select(["-password", "-block", "-fcm_token"])
-          //     .populate([
-          //       "event_categories",
-          //       "roles",
-          //       "favorite_categories",
-          //       "list_of_notifications",
-          //       {
-          //         path: "meetings",
-          //         options: { sort: { createdAt: "desc" } },
-          //         populate: [
-          //           "images",
-          //           {
-          //             // path: "category",
-          //             select: {
-          //               name: 1,
-          //               description: 1,
-          //               status: 1,
-          //               createdAt: 1,
-          //               updaedAt: 1,
-          //               avatar: 1,
-          //               map_avatar: 1,
-          //               categoryIcon: "$avatar",
-          //             },
-          //           },
-          //           {
-          //             path: "favorites",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "likes",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "visits",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "in_place",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //         ],
-          //       },
-          //       {
-          //         path: "event_in_place",
-          //         options: { sort: { createdAt: "desc" } },
-          //         populate: [
-          //           "images",
-          //           {
-          //             // path: "category",
-          //             select: {
-          //               name: 1,
-          //               description: 1,
-          //               status: 1,
-          //               createdAt: 1,
-          //               updaedAt: 1,
-          //               avatar: 1,
-          //               map_avatar: 1,
-          //               categoryIcon: "$avatar",
-          //             },
-          //           },
-          //           {
-          //             path: "favorites",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "likes",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "visits",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //           {
-          //             path: "in_place",
-          //             options: { sort: { createdAt: "desc" } },
-          //             select: [
-          //               "name",
-          //               "surname",
-          //               "email",
-          //               "phone_number",
-          //               "avatar",
-          //             ],
-          //           },
-          //         ],
-          //       },
-          //     ])
-          //     .lean();
-          // };
-          const user = await User.findById(data.user);
-          if (
-            user &&
-            user.list_of_notifications &&
-            user.list_of_notifications.length
-          ) {
-            for (let l = 0; l < user.list_of_notifications.length; l++) {
-              if (data.notif_type == user.list_of_notifications[l].name) {
-                ex_notif_type = true;
-                break;
-              }
-            }
-          }
-        }
-        const getNotificatationListByName = async (name) => {
-          return await NotificatationList.findOne({ name });
-        };
-        const notificationLists = await getNotificatationListByName(data.type);
+      // const store = async (data) => {
+      //   let ex_notif_type = false;
+      //   if (data.user && data.type) {
+      //     const user = await User.findById(data.user);
+      //     if (
+      //       user &&
+      //       user.list_of_notifications &&
+      //       user.list_of_notifications.length
+      //     ) {
+      //       for (let l = 0; l < user.list_of_notifications.length; l++) {
+      //         if (data.notif_type == user.list_of_notifications[l].name) {
+      //           ex_notif_type = true;
+      //           break;
+      //         }
+      //       }
+      //     }
+      //   }
+      //   const getNotificatationListByName = async (name) => {
+      //     return await NotificatationList.findOne({ name });
+      //   };
+      //   const notificationLists = await getNotificatationListByName(data.type);
 
-        if (!ex_notif_type && notificationLists) {
-          return 1;
-        }
+      //   if (!ex_notif_type && notificationLists) {
+      //     return 1;
+      //   }
 
-        let roles = await Role.find({ name: data.sent }, { _id: 1 });
-        data.sent = roles;
-        return await Notification.create(data);
-      };
+      //   let roles = await Role.find({ name: data.sent }, { _id: 1 });
+      //   data.sent = roles;
+      //   return await Notification.create(data);
+      // };
+      const evLink = `alleven://myMeeting/${meetingDb._id}`;
 
-      const evLink = `alleven://eventDetail/${meetingDb._id}`;
-      await store({
+      const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format(),
         user: userDb._id,
         type: "message",
         message: `К сожалению, ваше событие ${meetingDb.purpose} ${meetingDb.description} отклонено модератором, причина - ${status}`,
-        categoryIcon: meetingDb.images[0].path,
-        createId: meetingDb._id,
+        // categoryIcon: meetingDb.images[0].path,
+        meetingId: meetingDb._id,
+        navigate: true,
         link: evLink,
-      });
+      };
+      const nt = new Notification(dataNotif);
 
       if (userDb.notifMeeting) {
         notifEvent.emit(
@@ -1697,8 +1712,9 @@ const meetingService = {
           JSON.stringify({
             type: "message",
             date_time: moment.tz(process.env.TZ).format(),
-            categoryIcon: meetingDb.images[0].path,
-            createId: meetingDb._id,
+            // categoryIcon: meetingDb.images[0].path,
+            meetingId: meetingDb._id,
+            navigate: true,
             message: `К сожалению, ваше событие ${meetingDb.purpose} ${meetingDb.description} отклонено модератором, причина - ${status}`,
             link: evLink,
           })
@@ -1728,11 +1744,46 @@ const meetingService = {
         date: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
       });
       const like = await likeDb.save();
-      const commentDb = await meetingComment.findByIdAndUpdate(
-        commentId,
-        { $push: { likes: like._id } },
-        { new: true }
-      );
+      const commentDb = await meetingComment
+        .findByIdAndUpdate(
+          commentId,
+          { $push: { likes: like._id } },
+          { new: true }
+        )
+        .populate("user");
+      const meeting = await meetingModel
+        .findById(commentDb.meetingId)
+        .populate("user");
+      if (commentDb.user._id.toString() !== user) {
+        const evLink = `alleven://myMeeting/${meeting._id}`;
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: commentDb.user._id.toString(),
+          type: "message",
+          navigate: true,
+          message: `У вас новое сообщение.`,
+          meetingId: meeting._id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        if (commentDb.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            commentDb.user._id.toString(),
+            JSON.stringify({
+              type: "message",
+              meetingId: meeting._id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `У вас новое сообщение.`,
+              link: evLink,
+            })
+          );
+        }
+      }
+
       return { message: "like" };
     } else {
       const ifLike = await meetingCommentLikes.findOneAndDelete({
@@ -1758,16 +1809,16 @@ const meetingService = {
       { new: true }
     );
 
-    const evLink = `alleven://eventDetail/${meeting._id}`;
+    const evLink = `alleven://verifyMeeting`;
     const msg = `К сожалению, ваше данные паспорта отклонено модератором, причина - ${data.status}`;
     const dataNotif = {
       status: 2,
       date_time: moment.tz(process.env.TZ).format(),
       user: updatedUser._id.toString(),
       type: "message",
+      navigate: true,
       message: msg,
-      createId: meeting._id,
-      categoryIcon: "/icon/Passport.png",
+      meetingId: meeting._id,
       link: evLink,
     };
     const nt = new Notification(dataNotif);
@@ -1778,9 +1829,9 @@ const meetingService = {
         updatedUser._id.toString(),
         JSON.stringify({
           type: "message",
+          navigate: true,
           date_time: moment.tz(process.env.TZ).format(),
-          createId: meeting._id,
-          categoryIcon: "/icon/Passport.png",
+          meetingId: meeting._id,
           message: msg,
           link: evLink,
         })
@@ -1792,7 +1843,7 @@ const meetingService = {
   },
   addComment: async (user, meetingId, comment) => {
     try {
-      const meeting = await meetingModel.findById(meetingId);
+      const meeting = await meetingModel.findById(meetingId).populate("user");
 
       const commentDb = new meetingComment({
         user,
@@ -1816,7 +1867,39 @@ const meetingService = {
       const userDb = await User.findById(user);
       const companyDb = await meetingModel
         .findById(meetingId)
-        .populate("images");
+        .populate("images")
+        .populate("user")
+        .exec();
+      if (companyDb.user._id.toString() !== user) {
+        const evLink = `alleven://myMeeting/${meeting._id}`;
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: meeting.user._id.toString(),
+          type: "message",
+          navigate: true,
+          message: `У вас новое сообщение.`,
+          meetingId: meeting._id,
+          link: evLink,
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        if (meeting.user.notifMeeting) {
+          notifEvent.emit(
+            "send",
+            meeting.user._id.toString(),
+            JSON.stringify({
+              type: "message",
+              meetingId: meeting._id,
+              navigate: true,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              message: `У вас новое сообщение.`,
+              link: evLink,
+            })
+          );
+        }
+      }
+
       if (ifImpressions) {
         await ImpressionsMeeting.findByIdAndUpdate(ifImpressions._id, {
           $push: { comments: comment },
@@ -1871,13 +1954,45 @@ const meetingService = {
         const resultUser = await User.findById(user);
         resultUser.meeting_favorites.push(meetingId);
         await resultUser.save();
-        const meeting = await meetingModel.findByIdAndUpdate(
-          meetingId,
-          {
-            $push: { favorites: meetNewFavorit._id },
-          },
-          { new: true }
-        );
+        const meeting = await meetingModel
+          .findByIdAndUpdate(
+            meetingId,
+            {
+              $push: { favorites: meetNewFavorit._id },
+            },
+            { new: true }
+          )
+          .populate("user");
+        if (meeting.user._id.toString() !== user) {
+          const evLink = `alleven://myMeeting/${meeting._id}`;
+          const dataNotif = {
+            status: 2,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            user: meeting.user._id.toString(),
+            type: "message",
+            navigate: true,
+            message: `У вас новое сообщение.`,
+            meetingId: meeting._id,
+            link: evLink,
+          };
+          const nt = new Notification(dataNotif);
+          await nt.save();
+          if (meeting.user.notifMeeting) {
+            notifEvent.emit(
+              "send",
+              meeting.user._id.toString(),
+              JSON.stringify({
+                type: "message",
+                meetingId: meeting._id,
+                navigate: true,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `У вас новое сообщение.`,
+                link: evLink,
+              })
+            );
+          }
+        }
+
         return { message: "added", favorites: meeting.favorites };
       }
     } catch (error) {
@@ -1919,9 +2034,8 @@ const meetingService = {
 
         const averageRating = calculateAverageRating(resDb.ratings);
         const ifView = await MeetingViews.findOne({ meetingId: id, user });
-        
+
         if (!ifView) {
-          
           const viewDb = new MeetingViews({
             user,
             meetingId: id,
@@ -1964,7 +2078,6 @@ const meetingService = {
             })
             .exec();
         } else {
-          
           resultChanged1 = await meetingModel
             .findOneAndUpdate(
               { _id: id },
@@ -2168,17 +2281,20 @@ const meetingService = {
           "name surname notifMeeting"
         );
 
-        const evLink = `alleven://meetingDetail/${meetingDb._id}`;
+        const evLink = `alleven://myMeeting/${meetingDb._id}`;
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: meetingDb.user.toString(),
-          type: "meeting_participant",
-          message: `Пользователь ${userDb.name} ${userDb.surname} присоединился к встрече ${meetingDb.name}.`,
-          createId: meetingDb._id,
+          type: "Присоединение",
+          navigate: true,
+          situation: "upcoming",
+          message: `Пользователь ${userDb.name} ${userDb.surname} присоединился к встрече ${meetingDb.purpose}.`,
+          meetingId: meetingDb._id,
           categoryIcon: meetingDb.images[0].path,
           link: evLink,
         };
+
         const nt = new Notification(dataNotif);
         await nt.save();
         if (userDb.notifMeeting) {
@@ -2186,11 +2302,13 @@ const meetingService = {
             "send",
             meetingDb.user.toString(),
             JSON.stringify({
-              type: "meeting_participant",
+              type: "Присоединение",
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               categoryIcon: meetingDb.images[0].path,
-              createId: meetingDb._id,
-              message: `Пользователь ${userDb.name} ${userDb.surname} присоединился к встрече ${meetingDb.name}.`,
+              navigate: true,
+              meetingId: meetingDb._id,
+              situation: "upcoming",
+              message: `Пользователь ${userDb.name} ${userDb.surname} присоединился к встрече ${meetingDb.purpose}.`,
               link: evLink,
             })
           );
@@ -2233,28 +2351,47 @@ const meetingService = {
   },
   verify: async (body, user) => {
     try {
-      const db = new MeetingVerify({
-        name: body.name,
-        family: body.family,
-        surname: body.surname,
-        passport: body.passport,
-        term: body.term,
-        passportImage: body.passportImage,
+      const existVerify = await MeetingVerify.findOne({
         user,
       });
+      if (existVerify) {
+        let d = {};
+        d.name = body.name;
+        d.family = body.family;
+        d.surname = body.surname;
+        d.passport = body.passport;
+        d.term = body.term;
+        d.passportImage = body.passportImage;
+        d.image = body.image;
+        d.user = user;
+        d.status = 0;
+        await MeetingVerify.updateOne(d);
+        return { message: "updated" };
+      } else {
+        const db = new MeetingVerify({
+          name: body.name,
+          family: body.family,
+          surname: body.surname,
+          passport: body.passport,
+          term: body.term,
+          passportImage: body.passportImage,
+          image: body.image,
+          user,
+        });
 
-      await db.save();
+        await db.save();
 
-      // const resDb=await MeetingVerify.find({passport:body.passport})
-      // const userDb=await User.findById(user)
-      // userDb.meetings.push(db._id)
-      // const user=(await userDb.save()).populate("meetings").exec()
-      const updatedUser = await User.findByIdAndUpdate(
-        user,
-        { $set: { statusMeeting: "inProgress" } },
-        { new: true }
-      );
-      return { message: "success", user: updatedUser };
+        // const resDb=await MeetingVerify.find({passport:body.passport})
+        // const userDb=await User.findById(user)
+        // userDb.meetings.push(db._id)
+        // const user=(await userDb.save()).populate("meetings").exec()
+        const updatedUser = await User.findByIdAndUpdate(
+          user,
+          { $set: { statusMeeting: "inProgress" } },
+          { new: true }
+        );
+        return { message: "success", user: updatedUser };
+      }
     } catch (error) {
       console.error(error);
     }
@@ -2310,19 +2447,80 @@ const meetingService = {
       throw new Error("Failed to save meeting and images");
     }
   },
-  editMeeting: async (id, updateData) => {
+  editMeeting: async (id, data) => {
     try {
-      const updatedEvent = await Event.findByIdAndUpdate(id, updateData, {
-        new: true,
-        runValidators: true,
-      });
+      const d = data;
 
-      return updatedEvent;
+      if (d.images && d.images.length) {
+        let imgArr = [];
+        for (const image of d.images) {
+          let img = await meetingImages.create({ path: image, meetingId: id });
+
+          imgArr.push(img);
+        }
+        d.images = imgArr;
+      }
+
+      let event = await meetingModel.updateOne(d);
+
+      return event;
+
+      // let event = await meetingModel.findById(id);
+      // if (!event) {
+      //   return 0;
+      // }
+      // const newObj = { id, ...data };
+
+      // delete newObj.images;
+
+      // const evLink = `alleven://myMeeting/${event._id}`;
+
+      // const updatedCompany = await meetingModel
+      //   .findByIdAndUpdate(
+      //     id,
+      //     { ...newObj, updatedAt: moment.tz(process.env.TZ).format() },
+      //     { new: true }
+      //   )
+      //   .populate("images");
+      // const __filename = fileURLToPath(import.meta.url);
+      // const __dirname = dirname(__filename);
+      // // const dirPath = __dirname.split("");
+
+      // for (let i = 0; i < updatedCompany.images.length; i++) {
+
+      //   const element = updatedCompany.images[i];
+      //   try {
+      //     const filePath = path.join(__dirname, "..", "storage", element.name);
+
+      //     if (fs.existsSync(filePath)) {
+      //       await fs.promises.unlink(filePath);
+      //       console.log("File deleted successfully:", filePath);
+      //     } else {
+      //       console.log("File not found:", filePath);
+      //     }
+      //   } catch (err) {
+      //     console.error("Error deleting file:", err);
+      //   }
+      //   await meetingImages.findByIdAndDelete(element._id);
+      // }
+      // await meetingModel.findByIdAndUpdate(id, { $set: { images: [] } });
+
+      // await data.images.map(async (el) => {
+      //   const evImg = new meetingImages({
+      //     name: el,
+      //   });
+
+      //   const evimgDb = await evImg.save();
+      //   // console.log(evimgDb,"new image");
+      //   await meetingModel.findByIdAndUpdate(id, {
+      //     $push: { images: evimgDb._id },
+      //   });
+      // });
+      // // console.log(updatedCompany,"updatedCompany res");
+
+      // return updatedCompany;
     } catch (err) {
       console.error(err);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: err.message });
     }
   },
 };

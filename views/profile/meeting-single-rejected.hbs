@@ -6,6 +6,54 @@
         .menuIconImg{
     width: 15px;
     filter: brightness(0) invert(1);}
+    #imageModal{
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.391);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imgaeModal_block{
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  margin: 0 auto;
+  position: relative;
+}
+#modalImage{
+width: 100%;
+    height: 100%;}
+#div_x{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+#closeModal{
+    font-size: 30px;
+    padding: 10px;
+    position: absolute;
+    right: 5px;
+    top: -10px;
+    cursor: pointer;
+}
+
+.removeButton{
+  width: 20px;
+  height: 20px;
+}
+
+.service_img_div{
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
 </style>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
@@ -25,13 +73,9 @@
           &gt;
           <a id="changeNavText">Все Встречи</a></p>
       </div>
-      {{! <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
-              Фильтр
-              <img src="/images/staticimg/Group(10).svg">
-            </div> }}
     </div>
     <div id="allEvMainDiv">
-      <div class="allEvBox">
+      <div class="allEvBox" style="width: 50%;">
         <div id="allEvBox_header">
           <h4>Встречa</h4>
           <form
@@ -47,18 +91,16 @@
         <div class="allEvBoxCont">
           <div id="pics1">
                     {{!-- {{#if event}} --}}
-  {{#optionsFromArrays images "_id" "path"}}
-                <img
-                  src="/{{url}}"
-                  class="allEvImg"
-                  style="width: 118px;height:118px"
-                />
-  {{/optionsFromArrays}}
+                   {{#optionsFromArrays images "_id" "path"}}
+                                 <div class="changeEvDiv" style="padding:2px;cursor:pointer;background-image: url('/{{url}}')" onclick="openImageModal('{{url}}')">
+                                   <svg onclick="removeimage(this)" attr_id="{{value}}" class="removeButton" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" fill="white"/></svg>
+                                 </div>
+                   {{/optionsFromArrays}}
                     {{!-- {{/if}} --}}
             {{! <img src="/images/pics/image 32.svg" class="allEvImg" />
             <img src="/images/pics/image 32 (1).svg" class="allEvImg" /> }}
           </div>
-          <div class="allEvBoxContDiv">
+          <div class="allEvBoxContDiv" style="margin: 5px;width:98%">
             <div id="boxPersonName">
               <h6>{{getValue event "purpose"}}</h6>
               <div id="emotions">
@@ -116,7 +158,7 @@
           </div>
         </div>
       </div>
-      <div class="allEvBox">
+      <div class="allEvBox" style="width: 50%;">
         <p id="deniedP">Причина отклонения Встречa</p>
         <hr />
         <div id="fillResponseMessage">{{getValue event "statusMeeting"}}</div>
@@ -125,17 +167,81 @@
   </div>
 </div>
 <script src="/js/axios.js"></script>
+      <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" onclick="closeFunc()" >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
 <script>
    function buttonFunc() {
-    // Տպում barev
     const modal=document.querySelector('.modal');
   modal.style.display = 'flex';
  
-    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
     setTimeout(() => {
-      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
-      form.submit(); // Ուղարկում ենք form-ը
-    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+      const form = document.getElementById('eventForm'); 
+      form.submit(); 
+    }, 1000); 
+  }
+
+        function removeimage(el){
+        let id = el.getAttribute('attr_id');
+        el.parentNode.remove()
+         axios.delete(`/admin/profile/meet/image/${id}`).then((d)=>{
+          
+        })
+      }
+
+
+
+
+     document.querySelectorAll('.img_service').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+    document.querySelectorAll('.user_image').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+
+
+      document.querySelectorAll('.changeEvDiv').forEach(el=>{
+        el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+      })
+
+  function openImageModal(path){
+    const imgModal=document.getElementById('modalImage')
+    imgModal.src=`/${path}`
+  }
+
+  function closeFunc(e){
+          const imageModal=document.getElementById('imageModal')
+        imageModal.style.display='none'
   }
   //const geoCordLatit = "{{event.latitude}}"; const geoCordLotit = "{{event.longitude}}";
   //const geoPath =

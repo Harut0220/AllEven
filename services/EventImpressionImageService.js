@@ -4,6 +4,7 @@ import EventService from "./EventService.js";
 import NotificationService from "./NotificationService.js";
 import notifEvent from "../events/NotificationEvent.js";
 
+
 class EventImpressionImageService {
   constructor() {
     this.UploadService = new UploadService();
@@ -23,7 +24,7 @@ class EventImpressionImageService {
     const msg = `Пользователь ${userName} ${userSurname} поделился впечатлениями с пройденного события ${event.name}`;
 
     if (event.owner && event.owner._id) {
-      const evLink = `alleven://eventDetail/${event._id}`;
+      const evLink = `alleven://myEvent/${event._id}`;
       const notif = await this.NotificationService.store({
         type: "message",
         date_time: new Date(),
@@ -31,8 +32,8 @@ class EventImpressionImageService {
         message: msg,
         user: event.owner._id.toString(),
         link: evLink,
-        categoryIcon: event.category.avatar,
-        createId: event._id,
+        // categoryIcon: event.category.avatar,
+        eventId: event._id,
       });
       if (event.owner.notifEvent) {
         notifEvent.emit(
@@ -41,11 +42,11 @@ class EventImpressionImageService {
           JSON.stringify({
             type: "message",
             date_time: new Date(),
-            createId: event._id,
+            eventId: event._id,
             message: msg,
             notif_type: "Фото/Видео",
             link: evLink,
-            categoryIcon: event.category.avatar,
+            // categoryIcon: event.category.avatar,
           })
         );
       }

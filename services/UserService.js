@@ -618,30 +618,22 @@ class UserService {
     const user = await User.findById(id);
     const token = user.fcm_token;
     if (token.length) {
-      // for (let i = 0; i < tokens.length; i++) {
-        console.log("Sending notification to:", tokens[0]);
-        const condition = "'stock-GOOG' in topics || 'industry-tech' in topics";
+      for (let i = 0; i < token.length; i++) {
+        const element = token[i];
+
+        console.log("Sending notification to:", element);
 
         const message = {
           notification: {
             title: d.type,
             body: d.message,
           },
-          token: tokens[0],
-          // condition: condition,
+          token: element,
           data: {
             link: d.link ? d.link : "",
             categoryIcon: d.categoryIcon ? d.categoryIcon : "",
-            // service: d.service ? d.service : "",
-            // company: d.company ? d.company : "",
-            // event: d.event ? d.event : "",
-            // meeting: d.meeting ? d.meeting : "",
           },
-          // webpush: {
-          //   headers: {
-          //     URGENCY: "high",
-          //   },
-          // },
+  
           apns: {
             headers: {
               "apns-priority": "10",
@@ -658,30 +650,27 @@ class UserService {
             },
           },
         };
-
+  
         try {
           const response = await admin.messaging().send(message);
           console.log("Successfully sent message:", response);
         } catch (error) {
           console.error("Error sending message:", error);
-
-          // Check for the specific error regarding invalid registration tokens
+  
           if (
             error.errorInfo &&
-            error.errorInfo.code ===
-              "messaging/registration-token-not-registered"
+            error.errorInfo.code === "messaging/registration-token-not-registered"
           ) {
             console.log(`Removing invalid token for user `);
             try {
-              // Remove or invalidate the token in the database
-              // await User.updateOne({ _id: user._id }, { $unset: { firebaseToken: 1 } });
               console.log(`Token removed for user `);
             } catch (error) {
               console.error(`Error updating database for user:`);
             }
           }
         }
-      // }
+        
+      }
     }
   };
 

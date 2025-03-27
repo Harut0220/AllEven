@@ -2,7 +2,6 @@ import { validator } from "../../../helper/validator.js";
 
 const store = async (req,res,next) => {
     try {
-        console.log(req.body.role,"req.body.role");
 
     const validationRule = {
         "file": "required",

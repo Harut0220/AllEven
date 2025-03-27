@@ -19,7 +19,7 @@ const newAuthJWT = async (req, res, next) => {
             }
         } catch (err) {
             console.error(err);
-            return res.status(500).send({ message: "Internal server error" }); 
+            return res.status(500).send({ message: "Server Error" }); 
         }
     } 
 

@@ -1,9 +1,11 @@
 <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link rel="stylesheet" href="/styles/event.css" />
 <link
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
 />
-
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
         .menuIconImg{
     width: 15px;
@@ -19,7 +21,46 @@
   width: 50%;
   padding: 10px;
 }
+#imageModal{
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.391);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imgaeModal_block{
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  margin: 0 auto;
+  position: relative;
+}
+#modalImage{
+width: 100%;
+    height: 100%;}
+#div_x{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+#closeModal{
+    font-size: 30px;
+    padding: 10px;
+    position: absolute;
+    right: 5px;
+    top: -10px;
+}
+
+
 </style>
+
 <div class="Header">
   <div id="allEvents">
     <div class="eventMainBody">
@@ -35,19 +76,31 @@
         <div class="allEvBox">
           <div id="allEvBox_header">
             <h4>События</h4>
-            <p>
-                                {{#if (eq event.status 0)}}на модерации
-                    {{else}}Одобрено
-                    {{/if}}</p>
+            <p>{{#if (eq event.status 0)}}на модерации{{else}}Одобрено{{/if}}</p>
           </div>
-
           <hr />
-          <div class="allEvBoxCont">
-            <div id="pics1">
-              {{#each event.images}}
-              <img src="/{{ name }}" class="allEvImg" />
-              {{/each}}
-            </div>
+          <div class="changeEvBoxCont">
+                      <div class="userDiv">
+                        <img src="/{{getValue userMeet "avatar"}}" alt=""
+                        class="user_image" onclick="openImageModal('{{getValue userMeet "avatar"}}')">
+                        <div class="userData">
+                          <p class="userName">
+                            {{getValue userMeet "name"}} {{getValue userMeet "surname"}}
+                          </p>
+                          <p class="user_data">{{getValue userMeet "phone_number"}}</p>
+                          <p class="user_data">{{getValue userMeet "email"}}</p>
+                        </div>
+                     </div>
+                     <hr>
+                  <div id="pics1-show">
+                      {{#if event.images}}
+                        {{#each event.images}}
+                          <div class="changeEvDiv-show" style="background-image: url('/{{name}}')" onclick="openImageModal('{{name}}')">
+                              <img src="/images/pics/GroupX.svg"  class="removeButton" onclick="removeimage(this)" attr_id="{{_id}}">
+                          </div>
+                        {{/each}}
+                      {{/if}}
+                  </div>
             <div class="allEvBoxContDiv">
               <div id="boxPersonName">
                 <h6>{{event.name}}</h6>
@@ -81,7 +134,6 @@
                 </p>
               </div>
               <p class="boxP"><span>Дата: </span> {{convertDate event.started_time}} </p>
-              {{!-- <p class="boxP"><span>Время:</span>{{convertDate event.started_time}}</p> --}}
               <p class="boxP"><span>Телефон: </span>{{event.owner.phone_number}}</p>
               <p class="boxP"><span>Веб сайт: </span>{{event.tickets_link}}</p>
               <p class="boxP boxPflex">
@@ -116,19 +168,22 @@
             </li>
           </ul>
           <hr />
-
           <div
             id="gallery"
-            class="allEvBoxCont ChangedAllEvBoxCont active"
-            style="overflow-y: hidden"
-          >
-            <div id="photos" class="photos">
-              {{#each event.impression_images}}
-              <div class="emptyPhotosImg">
-                <img src="/{{ path }}" class="img" />
-              </div>
-              {{/each}}
-            </div>
+            class="allEvBoxCont ChangedAllEvBoxCont active">
+              {{#eventImpressionImages event.impression_images}}  
+                   <div id="photos" class="photos" data-event="{{event_index}}">
+                       <div class="user_imp_div">
+                           <img src="/{{user_avatar}}" alt="" id="user_avatar" onclick="openImageModal('{{user_avatar}}')">
+                           <span>{{user_name}} {{user_surname}}</span>
+                       </div>
+                       {{#ImpressionImages paths}}
+                           <div class="emptyPhotosImg galery_modal">
+                               <img src="/{{path}}" onclick="openImageModal('{{path}}')" />
+                           </div>
+                       {{/ImpressionImages}}
+                   </div>
+              {{/eventImpressionImages}}
           </div>
           <div
             id="comments"
@@ -139,11 +194,12 @@
             <div id="photos" class="comments">
               {{#each event.comments}}
               <div class="comment-box">
+                <hr>
                 <div class="content">
-                  <img src="/{{user.avatar}}" class="img" />
+                  <img src="/{{user.avatar}}" class="img img-comment-user" onclick="openImageModal('{{user.avatar}}')" />
                   <div class="c">
                     <div class="b">
-                      <p class="text">{{user.name}}</p>
+                      <p class="text">{{user.name}} {{user.surname}}</p>
                       <span class="span2"
                         >{{likes.length}}
                         <img src="/images/staticimg/heart.svg" />
@@ -154,10 +210,6 @@
                     </p>
                   </div>
                 </div>
-                {{!-- <div class="under-box">
-                  <span class="tm">30 мин.</span>
-                  <div class="del">Удалить</div>
-                </div> --}}
               </div>
               {{/each}}
             </div>
@@ -165,21 +217,19 @@
           <div
             id="visitors"
             class="allEvBoxCont ChangedAllEvBoxCont"
-            style="overflow-y: hidden"
           >
-            <p id="p1" class="p1">Пришли на событие: {{event.participants.length}}</p>
+            <p id="p1" class="p1">Пришли на событие: {{event.participantsSpot.length}}</p>
             <div id="photos" class="clients">
-              {{#each participants }}
-              
+              {{#each participantsSpot }}
               <div class="visiter">
-                <img src="/{{getValue user "avatar"}}" />
+                <img src="/{{getValue user "avatar"}}" onclick="openImageModal('{{getValue user "avatar"}}')"/>
                 <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
               </div>
               {{/each}}
-              <p class="p1" id="p10">Собирались посетить: {{event.views.length}}</p>
-              {{#each views}}
+              <p class="p1" id="p10">Собирались посетить: {{event.participants.length}}</p>
+              {{#each participants}}
               <div class="visiter">
-                <img src="/{{getValue user "avatar"}}" />
+                <img src="/{{getValue user "avatar"}}" onclick="openImageModal('{{getValue user "avatar"}}')" />
                 <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
               </div>
               {{/each}}
@@ -192,3 +242,72 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script src="/js/helper.js"></script>
+      <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" onclick="closeFunc()" >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
+<script>
+    const imgModal=document.getElementById('modalImage')
+
+  function openImageModal(path){
+    imgModal.src=`/${path}`
+    const imageModal=document.getElementById('imageModal')
+    imageModal.style.display='flex'
+    imageModal.style.position='absolute'
+    imageModal.style.margin='0 auto'
+  }
+
+  function closeFunc(e){
+          const imageModal=document.getElementById('imageModal')
+        imageModal.style.display='none'
+  }
+
+
+
+
+</script>
+
+
+<div class="modal fade" id="largeModal" tabindex="-1" aria-labelledby="largeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg my_modal"> 
+        <div class="modal-content modal-content-header">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {{#if event.images}}
+                            {{#each event.images}}
+                                <div class="carousel-item {{#if @first}}active{{/if}}" data-index="{{@index}}">
+                                    <img src="/{{name}}" class="d-block my-img w-100 img-modal" alt="Նկար">
+                                </div>
+                            {{/each}}
+                        {{/if}}
+                    </div>
+                    <button class="carousel-control-prev carousel-btn-color" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="40" height="40" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                        </svg>
+                        <span class="visually-hidden">Նախորդը</span>
+                    </button>
+                    <button class="carousel-control-next carousel-btn-color" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="40" height="40" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                        </svg>
+                        <span class="visually-hidden">Հաջորդը</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

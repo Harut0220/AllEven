@@ -9,6 +9,8 @@ const MeetingVerify = new Schema({
     passport:{type:String,required:true},
     term:{type:String,required:true},
     passportImage:{type: String,required:true},
+    rejectMessage:{type:String,required:false},
+    image:{type: String,required:true},
     status:{type:Number,default:0}
   }, {
     timestamps: true // This will add createdAt and updatedAt fields

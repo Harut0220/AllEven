@@ -3,7 +3,7 @@ import Role from "../models/Role.js";
 import UserService from "./UserService.js";
 import FeedbackService from "./FeedbackService.js";
 import notifEvent from "../events/NotificationEvent.js";
-import moment from "moment";
+import moment from "moment-timezone";
 
 class NotificationService{
 
@@ -29,7 +29,7 @@ class NotificationService{
             link: 1,
             categoryIcon: 1,
             parentId: "$feedback",
-            event_situation: 1,
+            situation: 1,
             confirmed: 1,
             read: 1
         }).sort({createdAt:'desc'}).select(['-sent','-status','-user']).lean()
@@ -160,8 +160,10 @@ class NotificationService{
 
     findById = async (id) => {
         const notif = await Notification.findById(id);
+
         return notif ? notif : false
     }
+  
 
     changeConfirmByEventId = async (id) => {
         const newNot = await Notification.updateMany(

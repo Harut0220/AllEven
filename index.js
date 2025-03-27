@@ -18,10 +18,14 @@ import { reportRoutes } from "./routes/report.js";
 import seedRouter from "./routes/seed.js";
 import reedRouter from "./routes/reed.js";
 import { dateNow } from "./config/timestamps.js";
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
 import shareRoutes from "./routes/share.js";
 import fs from "fs";
-
+import notifEvent from "./events/NotificationEvent.js";
+import punycode from "punycode/punycode.js";
+import Event from "./models/event/Event.js";
+import Notification from "./models/Notification.js";
+import moment from "moment-timezone";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,14 +37,12 @@ app.use(express.urlencoded({ extended: false }));
 
 app.set("etag", false);
 
-// Disable Last-Modified header
 app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store"); // Prevent caching
   res.setHeader("Pragma", "no-cache"); // Older browsers
   res.removeHeader("Last-Modified"); // Remove the last-modified header
   next();
 });
-
 
 expressWs(app);
 const hbs = create({
@@ -81,53 +83,67 @@ app.use(shareRoutes);
 app.use("/admin", webRoutes);
 app.use(wsRoutes);
 app.use("/api", apiRoutes);
-app.use("/report", reportRoutes);
 app.use("/seed", seedRouter);
 app.use(reedRouter);
 app.get("/some-route", (req, res) => {
   res.render("someTemplate", { url: process.env.URL });
 });
-app.get('/page/:num/', async function (req, res) {
-  let path = __dirname + '/public/' + req.params.num + '.html';
+app.get("/page/:num/", async function (req, res) {
+  let path = __dirname + "/public/" + req.params.num + ".html";
 
   try {
-      await fs.promises.access(path, fs.constants.F_OK);
-      res.sendFile(path);
+    await fs.promises.access(path, fs.constants.F_OK);
+    res.sendFile(path);
   } catch (error) {
-      res.status(404).send('not found');
+    res.status(404).send("not found");
   }
 });
 
-const lastDate = moment("2025-01-22T10:49:19.299+00:00", "YYYY-MM-DDTHH:mm");
-console.log("2222222222");
+app.get("/test/notif", async (req, res) => {
+  const idMeet = "67c9491ce280217a88f0a457";
+  const eventDb = await Event.findById(idMeet)
+    .populate({
+      path: "participants",
+      populate: { path: "user", select: "_id fcm_token notifEvent" },
+    })
+    .populate({
+      path: "participantsSpot",
+      populate: { path: "user", select: "_id fcm_token notifEvent" },
+    })
+    .populate("category")
+    .exec();
 
-// const dateNowd = moment();
-// console.log(dateNow,"dateNowd");
-// const difference = dateNow.diff(lastDate);
-// console.log(difference,"difference");
-// const differenceInHours = Math.round(moment.duration(difference).asHours());
-// console.log(differenceInHours,"differenceInHours");
+  const evLink = `alleven://singleEvent/${eventDb._id}`;
+  const date_time = moment.tz(process.env.TZ).format();
+  const dataNotif = {
+    status: 2,
+    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+    user: "6763ec4fbed192bc99eaf23d",
+    type: "confirm_come",
+    navigate: true,
+    message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+    categoryIcon: eventDb.category.avatar,
+    eventId: eventDb._id.toString(),
+    link: evLink,
+  };
+  const nt = new Notification(dataNotif);
+  await nt.save();
+  notifEvent.emit(
+    "send",
+    "6763ec4fbed192bc99eaf23d",
+    JSON.stringify({
+      type: "confirm_come",
+      date_time,
+      navigate: true,
+      eventId: eventDb._id.toString(),
+      message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+      categoryIcon: eventDb.category.avatar,
+      link: evLink,
+    })
+  );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  return res.send("Test");
+});
 
 const start = async () => {
   await connect();

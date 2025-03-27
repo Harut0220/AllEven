@@ -9,9 +9,13 @@ import schedule from "node-schedule";
 import companyHotDealRegistrations from "../../../models/company/companyHotDealRegistration.js";
 import Notification from "../../../models/Notification.js";
 import User from "../../../models/User.js";
-import ServicePays from "../../../models/company/companyPays.js";
 import companyCategory from "../../../models/company/companyCategory.js";
 import companyHotDeals from "../../../models/company/companyHotDeals.js";
+import commission from "../../../models/commission.js";
+import paysStore from "../../../models/paysStore.js";
+import axios from "axios";
+import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
+import companyParticipants from "../../../models/company/companyParticipants.js";
 const { ObjectId } = mongoose.Types;
 
 const servicesController = {
@@ -56,6 +60,7 @@ const servicesController = {
       obj.name = companyCategoryDb[i].name;
       obj.avatar = companyCategoryDb[i].avatar;
       const registersDb = await servicesRegistrations.find({
+        pay: true,
         user: user.id,
         category: companyCategoryDb[i]._id,
       });
@@ -74,32 +79,32 @@ const servicesController = {
 
     res.status(200).send({ message: "success", data: result });
   },
-  confirmPay: async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader.split(" ")[1];
-      const user = jwt.decode(token);
-      const { id } = req.body;
-      const registerDb = await servicesRegistrations.findById(id);
-      const service = await CompanyServiceModel.findById(
-        registerDb.serviceId.toString()
-      );
-      const prepaymentPrice = (service.cost * 10) / 100;
-      const servicePay = new ServicePays({
-        user: user.id,
-        service: registerDb.serviceId,
-        registerId: id,
-        prepayment: true,
-        prepaymentPrice: prepaymentPrice,
-        paymentPrice: service.cost,
-      });
+  // confirmPay: async (req, res) => {
+  //   try {
+  //     const authHeader = req.headers.authorization;
+  //     const token = authHeader.split(" ")[1];
+  //     const user = jwt.decode(token);
+  //     const { id } = req.body;
+  //     const registerDb = await servicesRegistrations.findById(id);
+  //     const service = await CompanyServiceModel.findById(
+  //       registerDb.serviceId.toString()
+  //     );
+  //     const prepaymentPrice = (service.cost * 10) / 100;
+  //     // const servicePay = new ServicePays({
+  //     //   user: user.id,
+  //     //   service: registerDb.serviceId,
+  //     //   registerId: id,
+  //     //   prepayment: true,
+  //     //   prepaymentPrice: prepaymentPrice,
+  //     //   paymentPrice: service.cost,
+  //     // });
 
-      await servicePay.save();
-      res.status(200).send({ message: "success", data: servicePay });
-    } catch (error) {
-      console.error(error);
-    }
-  },
+  //     // await servicePay.save();
+  //     res.status(200).send({ message: "success", data: servicePay });
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // },
   freeTimes: async (req, res) => {
     const { id, date } = req.query;
 
@@ -199,6 +204,7 @@ const servicesController = {
       const registerDb = await servicesRegistrations.findOne({
         serviceId: id,
         date: datTimes,
+        pay: true,
       });
 
       //      date: { $gt: afterDate } // $gt = "greater than"
@@ -225,11 +231,7 @@ const servicesController = {
     const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
     let availableTimes = freeTimes;
-    console.log(dateNow, "dateNow");
-    console.log(date, "date");
-    const dateDay=dateNow.slice(0,10)
-    console.log(dateDay,"dateDay");
-    
+    const dateDay = dateNow.slice(0, 10);
 
     if (dateDay === date) {
       availableTimes = freeTimes.filter((time) =>
@@ -245,6 +247,7 @@ const servicesController = {
     const { serviceId, today } = req.query;
     const serviceRegister = await servicesRegistrations.find({
       serviceId,
+      pay: true,
       date: { $regex: `^${today}` },
     });
     const service = await CompanyServiceModel.findById(
@@ -296,7 +299,7 @@ const servicesController = {
       const inPast = [];
       const objectIdArray = company.services.map((id) => ObjectId(id));
       const dbResult = await servicesRegistrations
-        .find({ serviceId: { $in: objectIdArray } })
+        .find({ pay: true, serviceId: { $in: objectIdArray } })
         .populate({
           path: "user",
           select: "name surname avatar phone_number",
@@ -328,11 +331,8 @@ const servicesController = {
         }
       }
 
-      // Example usage
       if (dbResult.length !== 0) {
         for (let i = 0; i < dbResult.length; i++) {
-          // const dateToCheck = '2024-08-13';
-          // const dateToCheck = '2024-08-12';
           try {
             const status = checkDateStatus(dbResult[i].date);
             if (status === "today") {
@@ -349,7 +349,6 @@ const servicesController = {
         resObj.inFuture = inFuture;
         resObj.resToday = resToday;
         resObj.inPast = inPast;
-        ////////////////////////////////////////////////////////
       }
 
       // if (!resObj.inFuture && !resObj.resToday && !resObj.inPast) {
@@ -357,39 +356,48 @@ const servicesController = {
       // } else {
       const resObject = {};
       if (day === "today") {
-        const dealsRegisters = [];
-        for (let i = 0; i < company.hotDeals.length; i++) {
-          const register = await companyHotDealRegistrations
-            .find({
-              dealId: company.hotDeals[i]._id,
-            })
+        // const dealsRegisters = [];
+        // for (let i = 0; i < company.hotDeals.length; i++) {
+        //   const register = await companyHotDealRegistrations
+        //     .find({
+        //       dealId: company.hotDeals[i]._id,
+        //     })
+        //     .populate({
+        //       path: "user",
+        //       select: "name surname avatar phone_number",
+        //     });
+        //   if (register) {
+        //     dealsRegisters.push(register);
+        //   }
+        // }
+        const hotDealsDb = await companyHotDeals.find({ companyId });
+        let dealRegisters = [];
+        for (let i = 0; i < hotDealsDb.length; i++) {
+          const element = hotDealsDb[i];
+          const dealRegistersDb = await companyHotDealRegistration
+            .findOne({ dealId: element._id, status: true })
             .populate({
               path: "user",
               select: "name surname avatar phone_number",
             });
-          if (register) {
-            dealsRegisters.push(register);
-          }
+          let obj = { description: element.description, ...dealRegistersDb };
+          dealRegisters.push(obj);
         }
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
           const resArray = [];
           for (let i = 0; i < resToday.length; i++) {
-            // if (i>0){
-            // if(resToday[i].dateSlice===resToday[i-1].dateSlice){
             resArray.push(resToday[i]);
-            // }
-            // }
           }
           resObject[resToday[0].dateSlice] = resArray;
-
+          
           res
             .status(200)
-            .send({ message: "success", data: resObject, dealsRegisters });
+            .send({ message: "success", data: resObject, dealRegisters });
         } else {
           res
             .status(200)
-            .send({ message: "success", data: resToday, dealsRegisters });
+            .send({ message: "success", data: resToday, dealRegisters });
         }
       } else if (day === "future") {
         if (inFuture.length) {
@@ -413,7 +421,6 @@ const servicesController = {
   editeRegistr: async (req, res) => {
     try {
       const { id, date, text } = req.body;
-      console.log(date, "date update");
 
       const daySlice = date.slice(8, 10);
       const monthSlice = date.slice(5, 7);
@@ -436,16 +443,16 @@ const servicesController = {
           await service.save();
         }
 
-        const evLink = `alleven://companyDetail/${service._id}`;
+        const evLink = `alleven://singleCompany/${service._id}`;
 
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: service.user._id.toString(),
-          type: "Предлагают перенести",
+          type: "confirm_come",
           message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
-          createId: service.serviceId._id,
-          categoryIcon: service.serviceId.images[0],
+          serviceId: service._id,
+          // categoryIcon: service.serviceId.images[0],
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -455,12 +462,11 @@ const servicesController = {
             "send",
             service.user._id.toString(),
             JSON.stringify({
-              type: "Предлагают перенести",
+              type: "confirm_come",
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              createId: service.serviceId._id,
               message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
-              service: service._id,
-              categoryIcon: service.serviceId.images[0],
+              serviceId: service.serviceId._id,
+              // categoryIcon: service.serviceId.images[0],
               link: evLink,
             })
           );
@@ -515,9 +521,12 @@ const servicesController = {
       const serviceDb = await CompanyServiceModel.findById(
         service.serviceId._id
       );
-      await companyModel.findByIdAndUpdate(serviceDb.companyId, {
-        $push: { participants: service.user._id },
+      const CompanyParticipants = await companyParticipants.findOne({
+        user: service.user._id,
+        companyId: serviceDb.companyId,
       });
+
+
       const daySlice = service.date.slice(8, 10);
       const monthSlice = service.date.slice(5, 7);
       const dateSlice = `${monthSlice}.${daySlice}`;
@@ -539,20 +548,33 @@ const servicesController = {
         })
         .exec();
       const time = confirmedRegister.date.split(" ")[1];
-      const evLink = `alleven://companyDetail/${confirmedRegister.serviceId._id}`;
       if (user.id === service.user._id.toString()) {
+        const notif = await Notification.findOne({
+          user: user.id,
+          serviceId: service.serviceId._id,
+          registerId: id,
+        });
+
+        if (notif) {
+          notif.confirmed = true;
+          await notif.save();
+        }
+
         const companyDb = await companyModel
           .findById(confirmedRegister.serviceId.companyId.toString())
           .populate("owner")
+          .populate("images")
           .exec();
+          const evLink = `alleven://singleCompany/${companyDb._id}`;
+
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: companyDb.owner._id.toString(),
           type: "Регистрации услугу",
           message: `Пользователь пoтвердил ваше предложение на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-          createId: confirmedRegister.serviceId._id,
-          cotegoryIcon: confirmedRegister.serviceId.images[0],
+          companyId: confirmedRegister.serviceId._id,
+          cotegoryIcon: companyDb.images[0].url,
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -563,24 +585,31 @@ const servicesController = {
             companyDb.owner._id.toString(),
             JSON.stringify({
               type: "Регистрации услугу",
-              createId: confirmedRegister.serviceId._id,
+              companyId: confirmedRegister.serviceId._id,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Пользователь пoтвердил ваше предложение на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-              service: confirmedRegister.serviceId._id,
-              cotegoryIcon: confirmedRegister.serviceId.images[0],
+              serviceId: confirmedRegister.serviceId._id,
+              cotegoryIcon: companyDb.images[0].url,
               link: evLink,
             })
           );
         }
       } else {
+        const companyDb = await companyModel
+          .findById(confirmedRegister.serviceId.companyId.toString())
+          .populate("owner")
+          .populate("images")
+          .exec();
+          const evLink = `alleven://singleCompany/${companyDb._id}`;
+
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: confirmedRegister.user._id.toString(),
           type: "Регистрации услугу",
           message: `Организатор пoтвердил ваша запис на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-          createId: confirmedRegister.serviceId._id,
-          cotegoryIcon: confirmedRegister.serviceId.images[0],
+          companyId: confirmedRegister.serviceId._id,
+          cotegoryIcon: companyDb.images[0].url,
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -591,11 +620,11 @@ const servicesController = {
             confirmedRegister.user._id.toString(),
             JSON.stringify({
               type: "Регистрации услугу",
-              createId: confirmedRegister.serviceId._id,
+              companyId: confirmedRegister.serviceId._id,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Организатор пoтвердил ваша запис на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-              service: confirmedRegister.serviceId._id,
-              cotegoryIcon: confirmedRegister.serviceId.images[0],
+              companyId: confirmedRegister.serviceId._id,
+              cotegoryIcon: companyDb.images[0].url,
               link: evLink,
             })
           );
@@ -608,6 +637,17 @@ const servicesController = {
       const registerTimeFive = registerTime.clone().subtract(5, "minute");
 
       const notificationTime = registerTime.clone().subtract(1, "hour");
+      if (!CompanyParticipants) {
+        const newCompanyParticipants = new companyParticipants({
+          user: service.user._id,
+          companyId: serviceDb.companyId,
+          serviceId: service.serviceId._id,
+        });
+        await newCompanyParticipants.save();
+        await companyModel.findByIdAndUpdate(serviceDb.companyId,{
+          $set:{participants:newCompanyParticipants._id}
+        });
+      }
 
       const currentTime = moment.tz(process.env.TZ).format();
       async function sendMessage(serviceRegisterDbId, type) {
@@ -628,8 +668,8 @@ const servicesController = {
               user: registerDb.user._id.toString(),
               type: "Регистрация на услугу",
               message: message,
-              createId: registerDb.serviceId._id,
-              categoryIcon: registerDb.serviceId.images[0],
+              serviceId: registerDb.serviceId._id,
+              // categoryIcon: registerDb.serviceId.images[0],
               link: evLink,
             };
             const nt = new Notification(dataNotif);
@@ -640,12 +680,12 @@ const servicesController = {
                 registerDb.user._id.toString(),
                 JSON.stringify({
                   type: "Регистрация на услугу",
-                  createId: registerDb.serviceId._id,
+                  serviceId: registerDb.serviceId._id,
                   date_time: moment
                     .tz(process.env.TZ)
                     .format("YYYY-MM-DD HH:mm"),
                   message: message,
-                  categoryIcon: registerDb.serviceId.images[0],
+                  // categoryIcon: registerDb.serviceId.images[0],
                   link: evLink,
                 })
               );
@@ -756,8 +796,7 @@ const servicesController = {
   registr: async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      const { serviceId, date } = req.body;
-      console.log(date, "date register");
+      const { serviceId, date, route } = req.body;
 
       const service = await CompanyServiceModel.findById(serviceId);
       const token = authHeader.split(" ")[1];
@@ -812,11 +851,59 @@ const servicesController = {
           return false;
         }
       };
+      const priceDb = await commission.findOne();
 
       const opensDays = await decideDay(companyDb.days, date);
       if (!opensDays) {
         return res.status(200).send({ message: "выходной день" });
       } else {
+        const userDb = await User.findById(user.id);
+
+        const datePayment = moment
+          .tz(process.env.TZ)
+          .format("YYYY-MM-DD HH:mm:ss");
+
+        const comm = new paysStore({
+          name: userDb.name,
+          surname: userDb.surname,
+          serviceName: service.type,
+          companyName: companyDb.companyName,
+          price: priceDb.price,
+          // operationId: response.data.Data.operationId,
+          // registerId: Db._id,
+          companyId: companyDb._id,
+          serviceId,
+          date,
+          payTime:datePayment
+        });
+        await comm.save();
+
+        const paymentData = {
+          Data: {
+            customerCode: process.env.CUSTOMER_CODE,
+            amount: priceDb.price,
+            purpose: "Перевод за оказанные услуги",
+            redirectUrl: `${process.env.REDIRECT_URL}/api/pay/success/${comm._id}?name=${service.type}&date=${date}`,
+            failRedirectUrl: `${process.env.REDIRECT_URL}/api/pay/reject/${comm._id}?name=${service.type}&date=${date}`,
+            paymentMode: ["sbp", "card", "tinkoff"],
+            saveCard: false,
+          },
+        };
+        console.log(paymentData, "paymentData");
+
+        const response = await axios.post(
+          "https://enter.tochka.com/uapi/acquiring/v1.0/payments",
+          paymentData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.ACCESS_TOKEN}`, // Corrected header for authentication
+            },
+          }
+        );
+        // if(response.data.Data.paymentLink){
+
+        // }
         const Db = new servicesRegistrations({
           serviceId,
           date,
@@ -824,50 +911,55 @@ const servicesController = {
           dateSlice,
           dealDate: date,
           category: companyDb.category._id,
+          payStoreId: comm._id,
+          operationId: response.data.Data.operationId,
         });
         await Db.save();
 
         service.serviceRegister.push(Db._id);
         await service.save();
 
-        const evLink = `alleven://serviceDetail/${companyDb._id}`;
+        // const evLink = `alleven://myCompany/${companyDb._id}`;
 
-        const userDb = await User.findById(user.id);
-        const time = date.split(" ")[1];
-        const day = date.split(" ")[0].split("-")[2];
-        const monthName = moment(date).locale("ru").format("MMMM");
+        // const time = date.split(" ")[1];
+        // const day = date.split(" ")[0].split("-")[2];
+        // const monthName = moment(date).locale("ru").format("MMMM");
 
-        const dataNotif = {
-          status: 2,
-          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-          user: companyDb.owner._id.toString(),
-          type: "Записались на услуги",
-          message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-          categoryIcon: companyDb.category.avatar, //sarqel
-          createId: serviceId,
-          link: evLink,
-        };
-        const nt = new Notification(dataNotif);
-        await nt.save();
-        if (companyDb.owner.notifCompany) {
-          notifEvent.emit(
-            "send",
-            companyDb.owner._id.toString(),
-            JSON.stringify({
-              type: "Записались на услуги",
-              createId: serviceId,
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-              categoryIcon: companyDb.category.avatar, //sarqel
-              link: evLink,
-            })
-          );
-        }
+        // const dataNotif = {
+        //   status: 2,
+        //   date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        //   user: companyDb.owner._id.toString(),
+        //   type: "Записались на услуги",
+        //   message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
+        //   categoryIcon: service.images[0], //sarqel
+        //   createId: serviceId,
+        //   link: evLink,
+        // };
+        // const nt = new Notification(dataNotif);
+        // await nt.save();
+        // if (companyDb.owner.notifCompany) {
+        //   notifEvent.emit(
+        //     "send",
+        //     companyDb.owner._id.toString(),
+        //     JSON.stringify({
+        //       type: "Записались на услуги",
+        //       createId: serviceId,
+        //       date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        //       navigate:false,
+        //       message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
+        //       categoryIcon: service.images[0], //sarqel
+        //       link: evLink,
+        //     })
+        //   );
+        // }
 
-        res.status(200).send({ message: "запись отправлено." });
+        return res
+          .status(200)
+          .send({ message: "success", link: response.data.Data.paymentLink });
       }
     } catch (error) {
       console.error(error);
+      res.status(500).send({ message: "Server Error" });
     }
   },
   deleteRegistr: async (req, res) => {

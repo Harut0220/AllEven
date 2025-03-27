@@ -7,7 +7,7 @@ import companyServiceDb from "../../../models/company/companyService.js";
 import Role from "../../../models/Role.js";
 import Notification from "../../../models/Notification.js";
 import User from "../../../models/User.js";
-import moment from "moment";
+import moment from "moment-timezone";
 import jwt from "jsonwebtoken";
 import companyLikes from "../../../models/company/companyLikes.js";
 import companyComment from "../../../models/company/companyComment.js";
@@ -25,10 +25,26 @@ import companyCommentAnswer from "../../../models/company/companyCommentAnswer.j
 import companyHotDeals from "../../../models/company/companyHotDeals.js";
 import companyPhones from "../../../models/company/companyPhones.js";
 import ImpressionsCompany from "../../../models/ImpressionsCompany.js";
-import companyPays from "../../../models/company/companyPays.js";
+// import companyPays from "../../../models/company/companyPays.js";
 import commission from "../../../models/commission.js";
+import paysStore from "../../../models/paysStore.js";
+import CompanyServiceModel from "../../../models/company/companyService.js";
+import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
+import Report from "../../../models/Report.js";
+import companyParticipants from "../../../models/company/companyParticipants.js";
 
 const companyController = {
+  deleteServiceImage: async (req, res) => {
+    try {
+      await CompanyServiceModel.findByIdAndUpdate(req.params.id, {
+        $pull: { images: req.query.path },
+      });
+      res.status(200).send({ message: "success" });
+    } catch (error) {
+      console.error(error);
+      res.status(200).send({ message: "Server Error" });
+    }
+  },
   priceEdit: async (req, res) => {
     try {
       const price = req.body.price;
@@ -104,15 +120,25 @@ const companyController = {
       //   comments: comments,
       // });
       const { id } = req.params;
-      const enents = await companyPays
-        .findById(id)
-        .populate("user")
-        .populate("service");
+      const events = await paysStore.find({ companyId: id, status: 1 });
+      const deals = await companyHotDealRegistration
+        .find({ companyId: id, pay: true })
+        .populate("companyId")
+        .populate("user");
+      for (let i = 0; i < deals.length; i++) {
+        let obj = {};
+        obj.name = deals[i].user.name;
+        obj.surname = deals[i].user.surname;
+        obj.companyName = deals[i].companyId.companyName;
+        obj.date = deals[i].date;
+        events.push(obj);
+      }
+      events.sort((a, b) => new Date(b.date) - new Date(a.date));
       res.render("profile/company-pays", {
         layout: "profile",
         title: "Company Pays",
         user: req.user,
-        enents,
+        events,
       });
     } catch (error) {
       console.error(error);
@@ -999,6 +1025,10 @@ const companyController = {
       likes: event.likes.length,
       registr,
       statusMessage: event.rejectMessage,
+      participants: event.participants.length,
+      views: event.view.length,
+      favorits: event.favorites.length,
+      rejectMessage: event.rejectMessage,
     });
   },
   commentDelete: async (req, res) => {
@@ -1067,18 +1097,20 @@ const companyController = {
         .populate("services")
         .populate("phoneNumbers")
         .populate({ path: "owner", select: "-password" });
+
       const user = await User.findById(dbCompany.owner);
       const eventCat = await companyCategory.findById(dbCompany.category);
-      const evLink = `alleven://companyDetail/${dbCompany._id}`;
+      const evLink = `alleven://myCompany/${dbCompany._id}`;
 
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: dbCompany.owner._id.toString(),
-        type: "Новая услуга",
-        message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
-        createId: dbCompany._id,
-        categoryIcon: "/icon/onlinePay.png",
+        type: "Онлайн оплата",
+        message: `Онлайн бронирование ваших услуг подключено.`,
+        navigate: true,
+        companyId: dbCompany._id,
+        categoryIcon: eventCat.avatar,
         link: evLink,
       };
       const nt = new Notification(dataNotif);
@@ -1087,13 +1119,14 @@ const companyController = {
         "send",
         dbCompany.owner._id.toString(),
         JSON.stringify({
-          type: "Новая услуга",
+          type: "Онлайн оплата",
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: dbCompany.owner._id.toString(),
-          message: `Вам подключена функция онлайн бронирования услуг.`,
-          createId: dbCompany._id,
-          categoryIcon: "/icon/onlinePay.png",
+          message: `Онлайн бронирование ваших услуг подключено.`,
+          companyId: dbCompany._id,
+          navigate: true,
+          categoryIcon: eventCat.avatar,
           link: evLink,
         })
       );
@@ -1148,11 +1181,14 @@ const companyController = {
         images: event.images,
         phone_numbers: event.phoneNumbers,
         favorite: favorite.length,
+        favorites: event.favorites.length,
         likes: event.likes.length,
         registr,
         statusMessage: event.rejectMessage,
         onlineReason: event.onlineReason,
         onlinePay: event.onlinePay,
+        views: event.view.length,
+        participants: event.participants.length,
       });
     } catch (error) {
       console.error(error);
@@ -1249,7 +1285,7 @@ const companyController = {
       // }
 
       const eventCats = await companyCategory.find();
-
+      events.reverse();
       res.render("profile/companyPay", {
         layout: "profile",
         title: "Company",
@@ -1260,7 +1296,7 @@ const companyController = {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   online: async (req, res) => {
@@ -1286,7 +1322,7 @@ const companyController = {
         );
       }
 
-      const evLink = `alleven://eventDetail/${company._id}`;
+      const evLink = `alleven://myCompany/${company._id}`;
 
       notifEvent.emit(
         "send",
@@ -1302,7 +1338,7 @@ const companyController = {
         .send({ message: "success", onlinePay: company.onlinePay });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   commentAnswerLike: async (req, res) => {
@@ -1321,7 +1357,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   commentAnswer: async (req, res) => {
@@ -1349,7 +1385,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   commentLike: async (req, res) => {
@@ -1369,7 +1405,7 @@ const companyController = {
     } catch (error) {
       console.error(error);
       res.status(500).send({
-        message: "Internal server error",
+        message: "Server Error",
       });
     }
   },
@@ -1392,7 +1428,6 @@ const companyController = {
         .populate("category");
       if (ifImpressions) {
         await ImpressionsCompany.findByIdAndUpdate(ifImpressions._id, {
-          // $set: { rating },
           $set: { date, rating },
         });
       } else {
@@ -1422,7 +1457,7 @@ const companyController = {
     } catch (error) {
       console.error(error);
       res.status(500).send({
-        message: "Internal server error",
+        message: "Server Error",
       });
     }
   },
@@ -1433,10 +1468,7 @@ const companyController = {
       const event = await companyService.reject(id, status);
 
       let template = "profile/company-single-rejected";
-      let participants = 0;
-      event.services.forEach((element) => {
-        participants += element.serviceRegister.length;
-      });
+      let participants = event.participants.length;
 
       res.render(template, {
         layout: "profile",
@@ -1456,7 +1488,7 @@ const companyController = {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   resolve: async (req, res) => {
@@ -1473,16 +1505,17 @@ const companyController = {
       const user = await User.findById(dbCompany.owner);
       const eventCat = await companyCategory.findById(dbCompany.category);
 
-      const evLink = `alleven://companyDetail/${dbCompany._id}`;
+      const evLink = `alleven://myCompany/${dbCompany._id}`;
 
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: dbCompany.owner._id.toString(),
         type: "Новая услуга",
+        navigate: true,
         message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
-        createId: dbCompany._id,
-        categoryIcon: dbCompany.category.avatar, //sarqel
+        companyId: dbCompany._id,
+        // categoryIcon: dbCompany.images[0].url, //sarqel
         link: evLink,
       };
       const nt = new Notification(dataNotif);
@@ -1497,8 +1530,9 @@ const companyController = {
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: dbCompany.owner._id.toString(),
             message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
-            createId: dbCompany._id,
-            categoryIcon: dbCompany.category.avatar, //sarqel
+            companyId: dbCompany._id,
+            navigate: true,
+            // categoryIcon:  dbCompany.images[0].url, //sarqel
             link: evLink,
           })
         );
@@ -1541,7 +1575,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   // confirm: async (req, res) => {
@@ -1595,8 +1629,8 @@ const companyController = {
       //     serviceId: services[i]._id,
       //   });
       // }
-
-      // Delete all comments related to the meeting
+      await ImpressionsCompany.deleteMany({company:req.params.id})
+      await companyParticipants.deleteMany({ companyId: req.params.id });
       await companyComment.deleteMany({ companyId: req.params.id });
       await companyImage.deleteMany({ companyId: req.params.id });
       await companyLikes.deleteMany({ companyId: req.params.id });
@@ -1604,7 +1638,18 @@ const companyController = {
       await companyView.deleteMany({ companyId: req.params.id });
       await companyRating.deleteMany({ companyId: req.params.id });
       await companyPhones.deleteMany({ companyId: req.params.id });
+      await paysStore.deleteMany({ companyId: req.params.id });
+      const companyHotDealDb = await companyHotDeals.find({
+        companyId: req.params.id,
+      });
+      for (let i = 0; i < companyHotDealDb.length; i++) {
+        await companyHotDealRegistration.deleteMany({
+          dealId: companyHotDealDb[i]._id,
+        });
+      }
       await companyHotDeals.deleteMany({ companyId: req.params.id });
+      await Notification.deleteMany({ companyId: req.params.id });
+
       const services = await companyServiceDb.find({
         companyId: req.params.id,
       });
@@ -1614,6 +1659,7 @@ const companyController = {
         });
       }
       await companyServiceDb.deleteMany({ companyId: req.params.id });
+      await Report.deleteMany({ company: req.params.id });
       await companyImpressionImages.deleteMany({ companyId: req.params.id });
       await User.findByIdAndUpdate(company.owner.toString(), {
         $set: { company: null },
@@ -1626,25 +1672,12 @@ const companyController = {
       });
       await company.remove();
 
-      console.log("Meeting and all related data deleted successfully");
-      // const companyDb = await Company.findById(req.params.id);
-      // // const userDb=await User.findById(companyDb.owner.toString());
-      // await User.findByIdAndUpdate(companyDb.owner.toString(),{$pull:{company:companyDb._id}});
-      // for (let i = 0; i < companyDb.services.length; i++) {
-      //   const service = await companyServiceDb.findByIdAndDelete(
-      //     companyDb.services[i].serviceId
-      //   );
-      // }
-      // for (let i = 0; i < companyDb.images.length; i++) {
-      //   const image = await companyImage.findByIdAndDelete(
-      //     companyDb.images[i].imageId
-      //   );
-      // }
-      // await Company.findByIdAndDelete(req.params.id);
+      console.log("Company and all related data deleted successfully");
+
       res.status(200).send({ success: true, message: "успешно удалено" });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ success: false, message: "Server error" });
+      res.status(500).send({ success: false, message: "Server Error" });
     }
   },
   myFavorites: async (req, res) => {
@@ -1736,7 +1769,7 @@ const companyController = {
       res.status(200).send(resultArr);
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   addFavorites: async (req, res) => {
@@ -1755,7 +1788,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   addCommets: async (req, res) => {
@@ -1799,12 +1832,42 @@ const companyController = {
         const userDb = await User.findById(user.id);
         const companyDb = await Company.findById(companyId)
           .populate("images")
-          .populate("category");
+          .populate("category")
+          .populate("owner");
         const ifImpressions = await ImpressionsCompany.findOne({
           company: companyId,
           user: user.id,
         });
         const dateTime = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        if (companyDb.owner._id.toString() !== userDb._id.toString()) {
+          const evLink = `alleven://myCompany/${companyDb._id}`;
+          const dataNotif = {
+            status: 2,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            user: companyDb.owner._id.toString(),
+            type: "message",
+            navigate: true,
+            message: `У вас новое сообщение.`,
+            companyId: companyDb._id,
+            link: evLink,
+          };
+          const nt = new Notification(dataNotif);
+          await nt.save();
+          if (companyDb.owner.notifEvent) {
+            notifEvent.emit(
+              "send",
+              companyDb.owner._id.toString(),
+              JSON.stringify({
+                type: "message",
+                navigate: true,
+                eventId: companyDb._id,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `У вас новое сообщение.`,
+                link: evLink,
+              })
+            );
+          }
+        }
 
         if (ifImpressions) {
           await ImpressionsCompany.findByIdAndUpdate(ifImpressions._id, {
@@ -1838,7 +1901,7 @@ const companyController = {
       }
     } catch (error) {
       console.error("Error adding comment:", error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   like: async (req, res) => {
@@ -1849,7 +1912,7 @@ const companyController = {
 
       const userToken = jwt.decode(token);
       const user = userToken.id;
-      console.log(companyId, user, "body");
+      const userDb = await User.findById(user);
 
       const findLike = await companyLikes.findOne({ user, companyId });
       if (!findLike) {
@@ -1858,10 +1921,44 @@ const companyController = {
         const newLike = new companyLikes({ user, companyId });
         await newLike.save();
 
-        const company = await Company.findById(companyId).populate("likes");
+        const company = await Company.findById(companyId)
+          .populate("likes")
+          .populate("owner");
         company.likes.push(newLike._id);
         await company.save();
         const companyDb = await Company.findById(companyId);
+        if (companyDb.owner.toString() !== userDb._id.toString()) {
+          const evLink = `alleven://myCompany/${companyDb._id}`;
+          const dataNotif = {
+            status: 2,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            user: company.owner._id.toString(),
+            type: "like",
+            navigate: true,
+            message: `Пользователь ${userDb.name} поставил лайк событию ${companyDb.companyName}.`,
+            companyId: companyDb._id,
+            // categoryIcon: event.category.avatar,
+            link: evLink,
+          };
+          const nt = new Notification(dataNotif);
+          await nt.save();
+          if (company.owner.notifEvent) {
+            notifEvent.emit(
+              "send",
+              company.owner._id.toString(),
+              JSON.stringify({
+                type: "like",
+                companyId: companyDb._id,
+                navigate: true,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `Пользователь ${userDb.name} поставил лайк событию ${companyDb.companyName}.`,
+                // categoryIcon: event.category.avatar,
+                link: evLink,
+              })
+            );
+          }
+        }
+
         res.status(200).json({
           message: "Like added successfully",
           company,
@@ -1884,21 +1981,26 @@ const companyController = {
       }
     } catch (error) {
       console.error("Error adding like:", error);
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Server Error" });
     }
   },
   near: async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
       const id = req.params.id;
+      const { longitude, latitude } = req.query;
 
       const compUpdate = await Company.findById(id);
       compUpdate.isLike = false;
       compUpdate.isRating = false;
       compUpdate.isFavorite = false;
       await compUpdate.save();
+      const myLatitude = 55.7558;
+      const myLongitude = 37.6173;
 
       if (authHeader) {
+        console.log("token ka----------");
+
         const token = authHeader.split(" ")[1];
         const user = jwt.decode(token);
         const result = await Company.findById(id).populate("ratings");
@@ -2155,8 +2257,48 @@ const companyController = {
             resultChanged1.comments[i].isLike = true;
           }
         }
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+          const earthRadius = 6371;
+
+          const latRad1 = (lat1 * Math.PI) / 180;
+          const lonRad1 = (lon1 * Math.PI) / 180;
+          const latRad2 = (lat2 * Math.PI) / 180;
+          const lonRad2 = (lon2 * Math.PI) / 180;
+
+          // Haversine formula
+          const dLat = latRad2 - latRad1;
+          const dLon = lonRad2 - lonRad1;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(latRad1) *
+              Math.cos(latRad2) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = earthRadius * c;
+
+          return distance;
+        }
+        if (latitude && longitude) {
+          resultChanged1.kilometr = calculateDistance(
+            latitude,
+            longitude,
+            resultChanged1.latitude,
+            resultChanged1.longitude
+          );
+        } else {
+          resultChanged1.kilometr = calculateDistance(
+            myLatitude,
+            myLongitude,
+            resultChanged1.latitude,
+            resultChanged1.longitude
+          );
+        }
+
         res.status(200).send(resultChanged1);
       } else {
+        console.log("token chka---------");
+
         const result = await Company.findById(id).populate("ratings");
 
         function calculateAverageRating(ratings) {
@@ -2291,11 +2433,49 @@ const companyController = {
           }
         }
         resultChanged1.hotDeals = upcomingDeals;
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+          const earthRadius = 6371;
+
+          const latRad1 = (lat1 * Math.PI) / 180;
+          const lonRad1 = (lon1 * Math.PI) / 180;
+          const latRad2 = (lat2 * Math.PI) / 180;
+          const lonRad2 = (lon2 * Math.PI) / 180;
+
+          // Haversine formula
+          const dLat = latRad2 - latRad1;
+          const dLon = lonRad2 - lonRad1;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(latRad1) *
+              Math.cos(latRad2) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = earthRadius * c;
+
+          return distance;
+        }
+        if (latitude && longitude) {
+          resultChanged1.kilometr = calculateDistance(
+            latitude,
+            longitude,
+            resultChanged1.latitude,
+            resultChanged1.longitude
+          );
+        } else {
+          resultChanged1.kilometr = calculateDistance(
+            myLatitude,
+            myLongitude,
+            resultChanged1.latitude,
+            resultChanged1.longitude
+          );
+        }
+
         res.status(200).send(resultChanged1);
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   popular: async (req, res) => {
@@ -2323,7 +2503,6 @@ const companyController = {
             Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = earthRadius * c;
-        console.log(distance, "distance");
 
         return distance;
       }
@@ -2547,7 +2726,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   getCompanys: async (req, res) => {
@@ -2773,7 +2952,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   singl: async () => {
@@ -2794,7 +2973,7 @@ const companyController = {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   single: async (req, res) => {
@@ -2843,7 +3022,10 @@ const companyController = {
         .populate("hotDeals")
         .populate({
           path: "participants",
-          select: "name surname avatar phone_number",
+          populate: {
+            path: "user",
+            select: "name surname avatar phone_number",
+          },
         })
         .populate({
           path: "comments",
@@ -2979,11 +3161,13 @@ const companyController = {
       for (let i = 0; i < resultChanged1.services.length; i++) {
         const serviceRegisterToday = await servicesRegistrations.find({
           serviceId: resultChanged1.services[i]._id,
+          pay: true,
           date: { $regex: `^${today}` },
         });
 
         const serviceRegisterAfter = await servicesRegistrations.find({
           serviceId: resultChanged1.services[i],
+          pay: true,
           date: { $gt: tomorrow }, // Matches today and dates after today
         });
 
@@ -3007,6 +3191,7 @@ const companyController = {
       resultChanged1.participants = removeDuplicatesByUser(
         resultChanged1.participants
       );
+
       res.status(200).send(resultChanged1);
     } catch (error) {
       console.error(error);
@@ -3044,18 +3229,22 @@ const companyController = {
 
       const user = jwt.decode(token);
       const userDB = await User.findById(user.id);
-      const companyDb = await companyModel.findOne({
-        owner: userDB._id.toString(),
-      });
+      const companyDb = await companyModel
+        .findOne({
+          owner: userDB._id.toString(),
+        })
+        .populate("category");
 
       if (!companyDb) {
         const data = req.body;
 
         const result = await companyService.addCompany(data, user.id);
 
-        const db = await Company.findById(result.company._id).populate("owner");
-        const evLink = `alleven://eventDetail/${db._id}`;
-        const categor = await companyCategory.find({ _id: db.category });
+        const db = await Company.findById(result.company._id)
+          .populate("owner")
+          .populate("images");
+        const evLink = `alleven://myCompany/${db._id}`;
+        const categor = await companyCategory.findById(db.category);
 
         const dataNotif = {
           status: 2,
@@ -3063,8 +3252,9 @@ const companyController = {
           user: user.id,
           type: "Новая услуга",
           message: `Ваше ${db.companyName} и услуги находится на модерации`,
-          createId: db._id,
-          categoryIcon: categor.avatar,
+          companyId: db._id,
+          navigate: true,
+          categoryIcon: categor.name,
           link: evLink,
         };
         let role = await Role.findOne({ name: "USER" });
@@ -3081,8 +3271,9 @@ const companyController = {
                 .tz(process.env.TZ)
                 .format("YYYY-MM-DD HH:mm:ss"),
               message: `Ваше ${db.companyName} и услуги находится на модерации`,
-              categoryIcon: categor.avatar,
-              createId: db._id,
+              categoryIcon: categor.name,
+              companyId: db._id,
+              navigate: true,
               status: 2,
               user: user.id,
               link: evLink,
@@ -3106,7 +3297,7 @@ const companyController = {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Server Error" });
     }
   },
   // editeCompany: async (req, res) => {
@@ -3121,11 +3312,6 @@ const companyController = {
     try {
       const { companyId, type, description, cost, images } = req.body;
 
-      // type: service.type,
-      // companyId: companyId,
-      // description: service.description,
-      // cost: service.cost,
-      // images: service.images,
       const result = await companyService.addService(
         companyId,
         type,
@@ -3785,7 +3971,7 @@ const companyController = {
     } catch (error) {
       console.error(error);
       res.status(500).send({
-        message: "Error",
+        message: "Server Error",
       });
     }
   },

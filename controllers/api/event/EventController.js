@@ -13,7 +13,7 @@ import EventView from "../../../models/event/EventView.js";
 import EventParticipantsSpot from "../../../models/event/EventParticipantsSpot.js";
 import EventLike from "../../../models/event/EventLike.js";
 import EventFavorites from "../../../models/event/EventFavorites.js";
-import moment from "moment";
+import moment from "moment-timezone";
 import EventRating from "../../../models/event/EventRating.js";
 import EventCommentAnswerLike from "../../../models/event/EventCommentAnswerLike.js";
 import EventCommentLikes from "../../../models/event/EventCommentLikes.js";
@@ -86,7 +86,7 @@ class EventController {
         obj.name = impression.event.name;
         // obj.url = impression.event.images[0].name;
         obj.date = impression.event.started_time;
-        obj._id=impression.event._id
+        obj._id = impression.event._id;
         obj.address = impression.event.address;
         obj.path = impression.path;
         obj.likes = impression.event.likes.length;
@@ -133,7 +133,7 @@ class EventController {
         obj.name = like.eventId.name;
         obj.url = like.eventId.images[0].name;
         obj.date = like.eventId.started_time;
-        obj._id=like.eventId._id
+        obj._id = like.eventId._id;
         obj.address = like.eventId.address;
         obj.likes = like.eventId.likes.length;
         obj.favorites = like.eventId.favorites.length;
@@ -181,7 +181,7 @@ class EventController {
         obj.name = favorite.eventId.name;
         obj.url = favorite.eventId.images[0].name;
         obj.date = favorite.eventId.started_time;
-        obj._id=favorite.eventId._id
+        obj._id = favorite.eventId._id;
 
         obj.address = favorite.eventId.address;
         obj.likes = favorite.eventId.likes.length;
@@ -270,33 +270,35 @@ class EventController {
       user: user.id,
       eventId: event_id,
     });
-    const evLink = `alleven://eventDetail/${event_id}`;
+    if (eventDb.owner._id.toString() !== user.id) {
+      const evLink = `alleven://myEvent/${event_id}`;
 
-    const dataNotif = {
-      status: 2,
-      date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      user: eventDb.owner._id.toString(),
-      type: "impression",
-      message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
-      createId: event_id,
-      categoryIcon: eventDb.category.avatar, //sarqel
-      link: evLink,
-    };
-    const nt = new Notification(dataNotif);
-    await nt.save();
-    if (eventDb.owner.notifEvent) {
-      notifEvent.emit(
-        "send",
-        eventDb.owner._id.toString(),
-        JSON.stringify({
-          type: "impression",
-          createId: event_id,
-          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-          message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
-          categoryIcon: eventDb.category.avatar, //sarqel
-          link: evLink,
-        })
-      );
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: eventDb.owner._id.toString(),
+        type: "impression",
+        navigate: true,
+        message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
+        eventId: event_id,
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+      if (eventDb.owner.notifEvent) {
+        notifEvent.emit(
+          "send",
+          eventDb.owner._id.toString(),
+          JSON.stringify({
+            type: "impression",
+            navigate: true,
+            eventId: event_id,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
+            link: evLink,
+          })
+        );
+      }
     }
 
     const userDb = await User.findById(user.id);
@@ -331,7 +333,7 @@ class EventController {
       });
       await eventImpression.save();
     }
-    
+
     return res
       .status(200)
       .send({ updated: result.bool, success: true, data: result.result });
@@ -423,7 +425,7 @@ class EventController {
       return res.status(200).send({ message: "success", data });
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "Internal server error" });
+      return res.status(500).send({ message: "Server Error" });
     }
   };
 
@@ -444,7 +446,13 @@ class EventController {
           })
           .populate("likes")
           .populate("images")
-          .populate("participantsSpot")
+          .populate({
+            path: "participantsSpot",
+            populate: {
+              path: "user",
+              select: "name surname avatar phone_number",
+            },
+          })
           .populate("views")
           .populate("favorites")
           .populate({
@@ -662,35 +670,39 @@ class EventController {
       },
       { new: true }
     )
-    .populate({ path: "owner", select: "-password" })
-    .populate("participants")
-    .populate({ path: "likes", select: "user" })
-    .populate("images")
-    .populate({
-      path: "participantsSpot",
-      populate: { path: "user", select: "name surname avatar" },
-    })
-    .populate({
-      path: "impression_images",
-      populate: { path: "user", select: "name surname avatar" },
-    })
-    .populate("views")
-    .populate("favorites")
-    .populate({
-      path: "ratings",
-      populate: { path: "user", select: "_id name surname avatar" },
-    })
-    .populate({
-      path: "comments",
-      populate: [
-        { path: "user", select: "_id name surname avatar" },
-        {
-          path: "answer",
-          populate: { path: "user", select: "name surname avatar" },
-        },
-      ],
-    })
-    .exec();
+      .populate({ path: "owner", select: "-password" })
+      .populate({
+        path: "participants",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate({ path: "likes", select: "user" })
+      .populate("images")
+      .populate({
+        path: "participantsSpot",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate({
+        path: "impression_images",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate("views")
+      .populate("favorites")
+      .populate({
+        path: "ratings",
+        populate: { path: "user", select: "_id name surname avatar" },
+      })
+      .populate({
+        path: "comments",
+        populate: [
+          { path: "user", select: "_id name surname avatar" },
+          {
+            path: "answer",
+            populate: { path: "user", select: "name surname avatar" },
+          },
+        ],
+      })
+      .populate("category")
+      .exec();
 
     for (let i = 0; i < eventUpdate.comments.length; i++) {
       for (let z = 0; z < eventUpdate.comments[i].answer.length; z++) {
@@ -727,6 +739,17 @@ class EventController {
     });
     eventUpdate.isFavorite = isFavorite ? true : false;
 
+    const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+    const eventTime = new Date(eventUpdate.started_time);
+    const dateNow = new Date(timeMoscow);
+
+    const timeDifference = eventTime - dateNow;
+
+    const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
+
+    if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+      eventUpdate.hour = true;
+    }
 
     return res.status(200).send({
       status: "success",
@@ -782,39 +805,67 @@ class EventController {
             for (let i = 0; i < eventDb.participants.length; i++) {
               const element = eventDb.participants[i].user;
               if (element.fcm_token[0]) {
-                const evLink = `alleven://eventDetail/${eventDb._id}`;
-                const dataNotif = {
-                  status: 2,
-                  date_time: moment
-                    .tz(process.env.TZ)
-                    .format("YYYY-MM-DD HH:mm"),
-                  user: element._id.toString(),
-                  type: "participation",
-                  message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                  categoryIcon: eventDb.category.avatar,
-                  createId: eventDb._id.toString(),
-                  link: evLink,
-                };
-                const nt = new Notification(dataNotif);
-                await nt.save();
-                console.log(
-                  `Событие ${eventDb.name} начнется через час. Не пропустите.`
-                );
-                const date_time = moment.tz(process.env.TZ).format();
-                if (element.notifEvent) {
+                  const evLink = `alleven://singleEvent/${eventDb._id}`;
+                  const date_time = moment.tz(process.env.TZ).format();
+                  const dataNotif = {
+                    status: 2,
+                    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                    user: element._id.toString(),
+                    type: "confirm_come",
+                    navigate:true,
+                    message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                    categoryIcon: eventDb.category.avatar,
+                    eventId: eventDb._id.toString(),
+                    link: evLink,
+                  };
+                  const nt = new Notification(dataNotif);
+                  await nt.save();
                   notifEvent.emit(
                     "send",
                     element._id.toString(),
                     JSON.stringify({
-                      type: "participation",
+                      type: "confirm_come",
                       date_time,
-                      createId: eventDb._id.toString(),
+                      navigate: true,
+                      eventId: eventDb._id.toString(),
                       message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
                       categoryIcon: eventDb.category.avatar,
                       link: evLink,
                     })
                   );
-                }
+                // const evLink = `alleven://singleEvent/${eventDb._id}`;
+                // const dataNotif = {
+                //   status: 2,
+                //   date_time: moment
+                //     .tz(process.env.TZ)
+                //     .format("YYYY-MM-DD HH:mm"),
+                //   user: element._id.toString(),
+                //   type: "confirm_come",
+                //   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                //   categoryIcon: eventDb.category.avatar,
+                //   eventId: eventDb._id.toString(),
+                //   link: evLink,
+                // };
+                // const nt = new Notification(dataNotif);
+                // await nt.save();
+                // console.log(
+                //   `Событие ${eventDb.name} начнется через час. Не пропустите.`
+                // );
+                // const date_time = moment.tz(process.env.TZ).format();
+                // if (element.notifEvent) {
+                //   notifEvent.emit(
+                //     "send",
+                //     element._id.toString(),
+                //     JSON.stringify({
+                //       type: "confirm_come",
+                //       date_time,
+                //       eventId: eventDb._id.toString(),
+                //       message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                //       categoryIcon: eventDb.category.avatar,
+                //       link: evLink,
+                //     })
+                //   );
+                // }
               }
             }
           }
@@ -826,7 +877,7 @@ class EventController {
             for (let i = 0; i < eventDb.participants.length; i++) {
               const element = eventDb.participants[i].user;
               if (element.fcm_token[0]) {
-                const evLink = `alleven://eventDetail/${eventDb._id}`;
+                const evLink = `alleven://singleEvent/${eventDb._id}`;
                 const dataNotif = {
                   status: 2,
                   date_time: moment
@@ -836,7 +887,7 @@ class EventController {
                   type: "participation",
                   message: `Событие ${eventDb.name} началось.`,
                   categoryIcon: eventDb.category.avatar,
-                  createId: eventDb._id.toString(),
+                  eventId: eventDb._id.toString(),
                   link: evLink,
                 };
                 const nt = new Notification(dataNotif);
@@ -850,7 +901,7 @@ class EventController {
                     JSON.stringify({
                       type: "participation",
                       date_time,
-                      createId: eventDb._id.toString(),
+                      eventId: eventDb._id.toString(),
                       message: `Событие ${eventDb.name} началось.`,
                       categoryIcon: eventDb.category.avatar,
                       link: evLink,
@@ -883,17 +934,47 @@ class EventController {
   edit = async (req, res) => {
     const event_id = req.params.id;
     const datas = req.body;
-    datas.status = "0";
-    const updated = await this.EventService.update(event_id, datas);
-    let message = "Successfully updated";
-    if (updated) {
-      res.status(200);
-    } else {
-      res.status(400);
-      message = "No such event exists";
-    }
 
-    return res.json({ message });
+    const updated = await this.EventService.update(event_id, datas);
+    const updatedEvent = await Event.findById(event_id)
+      .populate({ path: "owner", select: "-password" })
+      .populate({
+        path: "participants",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate({ path: "likes", select: "user" })
+      .populate("images")
+      .populate({
+        path: "participantsSpot",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate({
+        path: "impression_images",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
+      .populate("views")
+      .populate("favorites")
+      .populate({
+        path: "ratings",
+        populate: { path: "user", select: "_id name surname avatar" },
+      })
+      .populate({
+        path: "comments",
+        populate: [
+          { path: "user", select: "_id name surname avatar" },
+          {
+            path: "answer",
+            populate: { path: "user", select: "name surname avatar" },
+          },
+        ],
+      })
+      .populate("category")
+      .exec();
+    if (updated) {
+      res.status(200).send({ message: "success", data: updatedEvent });
+    } else {
+      res.status(400).send({ message: "error" });
+    }
   };
 
   userImpressions = async (req, res) => {
@@ -935,7 +1016,7 @@ class EventController {
         });
         await view.save();
         data = await Event.findByIdAndUpdate(
-           id ,
+          id,
           {
             $push: { views: view._id },
             $set: { ratingCalculated: averageRating },
@@ -1182,7 +1263,7 @@ class EventController {
       if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
         data.hour = true;
       }
-   
+
       res.status(200).send({ message: "success", data });
     }
   };
@@ -1220,7 +1301,12 @@ class EventController {
         const result = await Event.find({
           owner: { $ne: user.id },
           status: 1,
-        }).populate({ path: "category", select: "avatar name map_avatar" });
+        })
+          .populate({ path: "category", select: "avatar name map_avatar" })
+          .populate({
+            path: "participantsSpot",
+            populate: { path: "user", select: "name surname avatar" },
+          });
         function separateUpcomingAndPassed(events) {
           const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
           const upcoming = [];
@@ -1280,10 +1366,15 @@ class EventController {
         result.sort((a, b) => a.kilometr - b.kilometr);
         return res.status(200).send(result);
       } else {
-        const result = await Event.find({ status: { $eq: 1 } }).populate({
-          path: "category",
-          select: "avatar name map_avatar",
-        });
+        const result = await Event.find({ status: { $eq: 1 } })
+          .populate({
+            path: "category",
+            select: "avatar name map_avatar",
+          })
+          .populate({
+            path: "participantsSpot",
+            populate: { path: "user", select: "name surname avatar" },
+          });
         function separateUpcomingAndPassed(events) {
           const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
           const upcoming = [];
@@ -1470,7 +1561,10 @@ class EventController {
       const myLongitude = longitude;
 
       if (!authHeader) {
-        const pointsOfInterest = await Event.find();
+        const pointsOfInterest = await Event.find().populate({
+          path: "participantsSpot",
+          populate: { path: "user", select: "name surname avatar" },
+        });
 
         pointsOfInterest.upcoming.forEach((meeting) => {
           meeting.kilometr = calculateDistance(
@@ -1503,7 +1597,7 @@ class EventController {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).send({ message: "An error occurred" });
+      res.status(500).send({ message: "Server Error" });
     }
   };
 
@@ -1542,7 +1636,7 @@ class EventController {
       // }
     } catch (error) {
       console.error(error);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Server Error");
     }
   };
 
@@ -1558,7 +1652,11 @@ class EventController {
           status: 1,
         })
           .populate({ path: "category", select: "avatar name map_avatar" })
-          .populate({ path: "images", select: "name" });
+          .populate({ path: "images", select: "name" })
+          .populate({
+            path: "participantsSpot",
+            populate: { path: "user", select: "name surname avatar" },
+          });
         function separateUpcomingAndPassed(events) {
           const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
           const upcoming = [];
@@ -1688,7 +1786,12 @@ class EventController {
       } else {
         const events = await Event.find({ status: 1 })
           .populate({ path: "category", select: "avatar name map_avatar" })
-          .populate({ path: "images", select: "name" });
+          .populate({ path: "images", select: "name" })
+          .populate({
+            path: "participantsSpot",
+            populate: { path: "user", select: "name surname avatar" },
+          })
+          .exec();
 
         function separateUpcomingAndPassed(events) {
           const now = new Date();
@@ -1768,7 +1871,7 @@ class EventController {
     } catch (error) {
       console.error(error);
 
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Server Error");
     }
   };
 
@@ -1791,17 +1894,20 @@ class EventController {
           $push: { participants: participant._id },
         })
           .populate("owner")
-          .populate("category");
-        const evLink = `alleven://eventDetail/${id}`;
+          .populate("category")
+          .populate("images");
+        const evLink = `alleven://myEvent/${id}`;
         const userDb = await User.findById(user.id);
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: result.owner._id.toString(),
-          type: "participation",
+          type: "Присоединение",
+          navigate: true,
+          situation: "upcoming",
           message: `Пользователь ${userDb.name} присоединился к событию ${result.name}.`,
-          createId: result._id.toString(),
-          categoryIcon: result.category.avatar, //sarqel
+          eventId: result._id.toString(),
+          // categoryIcon: result.images[0].name, //sarqel
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -1813,11 +1919,13 @@ class EventController {
             "send",
             result.owner._id.toString(),
             JSON.stringify({
-              type: "participation",
-              createId: result._id.toString(),
+              type: "Присоединение",
+              eventId: result._id.toString(),
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Пользователь ${userDb.name} присоединился к событию ${result.name}.`,
-              categoryIcon: result.category.avatar, //sarqel
+              // categoryIcon: result.images[0].name, //sarqel
+              situation: "upcoming",
+              navigate: true,
               link: evLink,
             })
           );
@@ -1831,7 +1939,7 @@ class EventController {
       // }
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "Internal Server Error" });
+      return res.status(500).send({ message: "Server Error" });
     }
   };
   addParticipantSpot = async (req, res) => {
@@ -1846,6 +1954,16 @@ class EventController {
           eventId: id,
         });
         await participantSpot.save();
+
+        const notif = await Notification.findOne({
+          user: user.id,
+          eventId: id,
+          type: "confirm_come",
+        });
+        if (notif) {
+          notif.confirmed = true;
+          await notif.save();
+        }
         const result = await Event.findByIdAndUpdate(
           id,
           {
@@ -1854,16 +1972,18 @@ class EventController {
           { new: true }
         )
           .populate({ path: "owner", select: "_id notifEvent" })
-          .populate("category");
-        const evLink = `alleven://eventDetail/${id}`;
+          .populate("category")
+          .populate("images");
+        const evLink = `alleven://myEvent/${id}`;
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: result.owner._id.toString(),
-          type: "participationSpot",
+          type: "Присоединение",
+          navigate: true,
           message: `Пользователь ${user.name} пришел на ваше событие ${result.name}. `,
-          categoryIcon: result.category.avatar,
-          createId: result._id,
+          // categoryIcon: result.images[0].name,
+          eventId: result._id,
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -1873,11 +1993,12 @@ class EventController {
             "send",
             result.owner._id.toString(),
             JSON.stringify({
-              type: "participationSpot",
-              createId: result._id,
+              type: "Присоединение",
+              eventId: result._id,
+              navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Пользователь ${user.name} пришел на ваше событие ${result.name}. `,
-              categoryIcon: result.category.map_avatar, //sarqel
+              // categoryIcon: result.images[0].name, //sarqel
               link: evLink,
             })
           );
@@ -1889,7 +2010,7 @@ class EventController {
       }
     } catch (error) {
       console.error(error);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Server Error");
     }
   };
   // testUpcoming = async (req, res) => {

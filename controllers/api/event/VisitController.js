@@ -28,7 +28,7 @@
 //         }
 
 //         if(!evEx && event.owner){
-//             const evLink = `alleven://eventDetail/${event._id}`
+//             const evLink = `alleven://myEvent/${event._id}`
 //             const msg = `${userName} ${userSurname} собирается посетить ваше событие ${event.name}`;
 //             const notif = await this.NotificationService.store({type:'message',date_time:new Date(),status:2,message:msg,user:event.owner._id.toString(),link:evLink,notif_type:'Я пойду', categoryIcon: event.category.avatar, event: event._id})
 //             notifEvent.emit('send',event.owner._id.toString(),JSON.stringify({type:'message',date_time:new Date(),message:msg,link:evLink,notif_type:'Я пойду', categoryIcon: event.category.avatar}));

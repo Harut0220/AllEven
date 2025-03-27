@@ -12,9 +12,11 @@ import servicesRegistrations from "../../../models/services/servicesRegistration
 import companyComment from "../../../models/company/companyComment.js";
 import EventCategory from "../../../models/event/EventCategory.js";
 import Event from "../../../models/event/Event.js";
-import moment from "moment";
+import moment from "moment-timezone";
 import NotificationService from "../../../services/NotificationService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
+import Notification from "../../../models/Notification.js";
+import EventImpressionImages from "../../../models/event/EventImpressionImages.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -103,7 +105,8 @@ class EventController {
       started_time:event.started_time,
       // tickets_link:event.tickets_link,
       phone_number:req.user.phone_number,
-      category:event.category.name
+      category:event.category.name,
+      userMeet: event.owner,
     });
   };
 
@@ -118,7 +121,13 @@ class EventController {
       template += "-rejected";
     }
  
-   
+    // res.render(template, {
+    //   layout: "profile",
+    //   title: "Verification",
+    //   user: req.user,
+    //   event,
+    //   userMeet,
+    // });
     
     res.render(template, {
       layout: "profile",
@@ -198,32 +207,32 @@ class EventController {
     let rejectMessage = req.body.status;
     
     let event = await Event.findByIdAndUpdate(req.params.id, { $set: { status: 2, rejectMessage } });
-    const eventIf=await Event.findById(req.params.id).populate("category").populate("images");
+    const eventIf=await Event.findById(req.params.id).populate("category").populate("images")
 
-    const evLink = `alleven://eventDetail/${event._id}`;
-
-
+    const evLink = `alleven://myEvent/${event._id}`;
+    const userDb=await User.findById(eventIf.owner)
+    
     const dataNotif = {
       status: 2,
       date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
       user: event.owner.toString(),
-      type: "Новая услуга",
-      message: `${event.name} и услуги добавлены в приложение.`,
-      createId: event._id,
+      type: "Отклонение событий",
+      message: `К сожалению, ваше событие ${eventIf.category.name} ${eventIf.name} отклонено модератором, причина - ${rejectMessage}`,
+      eventId: event._id,
       categoryIcon: eventIf.category.avatar, //sarqel
       link: evLink,
     };
     const nt = new Notification(dataNotif);
     await nt.save();
-    if (dbCompany.owner.notifCompany) {
+    if (userDb.notifEvent) {
       notifEvent.emit(
         "send",
         event.owner.toString(),
         JSON.stringify({
-          type: "Новая услуга",
-          createId: event._id,
+          type: "Отклонение событий",
+          eventId: event._id,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-          message: `${event.name} и услуги добавлены в приложение.`,
+          message: `К сожалению, ваше событие ${eventIf.category.name} ${eventIf.name} отклонено модератором, причина - ${rejectMessage}`,
           categoryIcon: eventIf.category.avatar, //sarqel
           link: evLink,
         })
@@ -282,9 +291,12 @@ class EventController {
 
   show = async (req, res) => {
     const event = await this.EventService.getById(req.params.id);
-    
+    const impressions=await EventImpressionImages.find({event:req.params.id}).populate("user")
     const participants=event.participants
     const views=event.views
+
+    
+    
     res.render("profile/event-show", {
       layout: "profile",
       title: "Event View",
@@ -292,7 +304,11 @@ class EventController {
       event,
       q: req.query,
       participants,
-      views
+      views,
+      impressions,
+      userMeet:event.owner,
+      participants:event.participants,
+      participantsSpot:event.participantsSpot
     });
   };
 }

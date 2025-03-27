@@ -42,6 +42,8 @@ companyAdminRouter.get("/price/page",companyController.pricePage)
 
 companyAdminRouter.post("/commission/edit/:id",isEmpParamObjId,companyController.priceEdit)
 
+companyAdminRouter.delete("/service/image/:id",companyController.deleteServiceImage)
+
 
 
 export default companyAdminRouter

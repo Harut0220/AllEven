@@ -133,7 +133,7 @@ export default cron;
 //       if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
 //         for (let j = 0; j < meetingDb[i].participants.length; j++) {
 //           const organizer = meetingDb[i].user;
-//           const link = `alleven://eventDetail/${meetingDb[i]._id.toString()}`;
+//           const link = `alleven://myEvent/${meetingDb[i]._id.toString()}`;
 //           notifEvent.emit(
 //             "send",
 //             meetingDb[i].participants[j].user._id.toString(),
@@ -181,7 +181,7 @@ export default cron;
 //     if (differenceInMinutes > -1 && differenceInMinutes <= 1) {
 //       for (let j = 0; j < meetingDb[i].participants.length; j++) {
 //         const organizer = meetingDb[i].user;
-//         const link = `alleven://eventDetail/${meetingDb[i]._id.toString()}`;
+//         const link = `alleven://myEvent/${meetingDb[i]._id.toString()}`;
 //         notifEvent.emit(
 //           "send",
 //           meetingDb[i].participants[j].user._id.toString(),
@@ -212,7 +212,7 @@ export default cron;
 //     for (let i = 0; i < meetingParticipantDb.length; i++) {
 //       const meeting = meetingParticipantDb[i].meetingId;
 //       const organizer = meeting.user;
-//       const link = `alleven://eventDetail/${meeting._id.toString()}`;
+//       const link = `alleven://myEvent/${meeting._id.toString()}`;
 //       notifEvent.emit(
 //         "send",
 //         organizer._id.toString(),
@@ -275,7 +275,7 @@ export default cron;
 // // const db = await Company.findOne({
 // //   companyName: data.name,
 // // });
-// // const evLink = `alleven://eventDetail/${db._id}`;
+// // const evLink = `alleven://myEvent/${db._id}`;
 // // // console.log("user.id,", user.id);
 
 // // await store({

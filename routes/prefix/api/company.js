@@ -12,7 +12,7 @@ companyRoutes.get("/getCategories", companyController.getCategory);
 
 companyRoutes.get("/days", companyController.days);
 
-companyRoutes.get("/singl/:id", isEmpParamObjId, companyController.singl);
+// companyRoutes.get("/singl/:id", isEmpParamObjId, companyController.singl);
 
 companyRoutes.get("/single", companyController.single);
 
@@ -48,11 +48,11 @@ companyRoutes.post("/add/service", companyController.addService);
 
 companyRoutes.get("/allCompanies", companyController.getCompanys); //kilometer motikic heru
 
-companyRoutes.post("/like", newAuthJWT, companyController.like);
+companyRoutes.post("/like", newAuthJWT, companyController.like);//notif+
 
 companyRoutes.delete("/delete/service/:id", companyController.deleteService);
 
-companyRoutes.post("/add/comment", newAuthJWT, companyController.addCommets);
+companyRoutes.post("/add/comment", newAuthJWT, companyController.addCommets);//notif+
 
 companyRoutes.post(
   "/comment/delete",
@@ -60,13 +60,13 @@ companyRoutes.post(
   companyController.commentDelete
 );
 
-companyRoutes.post("/comment/like", newAuthJWT, companyController.commentLike);
+companyRoutes.post("/comment/like", newAuthJWT, companyController.commentLike);//notif+
 
 companyRoutes.post(
   "/comment/answer",
   newAuthJWT,
   companyController.commentAnswer
-);
+);//notif+
 
 companyRoutes.post(
   "/comment/answer/delete",
@@ -78,11 +78,11 @@ companyRoutes.post(
   "/comment/answer/like",
   newAuthJWT,
   companyController.commentAnswerLike
-);
+);//notif+
 
-companyRoutes.post("/rating", newAuthJWT, companyController.rating);
+companyRoutes.post("/rating", newAuthJWT, companyController.rating);//notif+
 
-companyRoutes.post("/add/favorite", newAuthJWT, companyController.addFavorites);
+companyRoutes.post("/add/favorite", newAuthJWT, companyController.addFavorites);//notif+
 
 companyRoutes.delete(
   "/delete/:id",
@@ -93,7 +93,7 @@ companyRoutes.delete(
 companyRoutes.post(
   "/impression-images/store",
   companyController.impressionImagesStore
-);
+);//notif+
 
 companyRoutes.post("/edit", companyController.companyEdit);
 

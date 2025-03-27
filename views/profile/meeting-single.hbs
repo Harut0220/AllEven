@@ -1,9 +1,57 @@
 <link rel="stylesheet" href="/styles/company.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+<style>
+  #imageModal{
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.391);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
+.imgaeModal_block{
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  margin: 0 auto;
+  position: relative;
+}
+#modalImage{
+width: 100%;
+    height: 100%;}
+#div_x{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+#closeModal{
+    font-size: 30px;
+    padding: 10px;
+    position: absolute;
+    right: 5px;
+    top: -10px;
+    cursor: pointer;
+}
+
+.removeButton{
+  width: 20px;
+  height: 20px;
+}
+
+.service_img_div{
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+</style>
 <div id="events" class="max-height-auto" style="display: flex">
     <div class="modal"><img src="/icon/icons8-verified-48.png" alt=""><span class="modalText"></span></div>
-
   <div class="eventMainBody">
     <div class="eventHead">
       <div class="eventHeadFirstPart">
@@ -12,56 +60,35 @@
           <a href="/admin/profile/meeting/page">Встречи</a> &gt;
         </p>
       </div>
-      {{!--
-      <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
-        Фильтр
-        <img src="/images/staticimg/Group(10).svg" />
-      </div>
-      --}}
     </div>
-
     <div id="eventBody">
-      {{!--
-      <div id="eventBodyHead">
-        <p>Топ</p>
-        <img src="/images/staticimg/delete 1.svg" />
-      </div>
-      --}}
       <div id="changeEvMainDiv">
         <div id="changeEvMainDivContainer1">
           <div id="changeEvBox_header">
             <h4>Встреча</h4>
-
             <div id="allowDiv">
               <button
                 class="buttonAllow whiteBtn"
-                onclick="toggleModal('denyDiv','block')"
-              >
-                Отклонить
+                onclick="toggleModal('denyDiv','block')">Отклонить
               </button>
               <form action="/admin/profile/meet/resolve/{{getValue event "_id"}}"
               method="POST" enctype="multipart/form-data" id="eventForm">
-
               <button type="button" class="buttonAllow" onclick="buttonFunc()">
-{{#or (eq (getValue event "status") 0) (eq (getValue event "status") 2)}}
-    Одобрить
-{{else}}
-    Изменить
-{{/or}}
-
-
-                {{!-- {{#if (getValue event "status")}}Изменить{{else}}Одобрить{{/if}} --}}
+              {{#or (eq (getValue event "status") 0) (eq (getValue event "status") 2)}}
+                  Одобрить
+              {{else}}
+                  Изменить
+              {{/or}}
               </button>
             </div>
           </div>
         </div>
         <hr />
-
         <div id="changeEvMainDivContainer23">
           <div class="changeEvBox">
             <div class="userDiv">
-              <img src="/{{getValue userMeet "avatar"}}" alt=""
-              class="user_image">
+              <img style="cursor: pointer;" src="/{{getValue userMeet "avatar"}}" alt=""
+              class="user_image" onclick="openImageModal('{{getValue userMeet "avatar"}}')"/>
               <div class="userData">
                 <p class="userName">
                   {{getValue userMeet "name"}} {{getValue userMeet "surname"}}
@@ -79,42 +106,17 @@
 
               <br>
               <span>Описание</span>
-              {{!-- <textarea class="inputAllowArea" --}}
-              {{!-- name="description">{{getValue event "description"}}</textarea> --}}
-                  <textarea class="inputAllowArea" name="description" required>{{getValue event "description"}}</textarea>
-
+              <div id="boxDescription">
+                    <textarea id="textarea" name="description textarea_description">{{getValue event "description" }}</textarea>
+              </div>
               <br><span>Aдрес</span>
-              {{!-- <input type="text" class="inputAllow" placeholder="Aдрес встречи" value="{{getValue event 'address'}}" name="address"> --}}
                   <input type="text" class="inputAllow" name="address" value="{{getValue event "address"}}" required>
-
               <br>
               <span>Начало встречи</span>
-               {{!-- <input type="text" class="inputAllow"
-              placeholder="Категория" value="{{getValue event "date"}} {{getValue event "startTime"}}"
-              name="date"> --}}
                   <input type="text" class="inputAllow" name="date" value="{{getValue event "date"}}" required>
-
               <br />
-              {{!-- <span>Конец присоединения встречи</span>
-              <input type="text" class="inputAllow"
-              placeholder="Категория" value="{{getValue event "openDate"}} {{getValue event "openTime"}}"
-              name="name"><br /> --}}
-              {{!-- <input type="text" class="inputAllow"
-              placeholder="Категория" value="{{getValue event "passportImage"}}"
-              name="name"><br />
-              --}}
               <div>
                 <div class="mapIcon_div">
-                  {{!--
-                  <svg
-                    class="map_icon"
-                    width="19"
-                    height="24"
-                    viewBox="0 0 19 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    --}}
                     <path
                       fill-rule="evenodd"
                       clip-rule="evenodd"
@@ -123,47 +125,21 @@
                     />
                   </svg>
                 </div>
-                {{!-- <input type="text" class="inputAllow" value="{{getValue
-                event "address"}}" name="name"> --}}
               </div>
               <br />
-              {{!--
-              <p>Фото интерьеров</p>
-              <br />
-              --}}
               <div id="pics1">
-{{!--                 
-                 {{#if event}} {{#optionsFromArrays images "_id" "url" }}
-
-                <div
-                  class="changeEvDiv"
-                  style="background-image: url('/{{this.url}}')"
-                >
-                  <img
-                    src="/images/pics/GroupX.svg"
-                    class="removeButton"
-                    onclick="removeimage(this)"
-                    attr_id="{{this._id}}"
-                  />
-                </div>
-                {{/optionsFromArrays}} {{/if}}  --}}
-                {{!--<div class="changeEvDiv">
-                  <img src="/images/pics/GroupX.svg" />
-                </div>
-                <div class="changeEvDiv">
-                  <img src="/images/pics/GroupX.svg" />
-                </div>
-                --}}
               </div>
               <br />
             </div>
-            
           </div>
-{{#optionsFromArraysy images "_id" "path" }}
-    <div class="changeEvDiv" style="background-image: url('/{{path}}')">
-        <img src="/images/pics/GroupX.svg" class="removeButton" onclick="removeimage(this)" attr_id="{{id}}">
-    </div>
-{{/optionsFromArraysy}}
+            {{#optionsFromArraysy images "_id" "path" }}
+                {{!-- <div class="changeEvDiv" style="background-image: url('/{{path}}')">
+                    <img src="/images/pics/GroupX.svg" class="removeButton" onclick="removeimage(this)" attr_id="{{id}}">
+                </div> --}}
+                <div class="changeEvDiv" style="padding:2px;cursor:pointer;background-image: url('/{{path}}')" onclick="openImageModal('{{path}}')">
+                  <svg onclick="removeimage(this)" attr_id="{{id}}" class="removeButton" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" fill="white"/></svg>
+                </div>
+            {{/optionsFromArraysy}}
         </div>
         </form>
       </div>
@@ -202,8 +178,27 @@
     </form>
   </div>
 </div>
-
+      <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" onclick="closeFunc()" >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
 <script src="../../public/js/axios.js"></script>
+            <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" onclick="closeFunc()" >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
 <script>
   //const geoCordLatit = {{getNestedValue event "latitude"}};
   //const geoCordLotit = {{getNestedValue event "longitude"}};
@@ -213,39 +208,69 @@
   //  al.innerHTML = d.data.features[0].properties.address_line2
   //})
 
-  function removeimage(el) {
-    let id = el.getAttribute("attr_id");
-    el.parentNode.remove();
-    axios.delete(`/admin/profile/meet/image/${id}`).then((d) => {});
-  }
+
 
    function buttonFunc() {
-    // Տպում barev
     const modal=document.querySelector('.modal');
   modal.style.display = 'flex';
  
-    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
     setTimeout(() => {
-      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
-      form.submit(); // Ուղարկում ենք form-ը
-    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+      const form = document.getElementById('eventForm'); 
+      form.submit(); 
+    }, 1000); 
   }
 
-  // Sample data
-  const data = {
-    title: "My Handlebars Image",
-    imageSrc: "../../pubimglic/styles/fonts/phoneVector.png",
-    altText: "Descriptive text for the image",
-  };
+      function removeimage(el){
+        let id = el.getAttribute('attr_id');
+        el.parentNode.remove()
+        axios.delete(`/admin/profile/meet/image/${id}`).then((d) => {});
+          
+      }
+     const imgModal=document.getElementById('modalImage')
 
-  // Compile the Handlebars template
-  const source = document.getElementById("template").innerHTML;
-  const template = Handlebars.compile(source);
+  function openImageModal(path){
+    imgModal.src=`/${path}`
 
-  // Render the template with the data
-  const html = template(data);
+  }
 
-  // Insert the rendered HTML into the page
-  document.getElementById("content").innerHTML = html;
+  function closeFunc(e){
+          const imageModal=document.getElementById('imageModal')
+        imageModal.style.display='none'
+  }
+
+       document.querySelectorAll('.img_service').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+    document.querySelectorAll('.user_image').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+
+
+      document.querySelectorAll('.changeEvDiv').forEach(el=>{
+        el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+      })
 </script>
 <script src="../../public/js/helper.js"></script>

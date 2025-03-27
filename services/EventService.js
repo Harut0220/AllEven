@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import Event from "../models/event/Event.js";
 import EventImage from "../models/event/EventImage.js";
 import UploadService from "./UploadService.js";
@@ -27,6 +27,12 @@ import Role from "../models/Role.js";
 import NotificatationList from "../models/NotificationList.js";
 import EventCategory from "../models/event/EventCategory.js";
 import Notification from "../models/Notification.js";
+import path from "path";
+import fs from "fs";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import Report from "../models/Report.js";
+import ImpressionsEvent from "../models/ImpressionsEvent.js";
 
 class EventService {
   constructor() {
@@ -133,6 +139,7 @@ class EventService {
       {
         path: "owner",
         select: [
+          "_id",
           "name",
           "surname",
           "email",
@@ -201,7 +208,10 @@ class EventService {
         "images",
         "owner",
         "ratings",
-        "impression_images",
+        {
+          path: "impression_images",
+          populate: { path: "user", select: "name avatar surname" },
+        },
         "likes",
         "favorites",
         {
@@ -210,6 +220,11 @@ class EventService {
         },
         {
           path: "participants",
+          populate: { path: "user", select: "name avatar surname" },
+          // select:{"name"}
+        },
+        {
+          path: "participantsSpot",
           populate: { path: "user", select: "name avatar surname" },
           // select:{"name"}
         },
@@ -241,7 +256,7 @@ class EventService {
 
     let event = await Event.create(d);
 
-    const evLink = `alleven://eventDetail/${event._id}`;
+    const evLink = `alleven://myEvent/${event._id}`;
     // const evLink = {
     //   tab: "Профиль",
     //   screen: "SingleEvent",
@@ -254,11 +269,11 @@ class EventService {
       status: 2,
       date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
       user: d.owner,
-      navigate:true,
+      navigate: true,
       type: "Новая события",
       message: `Ваше событие ${d.name} находится на модерации`,
       categoryIcon: category.avatar,
-      createId: event._id.toString(),
+      eventId: event._id.toString(),
       link: evLink,
     });
 
@@ -269,8 +284,8 @@ class EventService {
         d.owner,
         JSON.stringify({
           type: "Новая события",
-          navigate:true,
-          createId: event._id.toString(),
+          navigate: true,
+          eventId: event._id.toString(),
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           message: `Ваше событие ${d.name} находится на модерации`,
           categoryIcon: category.avatar,
@@ -331,95 +346,26 @@ class EventService {
   };
 
   update = async (id, data) => {
-    let event = await this.find(id);
-    if (!event) {
-      return 0;
+    const eventDb = await Event.findById(id);
+    const d = data;
+
+    // d.owner = user;
+
+    if (d.images && d.images.length) {
+      let imgArr = [];
+      for (const image of d.images) {
+        let img = await EventImage.create({ name: image });
+
+        imgArr.push(img);
+      }
+      d.images = imgArr;
     }
 
-    const evLink = `alleven://eventDetail/${event._id}`;
+    // const category = await this.EventCategoryService.findById(d.category);
 
-    if (data.status && data.status != "0" && event.owner) {
-      let eventDate = new Date(event.started_time)
-        .toLocaleDateString()
-        .slice(0, 10);
-      let nowDate = new Date().toLocaleDateString().slice(0, 10);
+    await eventDb.updateOne(d);
 
-      if (nowDate == eventDate) {
-        data.situation = "upcoming";
-      }
-
-      let msg =
-        data.status == 1
-          ? `Ваше событие ${event.category.name} ${event.name} одобрено модератором. Теперь оно на карте города.`
-          : `К сожалению, ваше событие ${event.category.name} ${event.name} отклонено модератором, причина - ${data.status}`;
-      await this.NotificationService.store({
-        status: 2,
-        date_time: new Date(),
-        user: event.owner._id,
-        type: "Отклонение событий",
-        message: msg,
-        navigate:true,
-        link: evLink,
-        categoryIcon: event.category.avatar,
-        createId: event._id,
-      });
-      if (event.owner.notifEvent) {
-        notifEvent.emit(
-          "send",
-          event.owner._id.toString(),
-          JSON.stringify({
-            type: "Отклонение событий",
-            createId: event._id,
-            navigate:true,
-            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: msg,
-            link: evLink,
-            categoryIcon: event.category.avatar,
-          })
-        );
-      }
-    } else if (data.status == "0" && event.owner) {
-      await this.NotificationService.store({
-        status: 2,
-        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        user: event.owner._id,
-        navigate:true,
-        type: "Подтверждение событий",
-        message: `Ваше событие ${event.category.name} ${event.name} находится на модерации`,
-        link: evLink,
-        categoryIcon: event.category.avatar,
-        createId: event._id,
-      });
-      if (event.owner.notifEvent) {
-        notifEvent.emit(
-          "send",
-          event.owner._id.toString(),
-          JSON.stringify({
-            type: "Подтверждение событий",
-            createId: event._id,
-            navigate:true,
-            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `Ваше событие ${event.category.name} ${event.name} находится на модерации`,
-            link: evLink,
-            categoryIcon: event.category.avatar,
-          })
-        );
-      }
-      notifEvent.emit(
-        "send",
-        "ADMIN",
-        JSON.stringify({
-          type: "Событие находится на модерации",
-          message: event.name,
-          data: event,
-          link: evLink,
-          categoryIcon: event.category.avatar,
-        })
-      );
-    }
-    // data.status=2
-    await event.updateOne(data);
-    return event;
+    return eventDb;
   };
 
   isValidDate = (d) => {
@@ -551,6 +497,8 @@ class EventService {
     if (Array.isArray(des_events)) {
       for (let i = 0; i < des_events.length; i++) {
         const event = await Event.findById(des_events[i]);
+        await Notification.deleteMany({ eventId: des_events[i] });
+        await Report.deleteMany({ event: des_events[i] });
 
         if (!event) {
           throw new Error("Event not found");
@@ -577,6 +525,7 @@ class EventService {
 
           await EventCommentAnswer.deleteMany({ commentId: comment._id });
         }
+        await ImpressionsEvent.deleteMany({ event: des_events[i] });
 
         await EventComment.deleteMany({ event: des_events[i] });
         // await EventImage.deleteMany({ event: des_events[i] });
@@ -587,7 +536,7 @@ class EventService {
         await EventImpressionImages.deleteMany({ event: des_events[i] });
         await EventParticipantsSpot.deleteMany({ eventId: des_events[i] });
         await EventParticipants.deleteMany({ eventId: des_events[i] });
-        await User.findByIdAndUpdate(des_events[i], {
+        await User.findByIdAndUpdate(event.owner.toString(), {
           $pull: { events: des_events[i] },
         });
         await event.remove();
@@ -595,7 +544,8 @@ class EventService {
       }
     } else if (typeof des_events === "string") {
       const event = await Event.findById(des_events);
-
+      await Notification.deleteMany({ eventId: des_events });
+      await Report.deleteMany({ event: des_events });
       if (!event) {
         throw new Error("Event not found");
       }
@@ -621,6 +571,7 @@ class EventService {
 
         await EventCommentAnswer.deleteMany({ commentId: comment._id });
       }
+      await ImpressionsEvent.deleteMany({ event: des_events });
 
       await EventComment.deleteMany({ event: des_events });
       await EventLikes.deleteMany({ eventId: des_events });
@@ -630,7 +581,7 @@ class EventService {
       await EventImpressionImages.deleteMany({ event: des_events });
       await EventParticipantsSpot.deleteMany({ eventId: des_events });
       await EventParticipants.deleteMany({ eventId: des_events });
-      await User.findByIdAndUpdate(des_events, {
+      await User.findByIdAndUpdate(event.owner.toString(), {
         $pull: { events: des_events },
       });
       await event.remove();
@@ -764,7 +715,7 @@ class EventService {
             ) {
               let ev_st_time = new Date(events[e].started_time);
               ev_st_time.setHours(+ev_st_time.getHours() - 1);
-              const evLink = `alleven://eventDetail/${events[e]._id}`;
+              const evLink = `alleven://myEvent/${events[e]._id}`;
 
               await this.NotificationService.store({
                 status: 1,
@@ -916,7 +867,7 @@ class EventService {
               "USER" && !events[e].situation === "passed")
           ) {
             let ev_st_time = new Date(events[e].started_time);
-            const evLink = `alleven://eventDetail/${events[e]._id}`;
+            const evLink = `alleven://myEvent/${events[e]._id}`;
             if (events[e].participants[v].notifEvent) {
               notifEvent.emit(
                 "send",
@@ -928,8 +879,8 @@ class EventService {
                   user: events[e].participants[v].user._id,
                   type: "confirm_come",
                   message: `Событие ${events[e].name}, начнется через 1 час. Если вы пойдете, не забудьте поделиться впечатлениями!`,
-                  categoryIcon: events[e].category.avatar,
-                  createId: events[e]._id,
+                  // categoryIcon: events[e].category.avatar,
+                  eventId: events[e]._id,
                 })
               );
             }
@@ -938,10 +889,10 @@ class EventService {
               date_time: ev_st_time,
               user: events[e].participants[v].user._id,
               type: "confirm_come",
-              createId: events[e]._id,
+              eventId: events[e]._id,
               message: `Событие ${events[e].name}, начнется через 1 час. Если вы пойдете, не забудьте поделиться впечатлениями!`,
               // type: "Событие началось",
-              categoryIcon: events[e].category.avatar,
+              // categoryIcon: events[e].category.avatar,
               link: evLink,
             });
           }
@@ -962,7 +913,7 @@ class EventService {
             !events[e].situation === "passed"
           ) {
             let msg = `Оцените прошедшее событие ${events[e].name}`;
-            const evLink = `alleven://eventDetail/${events[e]._id}`;
+            const evLink = `alleven://myEvent/${events[e]._id}`;
             await this.NotificationService.store({
               type: "message",
               link: evLink,
@@ -970,9 +921,9 @@ class EventService {
               status: 2,
               message: msg,
               user: events[e].participantsSpot[p]._id.toString(),
-              event_situation: "passed",
-              categoryIcon: events[e].category.avatar,
-              createId: events[e]._id,
+              situation: "passed",
+              // categoryIcon: events[e].category.avatar,
+              eventId: events[e]._id,
             });
             if (events[e].participantsSpot[p].notifEvent) {
               notifEvent.emit(
@@ -984,9 +935,9 @@ class EventService {
                   date_time: new Date().toLocaleString(),
                   type: "message",
                   message: msg,
-                  event_situation: "passed",
-                  categoryIcon: events[e].category.avatar,
-                  createId: events[e]._id,
+                  situation: "passed",
+                  // categoryIcon: events[e].category.avatar,
+                  eventId: events[e]._id,
                 })
               );
             }

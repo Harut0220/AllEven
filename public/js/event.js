@@ -33,7 +33,6 @@ function burgerMenu(icon) {
   }
   
   let imgHeart = '<img style="margin-bottom:-2px" src="./clients/heart.svg" />';
-  // margin-bottom: -2px;
   let obj = [
     {
       id: 1,

@@ -27,13 +27,13 @@ meetingRouter.post(
 
 // meetingRouter.post("/single/:id",meetingController.single)
 
-meetingRouter.post("/add", newAuthJWT, meeting, meetingController.addMeeting);
+meetingRouter.post("/add", newAuthJWT, meeting, meetingController.addMeeting);//notif+
 
 meetingRouter.post(
   "/add/participant",
   newAuthJWT,
   meetingController.addParticipant
-);
+);//notif+
 
 meetingRouter.put("/edit/:id", isEmpParamObjId, meetingController.editMeeting);
 
@@ -46,15 +46,15 @@ meetingRouter.get(
   meetingController.single
 );
 
-meetingRouter.post("/add/favorite", newAuthJWT, meetingController.addFavorit);
+meetingRouter.post("/add/favorite", newAuthJWT, meetingController.addFavorit);//notif+
 
-meetingRouter.post("/add/comment", newAuthJWT, meetingController.addComment);
+meetingRouter.post("/add/comment", newAuthJWT, meetingController.addComment);//notif+
 
-meetingRouter.post("/add/rating", newAuthJWT, meetingController.addRating);
+meetingRouter.post("/add/rating", newAuthJWT, meetingController.addRating);//notif+
 
-meetingRouter.post("/comment/like", newAuthJWT, meetingController.commentLike);
+meetingRouter.post("/comment/like", newAuthJWT, meetingController.commentLike);//notif+
 
-meetingRouter.post("/like", newAuthJWT, meetingController.like);
+meetingRouter.post("/like", newAuthJWT, meetingController.like);//notif+
 
 // meetingRouter.get("/page",meetingController.index)
 
@@ -68,19 +68,19 @@ meetingRouter.post(
   "/add/participantSpot",
   newAuthJWT,
   meetingController.participantSpot
-);
+);//notif+
 
 meetingRouter.post(
   "/comment/answer",
   newAuthJWT,
   meetingController.commentAnswer
-);
+);//notif+
 
 meetingRouter.post(
   "/comment/answer/like",
   newAuthJWT,
   meetingController.commentAnswerLike
-);
+);//notif+
 
 meetingRouter.delete("/delete/comment", meetingController.deleteComment);
 
@@ -99,7 +99,7 @@ meetingRouter.post(
   "/impression-images/store",
   newAuthJWT,
   meetingController.impressionImagesStore
-);
+);//notif+
 
 meetingRouter.get(
   "/my/meeting/impressions",
@@ -108,4 +108,6 @@ meetingRouter.get(
 );
 
 meetingRouter.get("/my/impressions",newAuthJWT, meetingController.myImpressions);
+
+meetingRouter.post("/in_place",authenticateJWT,meetingController.in_place)
 export default meetingRouter;

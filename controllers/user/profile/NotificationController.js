@@ -3,7 +3,7 @@ import EventCategoryService from "../../../services/EventCategoryService.js";
 import FeedbackService from "../../../services/FeedbackService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import Notification from "../../../models/Notification.js";
-import moment from "moment";
+import moment from "moment-timezone";
 
 class NotificationController{
 

@@ -4,7 +4,7 @@ import NotificationService from "../../../services/NotificationService.js";
 import EventLike from "../../../models/event/EventLike.js";
 import Event from "../../../models/event/Event.js";
 import jwt from "jsonwebtoken";
-import moment from "moment";
+import moment from "moment-timezone";
 import Notification from "../../../models/Notification.js";
 
 class LikeController {
@@ -35,7 +35,7 @@ class LikeController {
   //     }
 
   //     if(!evEx && event.owner){
-  //         const evLink = `alleven://eventDetail/${event._id}`;
+  //         const evLink = `alleven://myEvent/${event._id}`;
   //         const msg = `${userName} ${userSurname} нравится ваше событие ${event.name}`;
   //         const notif = await this.NotificationService.store({type:'message',date_time:new Date(),status:2,message:msg,user:event.owner._id.toString(),link:evLink,notif_type:'Лайк', categoryIcon: event.category.avatar, event: event._id})
   //         notifEvent.emit('send',event.owner._id.toString(),JSON.stringify({type:'message',date_time:new Date(),message:msg,link:evLink,notif_type:'Лайк', categoryIcon: event.category.avatar}));
@@ -66,45 +66,56 @@ class LikeController {
         )
           .populate({ path: "owner", select: "_id notifEvent" })
           .populate("category");
-          const evLink = `alleven://eventDetail/${id}`;
+
+        if (user.id !== event.owner._id.toString()) {
+          const evLink = `alleven://myEvent/${id}`;
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: event.owner._id.toString(),
             type: "like",
-            message: `Пользователь ${user.name} поставил лайк событию ${event.name}.`,
-            createId: event._id,
-            categoryIcon: event.category.avatar,
+            message: `Пользователь ${user.name} поставил лайк услугу ${event.name}.`,
+            eventId: event._id,
             link: evLink,
           };
           const nt = new Notification(dataNotif);
           await nt.save();
-        if (event.owner.notifEvent) {
-
-          notifEvent.emit(
-            "send",
-            event.owner._id.toString(),
-            JSON.stringify({
-              type: "like",
-              createId: event._id,
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${user.name} поставил лайк событию ${event.name}.`,
-              categoryIcon: event.category.avatar,
-              link: evLink,
-            })
-          );
+          if (event.owner.notifEvent) {
+            notifEvent.emit(
+              "send",
+              event.owner._id.toString(),
+              JSON.stringify({
+                type: "like",
+                eventId: event._id,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `Пользователь ${user.name} поставил лайк услугу ${event.name}.`,
+                link: evLink,
+              })
+            );
+          }
         }
-        return res.json({ status: "success", message: "liked",likes:event.likes });
+
+        return res.json({
+          status: "success",
+          message: "liked",
+          likes: event.likes,
+        });
       } else {
         await EventLike.findByIdAndDelete(neLike._id);
-        const event=await Event.findByIdAndUpdate(id, { $pull: { likes: neLike._id } },  { new: true });
-        return res.json({ status: "success", message: "deleted",likes:event.likes });
+        const event = await Event.findByIdAndUpdate(
+          id,
+          { $pull: { likes: neLike._id } },
+          { new: true }
+        );
+        return res.json({
+          status: "success",
+          message: "deleted",
+          likes: event.likes,
+        });
       }
     } else {
       return res.json({ status: "ERROR", message: "Event id is required" });
     }
-
-   
   };
 }
 

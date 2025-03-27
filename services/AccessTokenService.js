@@ -36,9 +36,7 @@ class AccessTokenService{
 
             if(fcm_token){
                 if(!user.fcm_token.includes(fcm_token)){
-                    const fcmArray=[fcm_token]
-                    fcmArray.push()
-                    user.fcm_token=fcmArray;
+                    user.fcm_token.push(fcm_token);
                     await user.save();
                 }
             }

@@ -7,12 +7,12 @@ const authenticateJWT = (req, res, next) => {
 
     if (authHeader) {
         const token = authHeader.split(' ')[1];
-
+        
         jwt.verify(token, process.env.API_TOKEN, async (err, user) => {
             if (err) {
                 return res.sendStatus(403);
             }
-
+            
             let u = await User.findById(user.id).populate("roles")
             if(u){
                 user.name = u.name;

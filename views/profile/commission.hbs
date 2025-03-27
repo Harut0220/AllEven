@@ -43,17 +43,14 @@
       <script src="/js/axios.js"></script>
       <script>
 
-      // Show the modal
  function buttonFunc() {
-    // Տպում barev
     const modal=document.querySelector('.modal');
   modal.style.display = 'flex';
  
-    // 10 վայրկյան անց form-ը ուղարկելու ֆունկցիան
     setTimeout(() => {
-      const form = document.getElementById('eventForm'); // Վերցնում ենք form-ը
-      form.submit(); // Ուղարկում ենք form-ը
-    }, 1000); // 10000 միլիվայրկյան = 10 վայրկյան
+      const form = document.getElementById('eventForm'); 
+      form.submit(); 
+    }, 1000); 
   }
  
  

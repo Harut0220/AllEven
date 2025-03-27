@@ -18,6 +18,7 @@ import { empObj, isEmpParamObjId } from "../../../middlewares/isEmpty.js";
 import authenticateJWT from "../../../middlewares/authJWT.js";
 import authenticateJWTWithoutCheck from "../../../middlewares/authJWTwithoutCheck.js";
 import newAuthJWT from "../../../middlewares/newAuthJWT.js";
+import InPlaceController from "../../../controllers/api/event/InPlaceController.js";
 const eventRoutes = Router();
 eventRoutes.post("/notif/opportunity", newAuthJWT, EventController.opportunity);
 eventRoutes.get(
@@ -45,16 +46,16 @@ eventRoutes.put("/edit/:id", isEmpParamObjId, empObj, EventController.edit);
 
 eventRoutes.get("/near/:id", isEmpParamObjId, EventController.nearEvent);
 
-eventRoutes.post("/favorite", newAuthJWT, FavoriteController.favorite);
+eventRoutes.post("/favorite", newAuthJWT, FavoriteController.favorite);//notif+
 
-eventRoutes.post("/like", newAuthJWT, likeDislike, LikeController.like);
+eventRoutes.post("/like", newAuthJWT, likeDislike, LikeController.like);//notif+
 
 eventRoutes.post(
   "/add/comment",
   newAuthJWT,
   comment,
   CommentController.addComment
-);
+);//notif+
 
 eventRoutes.delete("/comment/delete", CommentController.deleteComment);
 
@@ -63,12 +64,12 @@ eventRoutes.post(
   newAuthJWT,
   commentLike,
   CommentController.commentLike
-);
+);//notif+
 eventRoutes.post(
   "/comment/answer",
   newAuthJWT,
   CommentController.commentAnswer
-);
+);//notif+
 
 eventRoutes.delete(
   "/comment/answer/delete",
@@ -79,8 +80,8 @@ eventRoutes.post(
   "/comment/answer/like",
   newAuthJWT,
   CommentController.commentAnswerLike
-);
-eventRoutes.post("/add/rating", newAuthJWT, rating, RatingController.addRating);
+);//notif+
+eventRoutes.post("/add/rating", newAuthJWT, rating, RatingController.addRating);//notif+
 
 eventRoutes.get("/events", EventController.upcoming); //kilometr motikic heru
 
@@ -113,13 +114,13 @@ eventRoutes.post(
   EventCategoryController.store
 );
 // //authenticateJWT,
-eventRoutes.get("/like", authenticateJWT, LikeController.index);
+// eventRoutes.get("/like", authenticateJWT, LikeController.index);
 eventRoutes.post(
   "/impression-images/store",
   newAuthJWT,
   ImpressionImage,
   EventController.ImpressionImage
-);
+);//notif+
 
 eventRoutes.get(
   "/my/event/impressions",
@@ -139,9 +140,9 @@ eventRoutes.get("/my/impressions", newAuthJWT, EventController.myImpressions);
 // //authenticateJWT,
 // eventRoutes.post('/view',authenticateJWT,likeDislike,ViewController.store);
 // //authenticateJWT,
-// eventRoutes.get('/in_place',authenticateJWT,InPlaceController.index);//spotPartisipant
-// //authenticateJWT,
-// eventRoutes.post('/in_place',authenticateJWT,likeDislike,InPlaceController.store);//spot participant
+eventRoutes.get('/in_place',authenticateJWT,InPlaceController.index);//spotPartisipant
+// //authenticateJWT,likeDislike,
+eventRoutes.post('/in_place',authenticateJWT,InPlaceController.store);//spot participant
 // //authenticateJWT,
 // eventRoutes.post('/rating/store',authenticateJWT,rating,RatingController.store);
 // //authenticateJWT,

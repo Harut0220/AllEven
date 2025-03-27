@@ -5,7 +5,8 @@ import EventFavorites from "../../../models/event/EventFavorites.js";
 import Event from "../../../models/event/Event.js";
 import jwt from "jsonwebtoken";
 import User from "../../../models/User.js";
-import moment from "moment";
+import moment from "moment-timezone";
+import Notification from "../../../models/Notification.js";
 class FavoriteController {
   constructor() {
     this.EventService = new EventService();
@@ -34,7 +35,7 @@ class FavoriteController {
     const userSurname = req.user.surname ? req.user.surname : "";
 
     if (!evEx && event.owner) {
-      const evLink = `alleven://eventDetail/${event._id}`;
+      const evLink = `alleven://myEvent/${event._id}`;
       const msg = `Пользователь ${userName} ${userSurname} добавил в «избранное» ваше событие ${event.name}`;
       const notif = await this.NotificationService.store({
         type: "message",
@@ -44,12 +45,12 @@ class FavoriteController {
         user: event.owner._id.toString(),
         link: evLink,
         notif_type: "Добавлено в избранное",
-        categoryIcon: event.category.avatar,
-        createId: event._id,
+        // categoryIcon: event.category.avatar,
+        eventId: event._id,
       });
-    //   if(event.owner.notifEvent){
+      //   if(event.owner.notifEvent){
 
-    //   }
+      //   }
       notifEvent.emit(
         "send",
         event.owner._id.toString(),
@@ -57,10 +58,10 @@ class FavoriteController {
           type: "message",
           date_time: new Date(),
           message: msg,
-          createId: event._id,
+          eventId: event._id,
           link: evLink,
           notif_type: "Добавлено в избранное",
-          categoryIcon: event.category.avatar,
+          // categoryIcon: event.category.avatar,
         })
       );
     }
@@ -86,14 +87,22 @@ class FavoriteController {
         eventId: id,
       });
       if (isFavorite) {
-       const event= await Event.findByIdAndUpdate(id, {
-          $pull: { favorites: isFavorite._id },
-        } , { new: true });
+        const event = await Event.findByIdAndUpdate(
+          id,
+          {
+            $pull: { favorites: isFavorite._id },
+          },
+          { new: true }
+        );
         await User.findByIdAndUpdate(user.id, {
           $pull: { event_favorites: id },
         });
         await EventFavorites.findByIdAndDelete(isFavorite._id);
-        return res.json({ status: "success", message: "remove favorite",favorites:event.favorites });
+        return res.json({
+          status: "success",
+          message: "remove favorite",
+          favorites: event.favorites,
+        });
       } else {
         const favorite = new EventFavorites({
           user: user.id,
@@ -104,13 +113,53 @@ class FavoriteController {
         await User.findByIdAndUpdate(user.id, {
           $push: { event_favorites: id },
         });
-       const event= await Event.findByIdAndUpdate(id, {
-          $push: { favorites: favorite._id },
-        },
-        { new: true }
-      );
+        const event = await Event.findByIdAndUpdate(
+          id,
+          {
+            $push: { favorites: favorite._id },
+          },
+          { new: true }
+        ).populate("owner");
 
-        return res.json({ status: "success", message: "add favorite",favorites:event.favorites });
+
+        if(user.id !== event.owner._id.toString()){
+          const evLink = `alleven://myEvent/${id}`;
+          const dataNotif = {
+            status: 2,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            user: event.owner._id.toString(),
+            type: "Присоединение",
+            navigate: true,
+            message: `У вас новое сообщение`,
+            eventId: id,
+            link: evLink,
+          };
+          const nt = new Notification(dataNotif);
+          await nt.save();
+          if (event.owner.notifEvent) {
+            // const UserDb = await User.findById(user.id);
+  
+            notifEvent.emit(
+              "send",
+              event.owner._id.toString(),
+              JSON.stringify({
+                type: "Присоединение",
+                eventId: id,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `У вас новое сообщение`,
+                navigate: true,
+                link: evLink,
+              })
+            );
+          }
+        }
+
+
+        return res.json({
+          status: "success",
+          message: "add favorite",
+          favorites: event.favorites,
+        });
       }
     } else {
       return res.json({ status: "error", message: "error" });

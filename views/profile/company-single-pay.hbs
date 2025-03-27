@@ -10,45 +10,29 @@
             <div class="eventHeadFirstPart">
               <p><a href="/">Главная</a> &gt; <a href="/admin/profile/company/page">Услуга</a>
             </div>
-            {{!-- <div id="eventHeadSecondPart" onclick="toggleModal('filter','flex')">
-              Фильтр
-              <img src="/images/staticimg/Group(10).svg">
-            </div> --}}
           </div>
-           
           <div id="eventBody">
-            {{!-- <div id="eventBodyHead">
-              <p>Топ</p>
-              <img src="/images/staticimg/delete 1.svg">
-            </div> --}}
             <div id="changeEvMainDiv">
             <div id="changeEvMainDivContainer1">
               <div id="changeEvBox_header">
                 <h4>онлайн оплата</h4>
-
                 <div id="allowDiv">
-                 
                   <button class="buttonAllow whiteBtn" onclick="toggleModal('denyDiv','block')">
                     Отклонить
                   </button>
                   <form action="/admin/profile/company/resolve/{{getValue event "_id"}}" method="POST" enctype="multipart/form-data" id="eventForm">
-                  
                   <button type="button" class="buttonAllow" onclick="buttonFunc()">
                     {{#or (eq (getValue event "onlinePay") true) (eq (getValue event "onlinePay") false)}}
-    Одобрить
-{{else}}
-    Изменить
-{{/or}}
-
-                {{!-- {{#if (getValue event "status")}}Изменить{{else}}Одобрить{{/if}} --}}
+                        Одобрить
+                    {{else}}
+                        Изменить
+                    {{/or}}
                   </button>
                 </div>
               </div>
             </div>
             <hr>
-
             <div id="changeEvMainDivContainer2">
-               
               <div class="changeEvBox">
                 <div class="userDiv">
                   <img src="/{{getValue userOwner "avatar"}}" alt="" class="user_image">
@@ -59,13 +43,8 @@
                 <p class="user_data">{{getValue userOwner "phone_number"}}</p>
                 <p class="user_data">{{getValue userOwner "email"}}</p>
                 </div>
-
                 </div>
-
-
-                
                 <div class="changeEvBoxCont">
-
                   <input type="text" class="inputAllow" placeholder="Категория" value="{{getValue eventCat "name"}}" name="name">
                   <input type="text" class="inputAllow" placeholder="Название событий" value="{{getValue event 'companyName'}}" name="name">
                   <input type="text" class="inputAllow" placeholder="Категория" value="{{getValue event "web"}}" name="name"><br>
@@ -80,26 +59,15 @@
                   </div>
                   <br>
                      <p>Фото интерьеров</p><br>
-                                     <div id="pics1">
-                                       
+                      <div id="pics1">
                     {{#if event}}
-  {{#optionsFromArrays images "_id" "url" }}
-    
-       <div class="changeEvDiv" style="background-image: url('http://localhost:3000/{{url}}')">
-       <img src="/images/pics/GroupX.svg" class="removeButton" onclick="removeimage(this)" attr_id="{{value}}">
-    </div>
-  {{/optionsFromArrays}}
+                        {{#optionsFromArrays images "_id" "url" }}
+                          
+                             <div class="changeEvDiv" style="background-image: url('http://localhost:3000/{{url}}')">
+                             <img src="/images/pics/GroupX.svg" class="removeButton" onclick="removeimage(this)" attr_id="{{value}}">
+                          </div>
+                        {{/optionsFromArrays}}
                     {{/if}}
-                    {{!-- <div
-                      class="changeEvDiv"
-                    >
-                      <img src="/images/pics/GroupX.svg" />
-                    </div>
-                    <div
-                      class="changeEvDiv"
-                    >
-                      <img src="/images/pics/GroupX.svg" />
-                    </div>  --}}
                   </div><br>
                   <p>Контакти</p>
                 {{#optionsPhoneArrays phone_numbers "number" "telegram" "whatsApp"}}
@@ -122,7 +90,6 @@
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M18 9.68945C18 10.2417 17.5523 10.6895 17 10.6895L1 10.6895C0.447714 10.6895 -6.78525e-08 10.2417 -4.37114e-08 9.68945C-1.95703e-08 9.13717 0.447714 8.68945 1 8.68945L17 8.68945C17.5523 8.68945 18 9.13717 18 9.68945Z" fill="#A3A3A3"/>
                           </svg>
                       </div>
-
                       {{/if}}
                       {{#if whats}}
                       <div class="wats_up_icon">
@@ -162,8 +129,6 @@
                   <span>Рабочее время</span>
                 </div>
                 <input type="text" class="timeInputAllow"  value="{{getValue event "startHour"}}-{{getValue event "endHour"}}" name="name">
-
-<!-- Or, if you want to display each image separately: -->
                 </div>
               </div>
               <div class="service_parent" >
@@ -174,12 +139,9 @@
                       <p class="service_desc">{{desc}}</p>
                       <p>Стоимость услуги</p>
                       <p class="inputAllow">{{value}} ₽</p>
-                      {{!-- <p class="inputAllow">I{{id}}</p> --}}
                       <p>{{#if images}}{{{images}}}{{else}}No Images{{/if}}</p>
                    </div>
-
                 {{/optionsFromArray}}
-                  
               </div>
               {{!-- <div class="changeEvBox">
                 {{!-- <div class="allEvBox_box2">

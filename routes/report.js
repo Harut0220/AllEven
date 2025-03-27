@@ -6,11 +6,11 @@ import authCookieJWT from "../middlewares/authCookieJWT.js";
 import authenticateJWT from "../middlewares/authJWT.js";
 
 
-reportRoutes.get('/',authCookieJWT,ReportController.list);
+reportRoutes.get('/report/',authCookieJWT,ReportController.list);
 
-reportRoutes.get('/:report_type/:id',ReportController.index);
-
-reportRoutes.post('/',storeReport,ReportController.mobileStore);
+reportRoutes.get('/report/:report_type/:id',ReportController.index);
+//storeReport,
+reportRoutes.post('/report',ReportController.mobileStore);
 
 
 export {reportRoutes};

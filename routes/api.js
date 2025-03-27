@@ -27,8 +27,12 @@ import companyRouter from "./prefix/api/company.js";
 import meetingRouter from "./prefix/api/meeting.js";
 import serviceRouter from "./prefix/api/service.js";
 import newAuthJWT from "../middlewares/newAuthJWT.js";
+import payRouter from "./prefix/api/payRouter.js";
+import { reportRoutes } from "./report.js";
 
 const apiRoutes = Router();
+
+apiRoutes.use(reportRoutes)
 
 apiRoutes.get("/", (req, res) => {
   res.json({ name: "tesName" });
@@ -36,7 +40,6 @@ apiRoutes.get("/", (req, res) => {
 
 apiRoutes.get("/user/destroy/:token", async (req, res) => {
   const token = req.params.token;
-  console.log(token)
   if (!token) {
     res.status(400).send({ success: false, message: "Tokenis required" });
   }
@@ -93,13 +96,15 @@ apiRoutes.get(
   NotificationController.opportunity
 );
 
-apiRoutes.use("/event", eventRoutes);
+apiRoutes.use("/event", eventRoutes);//notif+
 
 apiRoutes.use("/company", companyRouter);
 
 apiRoutes.use("/service", serviceRouter);
 
-apiRoutes.use("/meeting", meetingRouter);
+apiRoutes.use("/meeting", meetingRouter);//notif+
+
+apiRoutes.use("/pay",payRouter)
 
 apiRoutes
   .route("/document")
@@ -125,6 +130,8 @@ apiRoutes.delete(
   authenticateJWT,
   NotificationController.destroyOne
 );
+
+apiRoutes.delete("/notifications/destroy", authenticateJWT, NotificationController.destroy);
 
 apiRoutes
   .route("/upload_single_file")

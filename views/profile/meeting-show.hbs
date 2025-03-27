@@ -8,18 +8,60 @@
         .menuIconImg{
     width: 15px;
     filter: brightness(0) invert(1);}
+        .center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
+#imageModal{
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.391);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.removeButton{
+  width: 20px;
+  height: 20px;
+}
+
+.imgaeModal_block{
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  margin: 0 auto;
+  position: relative;
+}
+#modalImage{
+width: 100%;
+    height: 100%;}
+#div_x{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+#closeModal{
+    font-size: 30px;
+    padding: 10px;
+    position: absolute;
+    right: 5px;
+    top: 0;
+    cursor: pointer;
+}
+
 </style>
 {{! ========================= }}
 <link rel="stylesheet" href="/styles/organizer.css" />
 <link rel="stylesheet" href="/styles/visitor.css" />
 <link rel="stylesheet" href="/styles/event-show.css">
-<style>
-    .center {
-  margin: auto;
-  width: 50%;
-  padding: 10px;
-}
-</style>
+
 <div class="Header">
   <div id="allEvents">
     <div class="eventMainBody">
@@ -32,7 +74,7 @@
         </div>
       </div>
       <div id="allEvMainDiv">
-        <div class="allEvBox">
+        <div class="allEvBox" id="allEvBox_meet">
           <div id="allEvBox_header">
             <h4>Встреча</h4>
             {{event.status}}
@@ -47,12 +89,15 @@
 
           <hr />
           <div class="allEvBoxCont">
-            <div id="pics1">
+            <div id="pics1" class="pics1_meet" style="padding: 6px; margin:12px -5px 5px" >
               {{#imagesFromMeeting images "_id" "path"}}
-              <img src="/{{ path }}" class="allEvImg" />
+              {{!-- <img src="/{{path}}" class="allEvImg" onclick="openImageModal('{{path}}')" /> --}}
+                    <div class="changeEvDiv" style="background-size:cover; padding:2px;cursor:pointer;background-image: url('/{{path}}')" onclick="openImageModal('{{path}}')">
+                      <svg onclick="removeimage(this)" attr_id="{{id}}" class="removeButton" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" fill="white"/></svg>
+                    </div>
               {{/imagesFromMeeting}}
             </div>
-            <div class="allEvBoxContDiv">
+            <div class="allEvBoxContDiv" id="allEvBoxContDiv_meet">
               <div id="boxPersonName">
                 <h6>{{getValue event "purpose"}}</h6>
                 <div id="emotions">
@@ -108,7 +153,7 @@
             </div>
           </div>
         </div>
-        <div class="allEvBox">
+        <div class="allEvBox allEvBox_meet" id="allEvBox_meet">
           <ul type="none" id="boxUl">
             <li class="boxLi a1 active" data-target="gallery">Галерея</li>
             <hr />
@@ -123,15 +168,21 @@
           <div
             id="gallery"
             class="allEvBoxCont ChangedAllEvBoxCont active"
-            style="overflow-y: hidden"
+            {{!-- style="overflow-y: hidden" --}}
           >
+            {{#meetingImpressionImages impressionImages}}
             <div id="photos" class="photos">
-              {{#imagesFromMeeting images "_id" "path"}}
-              <div class="emptyPhotosImg">
-                <img src="/{{ path }}" class="img" />
+              <div class="user_imp_div">
+              <img style="cursor: pointer;" src="/{{user_avatar}}" alt="" id="user_avatar" onclick="openImageModal('{{user_avatar}}')">
+              <span>{{user_name}} {{user_surname}}</span>
               </div>
-              {{/imagesFromMeeting}}
+              {{#ImpressionImagesMeet paths}}
+              <div class="emptyPhotosImg">
+                <img src="/{{ path }}" style="cursor: pointer;" class="img_imp" onclick="openImageModal('{{path}}')"/>
+              </div>
+              {{/ImpressionImagesMeet}}
             </div>
+            {{/meetingImpressionImages}}
           </div>
           <div
             id="comments"
@@ -143,10 +194,10 @@
               {{#ArrayFromComments comments "text" "date" "user" "likes"}}
               <div class="comment-box">
                 <div class="content">
-                  <img src="/{{getValue user "avatar"}}"  width="50px" height="50px" style="border-radius: 100px;" />
+                  <img src="/{{getValue user "avatar"}}" style="cursor: pointer;" onclick="openImageModal('{{getValue user "avatar"}}')"  width="50px" height="50px" style="border-radius: 100px;" />
                   <div class="c">
                     <div class="b">
-                      <p class="text">{{getValue user "name"}} {{getValue user "surname"}}</p>
+                      <p style="cursor: pointer;" class="text">{{getValue user "name"}} {{getValue user "surname"}}</p>
                       <span class="span2"
                         >{{likes.length}}
                         <img src="/images/staticimg/heart.svg" />
@@ -157,10 +208,6 @@
                     </p>
                   </div>
                 </div>
-                {{!-- <div class="under-box">
-                  <span class="tm">30 мин.</span>
-                  <div class="del">Удалить</div>
-                </div> --}}
               </div>
               {{/ArrayFromComments}}
             </div>
@@ -170,22 +217,21 @@
             class="allEvBoxCont ChangedAllEvBoxCont"
             style="overflow-y: hidden"
           >
-            <p id="p1" class="p1">Пришли на событие: {{paricipantsLength}}</p>
+            <p id="p1" class="p1">Пришли на событие: {{participantSpot.length}}</p>
             <div id="photos" class="clients">
+              {{#participantsArray participantSpot "user"}}
+              <div class="visiter">
+                <img style="cursor: pointer;" src="/{{getValue user "avatar"}}" onclick="openImageModal('{{getValue user "avatar"}}')"/>
+                <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
+              </div>
+              {{/participantsArray}}
+              <p class="p1" id="p10">Собирались посетить: {{participants.length}}</p>
               {{#participantsArray participants "user"}}
               <div class="visiter">
-                <img src="/{{getValue user "avatar"}}" />
+                <img style="cursor: pointer;" src="/{{getValue user "avatar"}}" onclick="openImageModal('{{getValue user "avatar"}}')"/>
                 <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
               </div>
               {{/participantsArray}}
-              <p class="p1" id="p10">Собирались посетить: {{views.length}}</p>
-              {{#participantsArray views "user"}}
-              <div class="visiter">
-                <img src="/{{getValue user "avatar"}}" />
-                <div class="name">{{getValue user "name"}} {{getValue user "surname"}}</div>
-              </div>
-              {{/participantsArray}}
-
             </div>
           </div>
         </div>
@@ -193,5 +239,62 @@
     </div>
   </div>
 </div>
+      <div id="imageModal" style="display: none;">
+           <div class="imgaeModal_block">
+                <button id="closeModal" style="background-color: aliceblue;border:none" onclick="closeFunc()"  >
+                x
+              </button>
+              <div id="div_x">
+                <img id="modalImage"  src="" />
+              </div>
+           </div>
+      </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script src="/js/helper.js"></script>
+<script src="/js/axios.js"></script>
+
+<script>
+        function removeimage(el){
+        let id = el.getAttribute('attr_id');
+        el.parentNode.remove()
+        axios.delete(`/admin/profile/meet/image/${id}`).then((d) => {});
+      }
+
+
+
+    document.querySelectorAll('.user_avatar').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+
+
+      document.querySelectorAll('.changeEvDiv').forEach(el=>{
+        el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+      })
+
+    const imgModal=document.getElementById('modalImage')
+
+  function openImageModal(path){
+    imgModal.src=`/${path}`
+
+  }
+
+  function closeFunc(e){
+          const imageModal=document.getElementById('imageModal')
+        imageModal.style.display='none'
+  }
+</script>

@@ -10,20 +10,11 @@ const signup = async (req,res,next)=>{
         // "phone_number": "required|integer",
         "name": "required|string",
         "surname":"required|string",
-        "imagePath":"required|string",
+        // "imagePath":"required|string",
         // "role": "required|string",
     };
     const {expiration_token} = req.body;
     
-    // const user = await User.findOne({"phone_number":req.body.phone_number});
-
-    // if(user){
-    //     res.status(412)
-    //             .send({
-    //                 success: false,
-    //                 message: 'The phone_number has already been taken',
-    //             });
-    // }
 
     await validator(req.body, validationRule, {}, (err, status) => {
         if (!status) {
@@ -51,7 +42,7 @@ const signin = async (req,res,next)=>{
     const validationRule = {
         "phone_number": "required|integer",
         "password": "required|integer",
-        // "fcm_token": "required|string",
+        "fcm_token": "required",
     };
 
 

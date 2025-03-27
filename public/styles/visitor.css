@@ -188,8 +188,8 @@ body {
   width: 100%;
   display: flex;
   /* height: auto; */
-  min-height: calc(100vh - 64.6px);
-  overflow-y: hidden;
+  /* min-height: calc(100vh - 64.6px); */
+  /* overflow-y: hidden; */
 }
 .Header1 {
   width: 15%;
@@ -320,7 +320,7 @@ hr {
   flex-direction: column;
   padding: 10px;
   width: 49%;
-  height: 100%;
+  height: 1000px;
 }
 #allEvBox_header {
   display: flex;
@@ -346,10 +346,7 @@ hr {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: calc(100% - 39px);
-  /* margin-top: 20px; */
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* height: calc(100% - 39px); */
   padding: 0 5px 10px 0;
 }
 .allEvBoxContDiv {
@@ -357,9 +354,8 @@ hr {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  height: auto;
-  overflow-y: auto;
-  padding: 0 5px 10px 0;
+  height: 300px;
+  /* overflow-y: auto; */
 }
 #pics1 {
   display: flex;
@@ -481,7 +477,7 @@ a {
   flex-wrap: wrap;
   gap: 14px;
   justify-content: start;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   padding: 0 5px 15px 0;
 }
 .emptyPhotosImg {
@@ -498,10 +494,11 @@ a {
   width: 100%;
   height: 100%;
   cursor: pointer;
+  object-fit: cover;
 }
 .ChangedAllEvBoxCont {
   width: 92%;
-  overflow: visible;
+  /* overflow: visible; */
 }
 .p1 {
   font-weight: 400;
@@ -693,7 +690,7 @@ a {
   flex-wrap: wrap;
   gap: 14px;
   justify-content: start;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   padding: 0 5px 15px 0;
 }
 .emptyPhotosImg {
@@ -864,9 +861,9 @@ a {
   .clientsMainBody {
     margin-bottom: 10px;
   }
-  .allEvBox {
+  /* .allEvBox {
     width: 100%;
-  }
+  } */
 }
 
 @media (max-height: 440px) {
@@ -879,6 +876,7 @@ a {
   }
   #allEvents {
     overflow-y: auto;
+    /* margin-bottom:50px ; */
   }
 }
 
@@ -927,4 +925,8 @@ a {
   100% {
     top: -100%;
   }
+}
+
+#visitors{
+  overflow-y: auto;
 }
