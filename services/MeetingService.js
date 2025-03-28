@@ -341,15 +341,18 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
+
+
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-
+        
+        
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+        
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
 
@@ -472,17 +475,18 @@ const meetingService = {
       separatedEvents.upcoming.sort((a, b) => a.kilometr - b.kilometr);
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
+
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-
+        
+        
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
-          element.hour = true;
-        }
+        
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+          element.hour = true;        }
       }
       return {
         message: "success",
@@ -574,15 +578,17 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
+
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-
+        
+        
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+        
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
       }
@@ -691,15 +697,17 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
+
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-
+        
+        
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+        
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
 
@@ -2238,15 +2246,17 @@ const meetingService = {
           })
           .exec();
       }
+
       const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
       const eventTime = new Date(resultChanged1.date);
       const dateNow = new Date(timeMoscow);
-
+      
+      
       const timeDifference = eventTime - dateNow;
+      const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-      const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-      if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+      
+      if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
         resultChanged1.hour = true;
       }
       return { message: "success", data: resultChanged1 };

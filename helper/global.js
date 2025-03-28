@@ -508,6 +508,22 @@ const h = {
       })
       .join("");
   },
+  optionsFromArraysShare: (array, valueKey, textKey, options) => {
+    if (!Array.isArray(array)) {
+      return "";
+    }
+  
+    return array
+      .map((item, index) => {
+        const value = item[valueKey];
+        const url = item[textKey];
+        const first = index === 0; // First item in the array
+  
+        return options.fn({ value, url, index, first });
+      })
+      .join("");
+  },
+  
 
   //     optionsFromArrays:(array, valueKey, textKey, options)=> {
   //   if (!Array.isArray(array)) {
@@ -544,6 +560,21 @@ const h = {
         const id = item[valueKey];
         const path = item[textKey];
         return options.fn({ id, path });
+      })
+      .join("");
+  },
+  imagesFromMeetingShare: (array, valueKey, textKey, options) => {
+    if (!Array.isArray(array)) {
+      return "";
+    }
+  
+    // Generate <option> elements
+    return array
+      .map((item, index) => {
+        const id = item[valueKey];
+        const path = item[textKey];
+        const first = index === 0;
+        return options.fn({ id, path, index, first });
       })
       .join("");
   },

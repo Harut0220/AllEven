@@ -178,6 +178,31 @@ reedRouter.get("/fonts/:image", (req, res) => {
     res.status(404).send("Image not found");
   }
 })
+
+
+reedRouter.get("/public/images/pics/:image", (req, res) => {
+  const image = req.params.image;
+  const imagePath = path.join(__dirname,"..", "public", "images","pics", image);
+
+  // Check if the file exists
+  if (image && imagePath) {
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).send("Image not found");
+  }
+})
+reedRouter.get("/public/images/staticimg/:image", (req, res) => {
+  const image = req.params.image;
+  const imagePath = path.join(__dirname,"..", "public", "images","staticimg", image);
+
+  // Check if the file exists
+  if (image && imagePath) {
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).send("Image not found");
+  }
+})
+
 reedRouter.get("/categories/:imageCategory",async(req,res)=>{
   const imageCategory = req.params.imageCategory;
 

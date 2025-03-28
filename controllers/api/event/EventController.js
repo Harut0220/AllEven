@@ -744,10 +744,10 @@ class EventController {
     const dateNow = new Date(timeMoscow);
 
     const timeDifference = eventTime - dateNow;
+    const differenceInMinutes = timeDifference / 60000; 
 
-    const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
 
-    if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+    if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
       eventUpdate.hour = true;
     }
 
@@ -764,7 +764,9 @@ class EventController {
 
     const user = jwt.decode(token);
     let event = await this.EventService.store(req, user.id);
+    const lastDate=moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss")
 
+    await User.findByIdAndUpdate(user.id,{$set:{last_event_date:lastDate}})
     notifEvent.emit(
       "send",
       "ADMIN",
@@ -805,34 +807,36 @@ class EventController {
             for (let i = 0; i < eventDb.participants.length; i++) {
               const element = eventDb.participants[i].user;
               if (element.fcm_token[0]) {
-                  const evLink = `alleven://singleEvent/${eventDb._id}`;
-                  const date_time = moment.tz(process.env.TZ).format();
-                  const dataNotif = {
-                    status: 2,
-                    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                    user: element._id.toString(),
+                const evLink = `alleven://singleEvent/${eventDb._id}`;
+                const date_time = moment.tz(process.env.TZ).format();
+                const dataNotif = {
+                  status: 2,
+                  date_time: moment
+                    .tz(process.env.TZ)
+                    .format("YYYY-MM-DD HH:mm"),
+                  user: element._id.toString(),
+                  type: "confirm_come",
+                  navigate: true,
+                  message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                  categoryIcon: eventDb.category.avatar,
+                  eventId: eventDb._id.toString(),
+                  link: evLink,
+                };
+                const nt = new Notification(dataNotif);
+                await nt.save();
+                notifEvent.emit(
+                  "send",
+                  element._id.toString(),
+                  JSON.stringify({
                     type: "confirm_come",
-                    navigate:true,
+                    date_time,
+                    navigate: true,
+                    eventId: eventDb._id.toString(),
                     message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
                     categoryIcon: eventDb.category.avatar,
-                    eventId: eventDb._id.toString(),
                     link: evLink,
-                  };
-                  const nt = new Notification(dataNotif);
-                  await nt.save();
-                  notifEvent.emit(
-                    "send",
-                    element._id.toString(),
-                    JSON.stringify({
-                      type: "confirm_come",
-                      date_time,
-                      navigate: true,
-                      eventId: eventDb._id.toString(),
-                      message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                      categoryIcon: eventDb.category.avatar,
-                      link: evLink,
-                    })
-                  );
+                  })
+                );
                 // const evLink = `alleven://singleEvent/${eventDb._id}`;
                 // const dataNotif = {
                 //   status: 2,
@@ -1089,15 +1093,16 @@ class EventController {
           user: user.id,
           eventId: id,
         });
+
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(data.started_time);
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; 
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
 
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           data.hour = true;
         }
         if (isJoin) {
@@ -1165,16 +1170,16 @@ class EventController {
           user: user.id,
           eventId: id,
         });
-        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
+        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(data.started_time);
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
 
-        if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           data.hour = true;
         }
 
@@ -1252,15 +1257,17 @@ class EventController {
           ],
         })
         .exec();
+
       const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
       const eventTime = new Date(data.started_time);
       const dateNow = new Date(timeMoscow);
 
       const timeDifference = eventTime - dateNow;
+      const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-      const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
+      // Check if the event is within 1 hour before or 3 hours after
 
-      if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+      if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
         data.hour = true;
       }
 
@@ -1683,10 +1690,23 @@ class EventController {
           }
         }
         for (let z = 0; z < result.upcoming.length; z++) {
-          // const isJoin = await EventParticipants.findOne({
-          //   user: user.id,
-          //   eventId: result.upcoming[z]._id,
-          // });
+          const isJoin = await EventParticipants.findOne({
+            user: user.id,
+            eventId: result.upcoming[z]._id,
+          });
+          // const timeMoscow = moment
+          //   .tz(process.env.TZ)
+          //   .format("YYYY-MM-DD HH:mm");
+          // const eventTime = new Date(result.upcoming[z].started_time);
+          // const dateNow = new Date(timeMoscow);
+
+          // const timeDifference = eventTime - dateNow;
+
+          // const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
+
+          // if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+          //   result.upcoming[z].hour = true;
+          // }
           const timeMoscow = moment
             .tz(process.env.TZ)
             .format("YYYY-MM-DD HH:mm");
@@ -1694,10 +1714,11 @@ class EventController {
           const dateNow = new Date(timeMoscow);
 
           const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-          const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
+          // Check if the event is within 1 hour before or 3 hours after
 
-          if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             result.upcoming[z].hour = true;
           }
           // if (isJoin) {

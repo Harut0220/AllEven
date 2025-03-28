@@ -58,7 +58,7 @@ payRouter.get("/success/:id", async (req, res) => {
     user: companyDb.owner._id.toString(),
     type: "Записались на услуги",
     message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-    registerId: registerDb._id,
+    register: registerDb._id,
     serviceId: service._id,
     link: evLink,
   };
@@ -73,7 +73,7 @@ payRouter.get("/success/:id", async (req, res) => {
         serviceId: service._id,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         navigate: false,
-        registerId: registerDb._id,
+        register: registerDb._id,
         serviceId: service._id,
         message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
         link: evLink,

@@ -38,19 +38,12 @@
       <div class="allEvBox" style="width: 50%;">
         <div id="allEvBox_header">
           <h4>Услугa</h4>
-          <form
-            action="/admin/profile/company/online/resolve/{{getValue
-              event
-              '_id'
-            }}"
-            method="GET"
-            id="eventForm"
-          >
-            <input name="status" hidden value="1" />
+          <form action="/admin/profile/company/online/resolve/{{getValue event '_id'}}" method="POST" id="eventForm" enctype="multipart/form-data">
+            {{!-- <input name="status" hidden value="1" /> --}}
             <button
-              type="button"
+              type="submit"
               class="buttonAllow"
-              onclick="buttonFunc()"
+              {{!-- onclick="buttonFunc()" --}}
             >Подтвердить</button>
           </form>
         </div>

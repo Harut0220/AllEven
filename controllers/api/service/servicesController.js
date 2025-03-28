@@ -452,6 +452,7 @@ const servicesController = {
           type: "confirm_come",
           message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
           serviceId: service._id,
+          register:id,
           // categoryIcon: service.serviceId.images[0],
           link: evLink,
         };
@@ -466,6 +467,7 @@ const servicesController = {
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
               serviceId: service.serviceId._id,
+              register:id,
               // categoryIcon: service.serviceId.images[0],
               link: evLink,
             })

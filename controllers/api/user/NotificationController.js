@@ -102,14 +102,11 @@ class NotificationController {
         if (type[2] === "singleCompany") {
           // const eventDb=await companyModel.findById(el.serviceId)
           const register = await servicesRegistrations.findOne({
-            _id: el.serviceId,
+            _id: el.register,
             pay: true,
           });
-          if (register) {
-            await Notification.findByIdAndUpdate(el._id, {
-              $set: { confirmed: true },
-            });
-            el.confirmed = true;
+          if(register.status===1){
+            el.confirmed=true
           }
         }
       }

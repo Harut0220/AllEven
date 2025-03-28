@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles/bootstrap@5.3.0.css">
     <link rel="stylesheet" href="https://chatapi.trigger.ltd/Publi/manifest.json">
-    <title>{{title}}</title>
     <meta property="og:site_name" content="AllEven">
     <meta property="og:title" content="{{event.name}}" />
     <meta property="og:description" content="{{event.category.name}}">
@@ -15,8 +14,9 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:title" content="{{event.name}}">
     <meta name="twitter:description" content="{{event.category.name}}">
-    <meta name="twitter:image" content="/{{event.images.[0].name}}">
+    <meta name="twitter:image" content="https://chatapi.trigger.ltd/{{event.images.[0].name}}">
     <meta name="twitter:card" content="summary_large_image">
+    <title>{{title}}</title>
 </head>
     <body>
         <div class="container">
@@ -68,4 +68,17 @@
 
 
     </script>
-</html>
+
+
+{{! meta-tags.hbs partial }}
+<meta property="og:site_name" content="AllEven">
+<meta property="og:title" content="{{event.name}}" />
+<meta property="og:description" content="{{event.category.name}}">
+<meta property="og:image" itemprop="image" content="/{{imageHeader}}" />
+<meta property="og:image:secure_url" itemprop="image" content="/{{imageHeader}}" />
+<meta property="og:type" content="website" />
+
+<meta name="twitter:title" content="{{event.name}}">
+<meta name="twitter:description" content="{{event.category.name}}">
+<meta name="twitter:image" content="https://chatapi.trigger.ltd/{{event.images.0.name}}">
+<meta name="twitter:card" content="summary_large_image">

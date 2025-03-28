@@ -3,10 +3,11 @@ import ShareEventController from "../controllers/share/ShareEventController.js"
 import { isEmpParamObjId } from "../middlewares/isEmpty.js"
 
 const shareRoutes = Router()
-
-shareRoutes.get("/event/:id",isEmpParamObjId, ShareEventController.index)
-shareRoutes.get("/meeting/:id",isEmpParamObjId, ShareEventController.meetIndex)
-shareRoutes.get("/company/:id",isEmpParamObjId, ShareEventController.companyIndex)
-shareRoutes.get("/service/:id",isEmpParamObjId, ShareEventController.serviceIndex)
+//isEmpParamObjId,
+shareRoutes.get("/event/:id", ShareEventController.index)
+shareRoutes.get("/event/share/:id",ShareEventController.indexshare)
+shareRoutes.get("/meeting/share/:id", ShareEventController.meetIndex)
+shareRoutes.get("/company/share/:id", ShareEventController.companyIndex)
+shareRoutes.get("/service/:id", ShareEventController.serviceIndex)
 
 export default shareRoutes

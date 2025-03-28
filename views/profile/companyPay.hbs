@@ -82,12 +82,12 @@
                           <td class="td" {{#if (eq onlinePay 1)}} style="color: #59d815;"{{else if (eq onlinePay 3)}}style="color: red;"{{/if}}>{{name}}</td>
                           <td class="td" {{#if (eq onlinePay 1)}} style="color: #59d815;"{{else if (eq onlinePay 3)}}style="color: red;"{{/if}}>{{getNestedValue owner "name" }} {{getNestedValue owner "surname" }} </td>
                           <td class="td" {{#if (eq onlinePay 1)}} style="color: #59d815;"{{else if (eq onlinePay 3)}}style="color: red;"{{/if}}>
-                           
-                            {{#if onlinePay}}Одобрено
+                           {{#if (eq onlinePay 1)}}Hа модерации {{else if (eq onlinePay 3)}}Отклонено{{else}}Одобрено{{/if}}
+                            {{!-- {{#if onlinePay}}Одобрено
                             {{else}}Hа модерации 
                             {{!-- {{else if (eq status 2)}}Отклонено --}}
                             {{!-- {{else}}Отклонено --}}
-                            {{/if}}
+                            {{!-- {{/if}} --}} 
                             </td>
                           {{!-- <td class="td">{{lng situation "ru"}}</td> --}}
                           {{!-- <td class="td">{{startHour}}-{{endHour}}</td> --}}

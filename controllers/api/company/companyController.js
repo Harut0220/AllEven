@@ -205,7 +205,11 @@ const companyController = {
         //   obj.comments=null
         // }
         obj._id = like.companyId._id;
-        obj.url = like.companyId.images[0].name;
+        console.log(like.companyId,"like.companyId.");
+        console.log(like.companyId.images[0],"like.companyId.images[0]");
+        
+        
+        obj.url = like.companyId.images[0].url;
         obj.likes = like.companyId.likes.length;
         obj.favorites = like.companyId.favorites.length;
         obj.rating = like.companyId.ratingCalculated;
@@ -1169,7 +1173,8 @@ const companyController = {
       if (event.onlinePay == 3) {
         template += "-rejected";
       }
-
+      console.log(template,"template");
+      
       res.render(template, {
         layout: "profile",
         title: "Company Single",
@@ -1286,6 +1291,8 @@ const companyController = {
 
       const eventCats = await companyCategory.find();
       events.reverse();
+      console.log(events,"events");
+      
       res.render("profile/companyPay", {
         layout: "profile",
         title: "Company",

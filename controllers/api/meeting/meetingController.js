@@ -1010,6 +1010,8 @@ const meetingController = {
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {
         const result = await meetingService.addMeeting(meeting, user.id, phone);
+        const lastDate=moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss")
+        await User.findByIdAndUpdate(user.id,{$set:{last_meeting_date:lastDate}})
         const meetingDb = await meetingModel
           .findById(result[1]._id)
           .populate("images");
