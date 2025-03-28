@@ -67,8 +67,8 @@ class ShareEventController {
     //   meta: {
     //     title: event.name,
     //     description: event.description || "Check out this event on AllEven",
-    //     image: `https://chatapi.trigger.ltd/${event.images[0].name}`,
-    //     url: `https://chatapi.trigger.ltd/event/${req.params.id}`,
+    //     image: `https://alleven.ru/${event.images[0].name}`,
+    //     url: `https://alleven.ru/event/${req.params.id}`,
     //   },
     // });
 
@@ -134,8 +134,8 @@ class ShareEventController {
       meta: {
         title: event.name,
         description: event.description || "Check out this event on AllEven",
-        image: `https://chatapi.trigger.ltd/${event.images[0].name}`,
-        url: `https://chatapi.trigger.ltd/event/${req.params.id}`,
+        image: `https://alleven.ru/${event.images[0].name}`,
+        url: `https://alleven.ru/event/${req.params.id}`,
       },
     });
   };
