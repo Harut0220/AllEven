@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import Translator from "json-translation";
 import path from "path";
 import handlebars from "handlebars";

@@ -72,6 +72,52 @@ const meetingService = {
       data.upcoming = upcomPass.upcoming;
       data.passed = upcomPass.passed;
 
+      for (let i = 0; i < data.upcoming.length; i++) {
+        const element = data.upcoming[i];
+
+        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        const eventTime = new Date(element.date);
+        const dateNow = new Date(timeMoscow);
+
+        const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+          element.hour = true;
+        }
+
+        const findParticipant = await MeetingParticipants.findOne({
+          meetingId: element._id,
+          user,
+        });
+        if (findParticipant) {
+          element.joinStatus = 2;
+        }
+
+        const findParticipantSpot = await meetingParticipantSpot.findOne({
+          meetingId: element._id,
+          user,
+        });
+        if (findParticipantSpot) {
+          element.joinStatus = 3;
+        }
+
+        const isRating = await meetingRating.findOne({
+          meetingId: element._id,
+          user,
+        });
+        element.isRating = isRating ? true : false;
+        const findLike = await meetingLikes.findOne({
+          meetingId: element._id,
+          user,
+        });
+        element.isLike = findLike ? true : false;
+        const findFavorite = await meetingFavorit.findOne({
+          meetingId: element._id,
+          user,
+        });
+        element.isFavorite = findFavorite ? true : false;
+      }
       return { message: "success", data };
     } catch (error) {
       console.error(error);
@@ -253,6 +299,8 @@ const meetingService = {
     };
   },
   meetings: async (authHeader, longitude, latitude) => {
+    console.log(authHeader,"authHeader",longitude,"longitude",latitude,"latitude");
+    
     if (authHeader && longitude && latitude) {
       const token = authHeader.split(" ")[1];
       const userToken = jwt.decode(token);
@@ -306,16 +354,21 @@ const meetingService = {
           ],
         })
         .exec();
-
+        console.log(meetings,"meetings bolor@ ka");
+        
       function separateUpcomingAndPassed(events) {
         const now = new Date();
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
+          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  bolor@ ka");
+          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) bolor@ ka");
+          
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
+            
             upcoming.push(event);
           } else {
             passed.push(event);
@@ -341,17 +394,13 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
-
-
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-        
-        
+
         const timeDifference = eventTime - dateNow;
         const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
@@ -440,12 +489,15 @@ const meetingService = {
             },
           ],
         });
-
+        console.log(meetings,"meetings token chka");
+        
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
+          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  token@ chka");
+          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token@ chka");
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -479,14 +531,13 @@ const meetingService = {
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-        
-        
+
         const timeDifference = eventTime - dateNow;
         const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
-          element.hour = true;        }
+          element.hour = true;
+        }
       }
       return {
         message: "success",
@@ -495,8 +546,8 @@ const meetingService = {
       };
     } else if (
       !authHeader &&
-      longitude === "undefined" &&
-      latitude === "undefined"
+      !longitude &&
+      !latitude
     ) {
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
@@ -544,12 +595,15 @@ const meetingService = {
           ],
         })
         .exec();
-
+        console.log(meetings,"meetings vochmiban chka");
+        
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
+          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  vochmiban chka");
+          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) vochmiban chka");
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -578,16 +632,13 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
-
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-        
-        
+
         const timeDifference = eventTime - dateNow;
         const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
@@ -597,7 +648,7 @@ const meetingService = {
         upcoming: separatedEvents.upcoming,
         // passed: filter,
       };
-    } else if (authHeader && longitude && latitude) {
+    } else if (authHeader && !longitude && !latitude) {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const myLatitude = 55.7558;
@@ -663,11 +714,15 @@ const meetingService = {
       //   });
       //   meetings[i].isFavorite = findFavorite ? true : false;
       // }
+      console.log(meetings,"meetings token ka lon lan chka");
+      
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
+          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  token ka lon lan chka");
+          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token ka lon lan chka");
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -697,16 +752,13 @@ const meetingService = {
       for (let i = 0; i < separatedEvents.upcoming.length; i++) {
         const element = separatedEvents.upcoming[i];
 
-
         const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const eventTime = new Date(element.date);
         const dateNow = new Date(timeMoscow);
-        
-        
+
         const timeDifference = eventTime - dateNow;
         const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-        
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
         }
@@ -1068,7 +1120,7 @@ const meetingService = {
         );
       }
 
-      return { message: "Вас добавлен в список на место" };
+      return { success: true, message: "Вас добавлен в список на место" };
     } else {
       return { message: "Вас нет в списке участников" };
     }
@@ -1188,9 +1240,11 @@ const meetingService = {
     try {
       if (authHeader) {
         const token = authHeader.split(" ")[1];
-
+        
         const userToken = jwt.decode(token);
         const user = userToken.id;
+        console.log(user,"userId");
+
         const resDb = await meetingModel
           .find({ user, status: { $ne: 2 } })
           .populate({ path: "user", select: "-password" })
@@ -1215,6 +1269,9 @@ const meetingService = {
             ],
           })
           .exec();
+
+          console.log(resDb,"resDb");
+          
         let pastLikes;
         let pastComment;
         let view;
@@ -1285,11 +1342,17 @@ const meetingService = {
           const passed = [];
 
           events.forEach((event) => {
+            console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  myMeeting");
+            console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) myMeeting");
             if (
               event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
             ) {
+              console.log(event.purpose,"upcoming");
+
               upcoming.push(event);
             } else {
+              console.log(event.purpose,"passed");
+              
               passed.push(event);
             }
           });
@@ -1301,14 +1364,16 @@ const meetingService = {
         const filter = separatedEvents.passed.filter(
           (event) => event.status === 1
         );
-        let passed = [];
-        for (let i = 0; i < filter.length; i++) {
-          for (let j = 0; j < filter[i].participants.length; j++) {
-            if (filter[i].participants[j]._id.toString() === user) {
-              passed.push(filter[i]);
-            }
-          }
-        }
+        console.log(filter,"filter meetings");
+        
+        // let passed = [];
+        // for (let i = 0; i < filter.length; i++) {
+        //   for (let j = 0; j < filter[i].participants.length; j++) {
+        //     if (filter[i].participants[j]._id.toString() === user) {
+        //       passed.push(filter[i]);
+        //     }
+        //   }
+        // }
 
         const dateChange = await meetingModel.find({ user });
 
@@ -1353,7 +1418,7 @@ const meetingService = {
             meeting.longitude
           );
         });
-        passed.forEach((meeting) => {
+        filter.forEach((meeting) => {
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1363,12 +1428,12 @@ const meetingService = {
         });
 
         separatedEvents.upcoming.sort((a, b) => a.kilometr - b.kilometr);
-        passed.sort((a, b) => a.kilometr - b.kilometr);
+        filter.sort((a, b) => a.kilometr - b.kilometr);
 
         return {
           message: "success",
           upcoming: separatedEvents.upcoming,
-          passed,
+          passed:filter,
           count: countAll,
         };
       } else {
@@ -1702,7 +1767,7 @@ const meetingService = {
 
       const dataNotif = {
         status: 2,
-        date_time: moment.tz(process.env.TZ).format(),
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: userDb._id,
         type: "message",
         message: `К сожалению, ваше событие ${meetingDb.purpose} ${meetingDb.description} отклонено модератором, причина - ${status}`,
@@ -1821,7 +1886,7 @@ const meetingService = {
     const msg = `К сожалению, ваше данные паспорта отклонено модератором, причина - ${data.status}`;
     const dataNotif = {
       status: 2,
-      date_time: moment.tz(process.env.TZ).format(),
+      date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
       user: updatedUser._id.toString(),
       type: "message",
       navigate: true,
@@ -2250,12 +2315,10 @@ const meetingService = {
       const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
       const eventTime = new Date(resultChanged1.date);
       const dateNow = new Date(timeMoscow);
-      
-      
+
       const timeDifference = eventTime - dateNow;
       const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
 
-      
       if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
         resultChanged1.hour = true;
       }

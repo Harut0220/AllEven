@@ -3,7 +3,7 @@ import UploadService from "./UploadService.js";
 import EventService from "./EventService.js";
 import NotificationService from "./NotificationService.js";
 import notifEvent from "../events/NotificationEvent.js";
-
+import moment from "moment-timezone"
 
 class EventImpressionImageService {
   constructor() {
@@ -27,7 +27,7 @@ class EventImpressionImageService {
       const evLink = `alleven://myEvent/${event._id}`;
       const notif = await this.NotificationService.store({
         type: "message",
-        date_time: new Date(),
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         status: 2,
         message: msg,
         user: event.owner._id.toString(),

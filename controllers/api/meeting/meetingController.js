@@ -23,17 +23,19 @@ const meetingController = {
   in_place: async (req, res) => {
     try {
       const { id, couse } = req.body;
-      console.log(couse, "couse");
+      console.log(couse, id, "couse");
 
-      let meetingId = id;
       const notif = await Notification.findById(id);
-      if (notif) {
-        meetingId = notif.meetingId;
-      }
-      await Notification.updateMany(
+      // if (notif) {
+      console.log(notif.meetingId, "notif.meetingId,");
+
+      const meetingId = notif.meetingId;
+      // }
+      const dbNotif = await Notification.updateMany(
         {
-          event: id,
+          meetingId,
           type: "confirm_come",
+          user: notif.user,
         },
         {
           $set: {
@@ -42,9 +44,18 @@ const meetingController = {
         },
         { new: true }
       );
-      const meeting = await meetingModel.findById(meetingId);
-      const meetingParticipantsDb=await meetingParticipant.findOne({user:req.user.id,meetingId})
-      await meetingModel.findByIdAndUpdate(meetingId,{$pull:{did_not_come_meetings:meetingParticipantsDb._id}})
+      console.log(dbNotif, "dbNotif");
+
+      const meeting = await meetingModel
+        .findById(notif.meetingId)
+        .populate("user");
+      const meetingParticipantsDb = await meetingParticipant.findOne({
+        user: req.user.id,
+        meetingId,
+      });
+      await meetingModel.findByIdAndUpdate(meetingId, {
+        $pull: { did_not_come_meetings: meetingParticipantsDb._id },
+      });
       if (!meeting) {
         return res.json({ status: false, message: "событие не найдено" });
       }
@@ -53,12 +64,12 @@ const meetingController = {
 
       const userName = req.user.name ? req.user.name : "";
       const userSurname = req.user.surname ? req.user.surname : "";
-      const meetDidNotCome=new meetingDidNotComeUser({
-        user:req.user.id,
-        meeting:meeting._id,
-        couse
-      })
-      await meetDidNotCome.save()
+      const meetDidNotCome = new meetingDidNotComeUser({
+        user: req.user.id,
+        meeting: meeting._id,
+        couse,
+      });
+      await meetDidNotCome.save();
       // await this.EventService.storeDidNotCome({
       //   user: req.user.id,
       //   event: eventId,
@@ -69,32 +80,33 @@ const meetingController = {
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        user: event.owner._id.toString(),
+        user: meeting.user._id.toString(),
         type: "message",
         navigate: true,
-        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${meeting.purpose}.`,
-        eventId: event._id.toString(),
+        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше встречу ${meeting.purpose}.`,
+        meetingId: meeting._id.toString(),
         link: evLink,
         date_time,
       };
       const nt = new Notification(dataNotif);
       await nt.save();
 
-      if (event && event.owner && event.owner._id) {
+      if (meeting && meeting.owner && meeting.owner._id) {
         notifEvent.emit(
           "send",
-          event.owner._id.toString(),
+          meeting.user._id.toString(),
           JSON.stringify({
             type: "message",
-            eventId,
+            meetingId: meeting._id.toString(),
             date_time,
             navigate: true,
-            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${meeting.purpose}`,
+            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше встречу ${meeting.purpose}`,
             link: evLink,
             date_time,
           })
         );
       }
+      res.send({ success: true });
     } catch (error) {
       console.error(error);
       res.status(500).send({ message: "Server Error" });
@@ -327,7 +339,7 @@ const meetingController = {
           user: meetingDb.user._id.toString(),
           type: "impression",
           navigate: true,
-          message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
+          message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.purpose}.`,
           meetingId: meeting_id,
           link: evLink,
         };
@@ -342,7 +354,7 @@ const meetingController = {
               meetingId: meeting_id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.name}.`,
+              message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.purpose}.`,
               link: evLink,
             })
           );
@@ -698,7 +710,7 @@ const meetingController = {
       const evLink = `alleven://myMeeting/${meetingDb._id}`;
       const dataNotif = {
         status: 2,
-        date_time: new Date(),
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: user._id.toString(),
         type: "Новая встреча",
         message: `Ваша встреча ${meetingDb.purpose} опубликована на карте.`,
@@ -1010,15 +1022,19 @@ const meetingController = {
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {
         const result = await meetingService.addMeeting(meeting, user.id, phone);
-        const lastDate=moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss")
-        await User.findByIdAndUpdate(user.id,{$set:{last_meeting_date:lastDate}})
+        const lastDate = moment
+          .tz(process.env.TZ)
+          .format("YYYY-MM-DD HH:mm");
+        await User.findByIdAndUpdate(user.id, {
+          $set: { last_meeting_date: lastDate },
+        });
         const meetingDb = await meetingModel
           .findById(result[1]._id)
           .populate("images");
         const evLink = `alleven://myMeeting/${meetingDb._id}`;
         const dataNotif = {
           status: 2,
-          date_time: new Date(),
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: userDb._id.toString(),
           type: "Новая встреча",
           message: `Ваше встреча ${meetingDb.purpose} находится на модерации`,
@@ -1059,7 +1075,7 @@ const meetingController = {
             .findById(idMeet)
             .populate({
               path: "participants",
-              populate: { path: "user", select: "_id fcm_token" },
+              populate: { path: "user", select: "_id fcm_token notifMeeting" },
             })
             .populate("participantSpot")
             .populate("images")
@@ -1068,61 +1084,34 @@ const meetingController = {
             for (let i = 0; i < meetingDb.participants.length; i++) {
               const element = meetingDb.participants[i].user;
               if (element.fcm_token[0]) {
-                // const evLink = `alleven://singleEvent/${eventDb._id}`;
-                // const date_time = moment.tz(process.env.TZ).format();
-                // const dataNotif = {
-                //   status: 2,
-                //   date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                //   user: "6763ec4fbed192bc99eaf23d",
-                //   type: "confirm_come",
-                //   navigate:true,
-                //   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                //   categoryIcon: eventDb.category.avatar,
-                //   eventId: eventDb._id.toString(),
-                //   link: evLink,
-                // };
-                // const nt = new Notification(dataNotif);
-                // await nt.save();
-                // notifEvent.emit(
-                //   "send",
-                //   "6763ec4fbed192bc99eaf23d",
-                //   JSON.stringify({
-                //     type: "confirm_come",
-                //     date_time,
-                //     navigate: true,
-                //     eventId: eventDb._id.toString(),
-                //     message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                //     categoryIcon: eventDb.category.avatar,
-                //     link: evLink,
-                //   })
-                // );
-                const evLink = `alleven://myMeeting/${meetingDb._id}`;
+                const evLink = `alleven://singleMeeting/${meetingDb._id}`;
+                const date_time = moment
+                  .tz(process.env.TZ)
+                  .format("YYYY-MM-DD HH:mm");
                 const dataNotif = {
                   status: 2,
-                  date_time: new Date(),
+                  date_time,
                   user: element._id.toString(),
                   type: "confirm_come",
-                  message: `Ваше событие ${d.name} находится на модерации`,
-                  meetingId: meetingDb._id,
                   navigate: true,
+                  message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
+                  situation: "upcoming",
+                  meetingId: meetingDb._id.toString(),
                   link: evLink,
                 };
                 const nt = new Notification(dataNotif);
                 await nt.save();
-                console.log(
-                  `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`
-                );
                 if (element.notifMeeting) {
                   notifEvent.emit(
                     "send",
-                    element._id,
+                    element._id.toString(),
                     JSON.stringify({
                       type: "confirm_come",
-                      meetingId: meetingDb._id,
+                      date_time,
                       navigate: true,
-                      date_time: moment
-                        .tz(process.env.TZ)
-                        .format("YYYY-MM-DD HH:mm"),
+                      user: element._id.toString(),
+                      meetingId: meetingDb._id.toString(),
+                      situation: "upcoming",
                       message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
                       link: evLink,
                     })
@@ -1141,7 +1130,7 @@ const meetingController = {
             .findById(idMeetSpot)
             .populate({
               path: "participantSpot",
-              populate: { path: "user", select: "_id fcm_token" },
+              populate: { path: "user", select: "_id fcm_token notifMeeting" },
             })
             .populate("images")
             .exec();
@@ -1149,20 +1138,19 @@ const meetingController = {
             for (let i = 0; i < meetingDb.participantSpot.length; i++) {
               const element = meetingDb.participantSpot[i].user;
               if (element.fcm_token[0]) {
+                const date_time=moment
+                .tz(process.env.TZ)
+                .format("YYYY-MM-DD HH:mm")
                 const evLink = `alleven://myMeeting/${meetingDb._id}`;
                 const dataNotif = {
                   status: 2,
-                  date_time: moment
-                    .tz(process.env.TZ)
-                    .format("YYYY-MM-DD HH:mm"),
+                  date_time,
                   user: element._id.toString(),
                   type: "participationSpot",
                   message: `Встреча ${meetingDb.purpose} началось.`,
-                  // categoryIcon: meetingDb.images[0].path,
                   meetingId: meetingDb._id,
                   link: evLink,
                 };
-                //Ваше событие ${d.name} находится на модерации
                 const nt = new Notification(dataNotif);
                 await nt.save();
                 console.log(`Встреча ${meetingDb.purpose} началось.`);
@@ -1173,11 +1161,8 @@ const meetingController = {
                     JSON.stringify({
                       type: "participationSpot",
                       meetingId: meetingDb._id,
-                      date_time: moment
-                        .tz(process.env.TZ)
-                        .format("YYYY-MM-DD HH:mm"),
+                      date_time,
                       message: `Встреча ${meetingDb.purpose} началось.`,
-                      // categoryIcon: meetingDb.images[0].path,
                       link: evLink,
                     })
                   );

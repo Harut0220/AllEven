@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import Notification from "../../../models/Notification.js";
 import User from "../../../models/User.js";
 import NotificationService from "../../../services/NotificationService.js";
@@ -11,6 +11,7 @@ import meetingParticipantSpot from "../../../models/meeting/meetingParticipantSp
 import meetingDidNotComeUser from "../../../models/meeting/meetingDidNotComeUser.js";
 import EventParticipantsSpot from "../../../models/event/EventParticipantsSpot.js";
 import EventDidNotComeUser from "../../../models/event/EventDidNotComeUser.js";
+import companyService from "../../../models/company/companyService.js";
 
 class NotificationController {
   constructor() {
@@ -26,15 +27,13 @@ class NotificationController {
 
     const userDb = await User.findById(user.id);
 
-    return res
-      .status(200)
-      .send({
-        message: "success",
-        eventNotif: userDb.notifEvent,
-        companyNotif: userDb.notifCompany,
-        meetingNotif: userDb.notifMeeting,
-        hotOfferNotif: userDb.notifHotOffer,
-      });
+    return res.status(200).send({
+      message: "success",
+      eventNotif: userDb.notifEvent,
+      companyNotif: userDb.notifCompany,
+      meetingNotif: userDb.notifMeeting,
+      hotOfferNotif: userDb.notifHotOffer,
+    });
     // }else{
     //     return res.status(403).send({message:"Unauthorized"})
     // }
@@ -42,12 +41,62 @@ class NotificationController {
 
   index = async (req, res) => {
     const notifications = await Notification.find({ user: req.user.id });
-    notifications.map(async (el) => {
-      el.date_time = moment(el.date_time).tz(process.env.TZ).toDate();
+    // async function processNotifications(notifications, req) {
+    for await (let el of notifications) {
+      el.date_time = moment.tz(
+        el.date_time,
+        "YYYY-MM-DD HH:mm",
+        process.env.TZ
+      );
+
+      if (el.serviceId && el.type === "confirm_come") {
+        const serviceDb = await companyService.findById(
+          el.serviceId.toString()
+        );
+        el.serviceName = serviceDb.type;
+
+        if (el.register) {
+          const existRegister = await servicesRegistrations.findOne({
+            _id: el.register,
+            pay: true,
+            status: 1,
+          });
+
+          if (existRegister) {
+            el.confirmed = true;
+          }
+        }
+      }
+      const type = el.link.split("/");
+
+      if (
+        type[2] === "singleCompany" &&
+        el.serviceId &&
+        el.type === "confirm_come"
+      ) {
+        if (el.register) {
+          const existRegister = await servicesRegistrations.findById(
+            el.register
+          );
+          const fixedTime = moment.tz(
+            existRegister.date,
+            "YYYY-MM-DD HH:mm",
+            process.env.TZ
+          );
+
+          // Check if the fixed time is after now
+          const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          if (fixedTime.isAfter(now)) {
+            el.situation = "upcoming";
+          } else {
+            el.situation = "passed";
+          }
+        }
+      }
+
       if (el.type === "confirm_come") {
-        const type = el.link.split("/");
-        if ((type[2] = "myEvent")) {
-          const eventDb = await meetingModel.findById(el.meetingId);
+        if (type[2] === "singleEvent" || type[2] === "myEvent") {
+          const eventDb = await Event.findById(el.eventId);
           const eventParticipantSpotDb = await EventParticipantsSpot.findOne({
             eventId: el.eventId,
             user: el.user,
@@ -56,6 +105,7 @@ class NotificationController {
             event: eventDb._id,
             user: el.user,
           });
+
           if (eventParticipantSpotDb || eventDidNotComeDb) {
             await Notification.findByIdAndUpdate(el._id, {
               $set: { confirmed: true },
@@ -64,33 +114,24 @@ class NotificationController {
           }
         }
 
-        if ((type[2] = "singleEvent")) {
-          const eventDb = await meetingModel.findById(el.meetingId);
-          const eventParticipantSpotDb = await EventParticipantsSpot.findOne({
-            eventId: el.eventId,
-            user: el.user,
-          });
-          const eventDidNotComeDb = await EventDidNotComeUser.findOne({
-            event: eventDb._id,
-            user: el.user,
-          });
-          if (eventParticipantSpotDb || eventDidNotComeDb) {
-            await Notification.findByIdAndUpdate(el._id, {
-              $set: { confirmed: true },
-            });
-            el.confirmed = true;
-          }
-        }
-
-        if (type[2] === "myMeeting") {
+        if (type[2] === "singleMeeting" || type[2] === "myMeeting") {
           const meetingDb = await meetingModel.findById(el.meetingId);
           const meetingParticipantSpotDb = await meetingParticipantSpot.findOne(
-            { meetingId: el.meetingId, user: el.user }
+            {
+              meetingId: el.meetingId,
+              user: el.user,
+            }
           );
           const meetingDidNotComeDb = await meetingDidNotComeUser.findOne({
             meeting: meetingDb._id,
             user: el.user,
           });
+
+          await Notification.findByIdAndUpdate(el._id, {
+            $set: { situation: meetingDb.situation },
+          });
+          el.situation = meetingDb.situation;
+
           if (meetingParticipantSpotDb || meetingDidNotComeDb) {
             await Notification.findByIdAndUpdate(el._id, {
               $set: { confirmed: true },
@@ -100,29 +141,164 @@ class NotificationController {
         }
 
         if (type[2] === "singleCompany") {
-          // const eventDb=await companyModel.findById(el.serviceId)
           const register = await servicesRegistrations.findOne({
             _id: el.register,
             pay: true,
           });
-          if(register.status===1){
-            el.confirmed=true
+          if (register && register.status === 1) {
+            el.confirmed = true;
           }
         }
       }
 
       if (el.read && el.read.length) {
-        for (let n = 0; n < el.read.length; n++) {
-          if (el.read[n].toString() == req.user.id) {
-            el.read = true;
-          } else {
-            el.read = false;
-          }
-        }
+        el.read = el.read.some((r) => r.toString() === req.user.id);
       } else {
         el.read = false;
       }
-    });
+    }
+    // }
+
+    // notifications.map(async (el) => {
+    //   el.date_time = moment.tz(
+    //     el.date_time,
+    //     "YYYY-MM-DD HH:mm",
+    //     process.env.TZ
+    //   );
+    //   if (el.serviceId&&el.type==="confirm_come") {
+
+    //     const serviceDb = await companyService.findById(el.serviceId.toString());
+
+    //     el.serviceName=serviceDb.type
+    //     if (el.register) {
+    //       console.log(el.register,"el.register");
+
+    //       const existRegister = await servicesRegistrations.findOne({
+    //         _id: el.register,
+    //         pay: true,
+    //         status: 1,
+    //       });
+    //       console.log(existRegister,"existRegister");
+
+    //       if (existRegister) {
+    //         console.log("confirmed");
+
+    //         el.confirmed = true;
+    //       }
+    //     }
+    //   }
+
+    //   if (el.type === "confirm_come") {
+    //     const type = el.link.split("/");
+    //     //singleEvent type[2] ov grel notifications mej vor sarqi confired true
+
+    //     if (type[2] === "singleEvent") {
+
+    //       const eventDb = await Event.findById(el.eventId);
+
+    //       const eventParticipantSpotDb = await EventParticipantsSpot.findOne({
+    //         eventId: el.eventId,
+    //         user: el.user,
+    //       });
+    //       const eventDidNotComeDb = await EventDidNotComeUser.findOne({
+    //         event: eventDb._id,
+    //         user: el.user,
+    //       });
+    //       if (eventParticipantSpotDb || eventDidNotComeDb) {
+    //         await Notification.findByIdAndUpdate(el._id, {
+    //           $set: { confirmed: true },
+    //         });
+    //         el.confirmed = true;
+    //       }
+    //     }
+
+    //     if (type[2] === "myEvent") {
+
+    //       const eventDb = await Event.findById(el.eventId);
+
+    //       const eventParticipantSpotDb = await EventParticipantsSpot.findOne({
+    //         eventId: el.eventId,
+    //         user: el.user,
+    //       });
+    //       const eventDidNotComeDb = await EventDidNotComeUser.findOne({
+    //         event: eventDb._id,
+    //         user: el.user,
+    //       });
+    //       if (eventParticipantSpotDb || eventDidNotComeDb) {
+    //         await Notification.findByIdAndUpdate(el._id, {
+    //           $set: { confirmed: true },
+    //         });
+    //         el.confirmed = true;
+    //       }
+    //     }
+
+    //     if (type[2] === "singleMeeting") {
+    //       const eventDb = await meetingModel.findById(el.meetingId);
+    //       const eventParticipantSpotDb = await meetingParticipantSpot.findOne({
+    //         meetingId: el.meetingId,
+    //         user: el.user,
+    //       });
+    //       const eventDidNotComeDb = await meetingDidNotComeUser.findOne({
+    //         meeting: eventDb._id,
+    //         user: el.user,
+    //       });
+    //       await Notification.findByIdAndUpdate(el._id, {
+    //         $set: { situation: eventDb.situation },
+    //       });
+    //       el.situation = eventDb.situation;
+    //       if (eventParticipantSpotDb || eventDidNotComeDb) {
+    //         await Notification.findByIdAndUpdate(el._id, {
+    //           $set: { confirmed: true },
+    //         });
+    //         el.confirmed = true;
+    //       }
+    //     }
+
+    //     if (type[2] === "myMeeting") {
+    //       const meetingDb = await meetingModel.findById(el.meetingId);
+    //       const meetingParticipantSpotDb = await meetingParticipantSpot.findOne(
+    //         { meetingId: el.meetingId, user: el.user }
+    //       );
+    //       const meetingDidNotComeDb = await meetingDidNotComeUser.findOne({
+    //         meeting: meetingDb._id,
+    //         user: el.user,
+    //       });
+    //       await Notification.findByIdAndUpdate(el._id, {
+    //         $set: { situation: meetingDb.situation },
+    //       });
+    //       el.situation = meetingDb.situation;
+    //       if (meetingParticipantSpotDb || meetingDidNotComeDb) {
+    //         await Notification.findByIdAndUpdate(el._id, {
+    //           $set: { confirmed: true },
+    //         });
+    //         el.confirmed = true;
+    //       }
+    //     }
+
+    //     if (type[2] === "singleCompany") {
+    //       // const eventDb=await companyModel.findById(el.serviceId)
+    //       const register = await servicesRegistrations.findOne({
+    //         _id: el.register,
+    //         pay: true,
+    //       });
+    //       if (register.status === 1) {
+    //         el.confirmed = true;
+    //       }
+    //     }
+    //   }
+
+    //   if (el.read && el.read.length) {
+    //     for (let n = 0; n < el.read.length; n++) {
+    //       if (el.read[n].toString() == req.user.id) {
+    //         el.read = true;
+    //       } else {
+    //         el.read = false;
+    //       }
+    //     }
+    //   } else {
+    //     el.read = false;
+    //   }
+    // });
     await this.NotificationService.toRead(req.user);
     notifications.reverse();
     return res.json({ status: "success", data: notifications });

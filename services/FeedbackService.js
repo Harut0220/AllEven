@@ -9,23 +9,35 @@ class FeedbackService{
     }
 
     pushInCollection = async (id,col_id,col_name) => {
-        let c = await this.find(id);
-        await Feedback.findByIdAndUpdate(id, {
-            $push: { sub_message: col_id}
-        })
-        // c[col_name].push(col_id);
-        // await c.save()
-        return 1;
+        try {
+            let c = await this.find(id);
+            await Feedback.findByIdAndUpdate(id, {
+                $push: { sub_message: col_id}
+            })
+            // c[col_name].push(col_id);
+            // await c.save()
+            return 1;
+        } catch (error) {
+            console.error(error)
+        }
+
     }
 
     store = async (data) => {
-        let feedback = await Feedback.create(data);
-        if(data.parent_id){
-            await this.pushInCollection(data.parent_id,feedback._id,'sub_message');
-            feedback.parent = data.parent_id;
-            await feedback.save()
+        try {
+            let feedback = await Feedback.create(data);
+            if(data.parent_id){
+                console.log("mtav data.parent_id mej");
+                
+                await this.pushInCollection(data.parent_id,feedback._id,'sub_message');
+                feedback.parent = data.parent_id;
+                await feedback.save()
+            }
+            return await feedback.populate(['parent','user']);
+        } catch (error) {
+            console.error(error)
         }
-        return await feedback.populate(['parent','user']);
+
     }
 
     // newStore = async (data) => {
@@ -87,6 +99,19 @@ class FeedbackService{
     // }
 
     getByuser = async (id) => {
+        return await Feedback.find({parent:null,user:id}).sort({createdAt: 'desc'}).populate('sub_message').populate({
+            path : 'user',
+            select: { '_id': 1,'name':1,'avatar':1},
+            populate : 
+            [
+                {
+                    path : 'roles'
+                }
+            ]
+          }).populate('to','name').lean()
+    }
+
+    getByUserId = async (id) => {
         return await Feedback.find({parent:null,user:id}).sort({createdAt: 'desc'}).populate('sub_message').populate({
             path : 'user',
             select: { '_id': 1,'name':1,'avatar':1},

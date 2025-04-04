@@ -83,7 +83,8 @@ class ProfileController {
       .populate({ path: "company", select: "_id services companyName" });
     if (u) {
       u.unread_notifications = await this.UserService.getCountNotif(user.id);
-
+      console.log(u,"u   user profil");
+      
       return res.status(200).send({ success: true, data: u });
     } else {
       return res

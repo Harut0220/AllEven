@@ -88,6 +88,8 @@ class EventController {
       template += "-rejected";
     }
 
+    console.log(event,"event");
+    
     res.render(template, {
       layout: "profile",
       title: "Event Single",
@@ -140,6 +142,47 @@ class EventController {
 
   edit = async (req, res) => {
     const { name, category, date_from } = req.query;
+
+    const eventDb=await Event.findById(req.params.id).populate("category")
+    console.log(eventDb.status===2,"eventDb.status===2");
+    console.log(eventDb.status===0,"eventDb.status===0");
+    
+    if(eventDb.status===0 || eventDb.status===2){
+      console.log("notif send");
+      
+      const evLink = `alleven://myEvent/${eventDb._id}`;
+      const userDb=await User.findById(eventDb.owner)
+      
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: eventDb.owner.toString(),
+        type: "Новая события",
+        message: `Ваше событие ${eventDb.name} опубликовано на карте.`,
+        eventId: eventDb._id,
+        navigate:true,
+        categoryIcon: eventDb.category.avatar, //sarqel
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+      if (userDb.notifEvent) {
+        notifEvent.emit(
+          "send",
+          eventDb.owner.toString(),
+          JSON.stringify({
+            type: "Новая события",
+            eventId: eventDb._id,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Ваше событие ${eventDb.name} опубликовано на карте.`,
+            categoryIcon: eventDb.category.avatar, //sarqel
+            link: evLink,
+          })
+        );
+      }
+    }
+
+
     let params = {};
     if (name) {
       params.name = name;
@@ -181,12 +224,14 @@ class EventController {
     data.status = 1;
     let template = "profile/event-single";
     data.tickets_link_active = data.tickets_link_active ? 1 : 0;
-    let event = await this.EventService.update(req.params.id, data);
+    let event = await this.EventService.updateAdmin(req.params.id, data);
     const ifEvent=await Event.findById(req.params.id).populate("category").populate("images");
     // let eventCats = await this.EventCategoryService.get();
     if (ifEvent.status &&  ifEvent.status === 2) {
       template = "profile/event-single-rejected";
     }
+
+
 
 
     

@@ -2,6 +2,8 @@ import { Router } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import fs from "fs";
+import sharp from "sharp";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,6 +32,23 @@ reedRouter.get("/document/:cssFile",(req,res)=>{
   try {
     const image = req.params.cssFile;
     const imagePath = path.join(__dirname,"..", "storage", "docs", image);
+  
+    // Check if the file exists
+    if (image && imagePath) {
+      res.sendFile(imagePath);
+    } else {
+      res.status(404).send("Image not found");
+    }
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+
+reedRouter.get("/img/:cssFile",(req,res)=>{
+  try {
+    const image = req.params.cssFile;
+    const imagePath = path.join(__dirname,"..", "public", "img", image);
   
     // Check if the file exists
     if (image && imagePath) {
@@ -246,31 +265,52 @@ reedRouter.get("/docs/:filename",(req,res)=>{
   }
 })
 
-reedRouter.get('/uploads/:image',(req,res)=>{
-  const imageCategory = req.params.image;
+// reedRouter.get('/uploads/:image',(req,res)=>{
+//   const imageCategory = req.params.image;
  
   
-  const imagePath = path.join(__dirname,"..", "storage","uploads", imageCategory);
-  // console.log(imagePath);
-  // Check if the file exists
-  if (imageCategory && imagePath) {
-    res.status(200).sendFile(imagePath);
-  } else {
-    res.status(404).send("Image not found");
-  }
-})
-
-// reedRouter.get("/uploads/:image", (req, res) => {
-//   const image = req.params.image;
-//   const imagePath = path.join(__dirname,"..", "uploads", image);
-
+//   const imagePath = path.join(__dirname,"..", "storage","uploads", imageCategory);
+//   // console.log(imagePath);
 //   // Check if the file exists
-//   if (image && imagePath) {
-//     res.sendFile(imagePath);
+//   if (imageCategory && imagePath) {
+//     res.status(200).sendFile(imagePath);
 //   } else {
 //     res.status(404).send("Image not found");
 //   }
 // })
+
+reedRouter.get("/uploads/:image", async (req, res) => {
+  const { image } = req.params;
+  const { width, height } = req.query; // Get width & height from query parameters
+
+  const imagePath = path.join(__dirname, "..", "storage", "uploads", image);
+
+  // Check if the file exists
+  if (!fs.existsSync(imagePath)) {
+    return res.status(404).send("Image not found");
+  }
+
+  try {
+    // If width or height is provided, resize the image
+    if (width || height) {
+      const resizedImage = sharp(imagePath).resize({
+        width: width ? parseInt(width) : null,
+        height: height ? parseInt(height) : null,
+        fit: "cover", // Adjust how the image fits (cover, contain, etc.)
+      });
+
+      res.set("Content-Type", "image/jpeg"); // Set correct content type
+      return resizedImage.pipe(res); // Send the resized image
+    }
+
+    // If no resizing is needed, send the original image
+    res.sendFile(imagePath);
+  } catch (error) {
+    console.error("Image processing error:", error);
+    res.status(500).send("Error processing image");
+  }
+});
+
 
 reedRouter.get("/admin/profile/company/styles/:cssFile",(req,res)=>{
   try {

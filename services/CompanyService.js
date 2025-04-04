@@ -1,6 +1,5 @@
 import notifEvent from "../events/NotificationEvent.js";
 import companyCategory from "../models/company/companyCategory.js";
-import Company from "../models/company/companyModel.js";
 import CompanyServiceModel from "../models/company/companyService.js";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
@@ -40,7 +39,7 @@ const companyService = {
 
     for (let i = 0; i < registrations.length; i++) {
       const obj = {};
-      const company = await Company.findById(
+      const company = await companyModel.findById(
         registrations[i].serviceId.companyId
       )
         .populate("images")
@@ -185,27 +184,27 @@ const companyService = {
       });
       await dealRegister.save();
 
-      await companyHotDeals.findByIdAndUpdate(dealId, {
-        $push: { registration: dealRegister._id },
-        situation: "passed",
-        // free: false,
-      });
+      // await companyHotDeals.findByIdAndUpdate(dealId, {
+      //   $push: { registration: dealRegister._id },
+      //   situation: "passed",
+      //   // free: false,
+      // });
 
-      const CompanyParticipants = await companyParticipants.findOne({
-        user: userId,
-        companyId: findHotDeal.companyId,
-      });
+      // const CompanyParticipants = await companyParticipants.findOne({
+      //   user: userId,
+      //   companyId: findHotDeal.companyId,
+      // });
 
-      if (!CompanyParticipants) {
-        const newCompanyParticipants = new companyParticipants({
-          user: userId,
-          companyId: findHotDeal.companyId,
-        });
-        await newCompanyParticipants.save();
-        await companyModel.findByIdAndUpdate(findHotDeal.companyId, {
-          $set: { participants: newCompanyParticipants._id },
-        });
-      }
+      // if (!CompanyParticipants) {
+      //   const newCompanyParticipants = new companyParticipants({
+      //     user: userId,
+      //     companyId: findHotDeal.companyId,
+      //   });
+      //   await newCompanyParticipants.save();
+      //   await companyModel.findByIdAndUpdate(findHotDeal.companyId, {
+      //     $set: { participants: newCompanyParticipants._id },
+      //   });
+      // }
 
       const paymentData = {
         Data: {
@@ -266,9 +265,9 @@ const companyService = {
       "companyId, description, cost, date, user"
     );
 
-    const result = await Company.findById(companyId);
-    result.hotDeals.push(hotDeal._id);
-    await result.save();
+    const result = await companyModel.findByIdAndUpdate(companyId,{$push:{hotDeals:hotDeal._id}}).exec();
+    // result.hotDeals.push(hotDeal._id);
+    // await result.save();
 
     return hotDeal;
   },
@@ -315,7 +314,7 @@ const companyService = {
     } else {
       newData.isNight = true;
     }
-    const updatedCompany = await Company.findByIdAndUpdate(
+    const updatedCompany = await companyModel.findByIdAndUpdate(
       data._id,
       { ...newData, updatedAt: moment.tz(process.env.TZ).format() },
       { new: true }
@@ -327,7 +326,7 @@ const companyService = {
     const companyImpressionImagesDb = await companyImpressionImages
       .findOne({ companyId, user: user })
       .populate({ path: "user", select: "name surname avatar" });
-    const companyDb = await Company.findById(companyId).populate("owner");
+    const companyDb = await companyModel.findById(companyId).populate("owner");
     if (companyDb.owner._id.toString() !== user) {
       const evLink = `alleven://myCompany/${companyDb._id}`;
       const dataNotif = {
@@ -365,7 +364,7 @@ const companyService = {
         companyId,
       });
       await resultDb.save();
-      await Company.findByIdAndUpdate(companyId, {
+      await companyModel.findByIdAndUpdate(companyId, {
         $push: { impression_images: resultDb._id },
       });
       const result = await companyImpressionImages
@@ -401,7 +400,7 @@ const companyService = {
   },
   destroyCompanyImage: async (id) => {
     const dbCompanyImage = await companyImage.findById(id);
-    const dbCompany = await Company.findByIdAndUpdate(
+    const dbCompany = await companyModel.findByIdAndUpdate(
       dbCompanyImage.companyId,
       {
         $pull: { images: dbCompanyImage._id },
@@ -421,7 +420,7 @@ const companyService = {
   destroyCompany: async (des_events) => {
     if (Array.isArray(des_events)) {
       for (let i = 0; i < des_events.length; i++) {
-        const company = await Company.findById(des_events[i]);
+        const company = await companyModel.findById(des_events[i]);
         await Notification.deleteMany({ companyId: des_events[i] });
         await Report.deleteMany({ company: des_events[i] });
         if (!company) {
@@ -490,7 +489,7 @@ const companyService = {
       }
     }
     if (typeof des_events === "string") {
-      const company = await Company.findById(des_events);
+      const company = await companyModel.findById(des_events);
       await Notification.deleteMany({ companyId: des_events });
       await Report.deleteMany({ company: des_events });
       if (!company) {
@@ -570,7 +569,7 @@ const companyService = {
         answerId: commentAnswerDb[0]._id,
       });
       await commentAnswerLikesDb.remove();
-      const meetingDb = await Company.findByIdAndUpdate(commentDb.companyId, {
+      const meetingDb = await companyModel.findByIdAndUpdate(commentDb.companyId, {
         $pull: { comments: commentDb._id },
       });
       return {
@@ -598,7 +597,7 @@ const companyService = {
   },
   onlinePage: async () => {
     try {
-      const company = await Company.find({ status: 1, onlinePay: 1 });
+      const company = await companyModel.find({ status: 1, onlinePay: 1 });
       return company;
     } catch (error) {
       console.error(error);
@@ -633,7 +632,7 @@ const companyService = {
           })
           .populate("user");
         const answerLikeCount = await CommentAnswerLikes.find({ answerId });
-        const companyDb = await Company.findById(
+        const companyDb = await companyModel.findById(
           commentAnswerDb.companyId
         ).populate("owner");
         if (commentAnswerDb.user._id.toString() !== user) {
@@ -686,7 +685,7 @@ const companyService = {
       await commentAnswer.save();
       comment.answer.push(commentAnswer._id);
       await comment.save();
-      const companyDb = await Company.findById(comment.companyId).populate(
+      const companyDb = await companyModel.findById(comment.companyId).populate(
         "owner"
       );
       if (comment.user._id.toString() !== user.toString()) {
@@ -744,7 +743,7 @@ const companyService = {
         commentDb.likes.push(commentLike._id);
         await commentDb.save();
         const commentLikeCount = await companyCommentLike.find({ commentId });
-        const companyDb = await Company.findById(commentDb.companyId).populate(
+        const companyDb = await companyModel.findById(commentDb.companyId).populate(
           "owner"
         );
         if (commentDb.user._id.toString() !== user.toString()) {
@@ -793,7 +792,7 @@ const companyService = {
 
       if (ifRating) {
         // await companyRating.findByIdAndDelete(ifRating._id)
-        // await Company.findByIdAndUpdate(eventId, {
+        // await companyModel.findByIdAndUpdate(eventId, {
         //   $pull: { rating: ifRating._id },
         // });
         return {
@@ -810,7 +809,7 @@ const companyService = {
           date,
         });
         await ratingDb.save();
-        await Company.findByIdAndUpdate(eventId, {
+        await companyModel.findByIdAndUpdate(eventId, {
           $push: { ratings: ratingDb._id },
         });
         const ratings = await companyRating.find({ companyId: eventId }).lean();
@@ -825,7 +824,7 @@ const companyService = {
         }
         const averageRating = calculateAverageRating(ratings);
 
-        const newGet = await Company.findByIdAndUpdate(
+        const newGet = await companyModel.findByIdAndUpdate(
           eventId,
           {
             ratingCalculated: averageRating,
@@ -873,7 +872,7 @@ const companyService = {
   },
   onlineReject: async (id, status) => {
     try {
-      const companyDb = await Company.findById(id)
+      const companyDb = await companyModel.findById(id)
         .populate({ path: "owner", select: "-password" })
         .populate("category")
         .populate("images")
@@ -923,7 +922,7 @@ const companyService = {
   },
   reject: async (id, status) => {
     try {
-      const companyDb = await Company.findById(id)
+      const companyDb = await companyModel.findById(id)
         .populate({ path: "owner", select: "-password" })
         .populate("category")
         .populate("images")
@@ -974,13 +973,13 @@ const companyService = {
     }
   },
   onlineResolve: async (id) => {
-    const company = await Company.findById(id);
+    const company = await companyModel.findById(id);
     company.onlinePay = true;
     await company.save();
     return { message: "заявка одобрена" };
   },
   resolve: async (id) => {
-    const company = await Company.findById(id);
+    const company = await companyModel.findById(id);
     company.status = 1;
     await company.save();
     return { message: "заявка одобрена" };
@@ -991,7 +990,7 @@ const companyService = {
       const longitude = data.longitude;
       const latitude = data.latitude;
       const companyName = data.name;
-      const DB = await Company.findOne({ longitude, latitude, companyName });
+      const DB = await companyModel.findOne({ longitude, latitude, companyName });
       const categoryIf = await companyCategory.findById(data.category);
       async function addCompanyData(data) {
         const session = await mongoose.startSession();
@@ -1002,7 +1001,7 @@ const companyService = {
           const endTime = moment.tz(data.endHour, "HH:mm", process.env.TZ);
           let company;
           if (startTime < endTime) {
-            company = new Company({
+            company = new companyModel({
               category: mongoose.Types.ObjectId(data.category),
               companyName: companyName,
               web: data.web,
@@ -1017,7 +1016,7 @@ const companyService = {
               isNight: false,
             });
           } else {
-            company = new Company({
+            company = new companyModel({
               category: mongoose.Types.ObjectId(data.category),
               companyName: companyName,
               web: data.web,
@@ -1115,7 +1114,7 @@ const companyService = {
           companyId,
         });
         await newFav.save();
-        const company = await Company.findByIdAndUpdate(
+        const company = await companyModel.findByIdAndUpdate(
           companyId,
           {
             $push: { favorites: user },
@@ -1164,7 +1163,7 @@ const companyService = {
         await User.findByIdAndUpdate(user, {
           $pull: { company_favorites: companyId },
         });
-        const company = await Company.findByIdAndUpdate(
+        const company = await companyModel.findByIdAndUpdate(
           companyId,
           {
             $pull: { favorites: resFav._id },
@@ -1191,7 +1190,7 @@ const companyService = {
   // },
   addService: async (companyId, type, description, cost, images) => {
     try {
-      const company = await Company.findOne({ _id: companyId });
+      const company = await companyModel.findOne({ _id: companyId });
 
       const serviceDb = new CompanyServiceModel({
         type,
@@ -1214,7 +1213,7 @@ const companyService = {
   },
   // getOne: async (companyId) => {
   //   try {
-  //     const Db = await Company.find({ _id: companyId });
+  //     const Db = await companyModel.find({ _id: companyId });
 
   //     return { message: "success", company: Db };
   //   } catch (error) {
@@ -1223,7 +1222,7 @@ const companyService = {
   // },
   // getMy: async (user) => {
   //   try {
-  //     const company = await Company.find({ owner: user })
+  //     const company = await companyModel.find({ owner: user })
   //       .populate("images")
   //       .populate({ path: "services", populate: { path: "serviceRegister" } })
   //       .populate("phoneNumbers")
@@ -1330,7 +1329,7 @@ const companyService = {
   //     //   }
   //     //   await resDb[i].save();
   //     // }
-  //     // const dateChange=await Company.find({ owner: user });
+  //     // const dateChange=await companyModel.find({ owner: user });
   //     //  setTimeout(async () => {
   //     //   for (let x = 0; x < dateChange.length; x++) {
   //     //     dateChange[x].changes.comment = false;

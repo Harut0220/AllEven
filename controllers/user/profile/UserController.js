@@ -42,6 +42,7 @@ import meetingImages from "../../../models/meeting/meetingImages.js";
 import servicesRegistrations from "../../../models/services/servicesRegistrations.js";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
+import moment from "moment-timezone"
 
 class UserController {
   constructor() {
@@ -243,7 +244,7 @@ class UserController {
       user._id.toString(),
       JSON.stringify({
         type: "message",
-        date_time: new Date(),
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         message: msg,
         notif_type: "",
       })

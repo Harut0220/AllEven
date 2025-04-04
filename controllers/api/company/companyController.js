@@ -205,10 +205,9 @@ const companyController = {
         //   obj.comments=null
         // }
         obj._id = like.companyId._id;
-        console.log(like.companyId,"like.companyId.");
-        console.log(like.companyId.images[0],"like.companyId.images[0]");
-        
-        
+        console.log(like.companyId, "like.companyId.");
+        console.log(like.companyId.images[0], "like.companyId.images[0]");
+
         obj.url = like.companyId.images[0].url;
         obj.likes = like.companyId.likes.length;
         obj.favorites = like.companyId.favorites.length;
@@ -463,7 +462,7 @@ const companyController = {
         const token = authHeader.split(" ")[1];
         const user = jwt.decode(token);
         result = await companyHotDeals
-          .find({ user: { $ne: user.id } })
+          .find({ user: { $ne: user.id },free:true })
           .populate({
             path: "companyId",
             select:
@@ -551,7 +550,7 @@ const companyController = {
           result[z].open = openBool;
         }
       } else if (latitude && longitude && !authHeader) {
-        result = await companyHotDeals.find().populate({
+        result = await companyHotDeals.find({free:true }).populate({
           path: "companyId",
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
@@ -641,7 +640,7 @@ const companyController = {
         const token = authHeader.split(" ")[1];
         const user = jwt.decode(token);
         result = await companyHotDeals
-          .find({ user: { $ne: user.id } })
+          .find({ user: { $ne: user.id },free:true  })
           .populate({
             path: "companyId",
             select:
@@ -729,7 +728,7 @@ const companyController = {
           result[z].open = openBool;
         }
       } else {
-        result = await companyHotDeals.find().populate({
+        result = await companyHotDeals.find({free:true }).populate({
           path: "companyId",
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
@@ -817,7 +816,13 @@ const companyController = {
         }
       }
 
-      res.status(200).send({ message: "success", data: result });
+      const upcomingDeals = result.filter((el) => {
+        return moment
+          .tz(el.date, "YYYY-MM-DD HH:mm", process.env.TZ)
+          .isAfter(moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"));
+      });
+
+      res.status(200).send({ message: "success", data: upcomingDeals });
     } catch (error) {
       console.error(error);
       res.status(500).send({ message: "Server error" });
@@ -858,6 +863,13 @@ const companyController = {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
+      console.log(
+        companyId,
+        description,
+        cost,
+        date,
+        "companyId, description, cost, date"
+      );
 
       const result = await companyService.addHotDeals(
         companyId,
@@ -1173,8 +1185,8 @@ const companyController = {
       if (event.onlinePay == 3) {
         template += "-rejected";
       }
-      console.log(template,"template");
-      
+      console.log(template, "template");
+
       res.render(template, {
         layout: "profile",
         title: "Company Single",
@@ -1291,8 +1303,8 @@ const companyController = {
 
       const eventCats = await companyCategory.find();
       events.reverse();
-      console.log(events,"events");
-      
+      console.log(events, "events");
+
       res.render("profile/companyPay", {
         layout: "profile",
         title: "Company",
@@ -1522,7 +1534,7 @@ const companyController = {
         navigate: true,
         message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
         companyId: dbCompany._id,
-        // categoryIcon: dbCompany.images[0].url, //sarqel
+        categoryIcon: dbCompany.category.avatar, //sarqel
         link: evLink,
       };
       const nt = new Notification(dataNotif);
@@ -1539,7 +1551,7 @@ const companyController = {
             message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
             companyId: dbCompany._id,
             navigate: true,
-            // categoryIcon:  dbCompany.images[0].url, //sarqel
+            categoryIcon: dbCompany.category.avatar, //sarqel
             link: evLink,
           })
         );
@@ -1636,7 +1648,7 @@ const companyController = {
       //     serviceId: services[i]._id,
       //   });
       // }
-      await ImpressionsCompany.deleteMany({company:req.params.id})
+      await ImpressionsCompany.deleteMany({ company: req.params.id });
       await companyParticipants.deleteMany({ companyId: req.params.id });
       await companyComment.deleteMany({ companyId: req.params.id });
       await companyImage.deleteMany({ companyId: req.params.id });
@@ -1996,8 +2008,12 @@ const companyController = {
       const authHeader = req.headers.authorization;
       const id = req.params.id;
       const { longitude, latitude } = req.query;
+      console.log(req.params.id, "req.params.id");
+      console.log(authHeader, "authHeader");
 
       const compUpdate = await Company.findById(id);
+      console.log(compUpdate, "compUpdate");
+
       compUpdate.isLike = false;
       compUpdate.isRating = false;
       compUpdate.isFavorite = false;
@@ -2094,8 +2110,8 @@ const companyController = {
             );
 
             // Check if the fixed time is after now
-            const now = moment.tz(process.env.TZ);
-            if (fixedTime.isAfter(now)) {
+            const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+            if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
               upcomingDeals.push(resultChanged1.hotDeals[i]);
             } else {
               await companyHotDeals.findByIdAndUpdate(
@@ -2164,7 +2180,7 @@ const companyController = {
             );
 
             const now = moment.tz(process.env.TZ);
-            if (fixedTime.isAfter(now)) {
+            if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
               upcomingDeals.push(resultChanged1.hotDeals[i]);
             } else {
               await companyHotDeals.findByIdAndUpdate(
@@ -2430,7 +2446,7 @@ const companyController = {
           );
 
           const now = moment.tz(process.env.TZ);
-          if (fixedTime.isAfter(now)) {
+          if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
             upcomingDeals.push(resultChanged1.hotDeals[i]);
           } else {
             await companyHotDeals.findByIdAndUpdate(
@@ -3181,6 +3197,17 @@ const companyController = {
         countAfter.push(serviceRegisterAfter.length);
         countToday.push(serviceRegisterToday.length);
       }
+      for(let i=0;i<resultChanged1.hotDeals.length;i++){
+        
+        if(resultChanged1.hotDeals[i].registration){
+          
+          countToday.push(1)
+          console.log(countToday,"countToday inner");
+          
+        }
+      }
+      console.log(countToday,"countToday outer");
+      
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
 
@@ -3251,7 +3278,7 @@ const companyController = {
           .populate("owner")
           .populate("images");
         const evLink = `alleven://myCompany/${db._id}`;
-        const categor = await companyCategory.findById(db.category);
+        const categor = await companyCategory.findById(db.category.toString());
 
         const dataNotif = {
           status: 2,
@@ -3261,7 +3288,7 @@ const companyController = {
           message: `Ваше ${db.companyName} и услуги находится на модерации`,
           companyId: db._id,
           navigate: true,
-          categoryIcon: categor.name,
+          categoryIcon: categor.avatar,
           link: evLink,
         };
         let role = await Role.findOne({ name: "USER" });
@@ -3278,7 +3305,7 @@ const companyController = {
                 .tz(process.env.TZ)
                 .format("YYYY-MM-DD HH:mm:ss"),
               message: `Ваше ${db.companyName} и услуги находится на модерации`,
-              categoryIcon: categor.name,
+              categoryIcon: categor.avatar,
               companyId: db._id,
               navigate: true,
               status: 2,

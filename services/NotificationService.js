@@ -112,7 +112,7 @@ class NotificationService{
                 let users = await this.UserService.getUsersByRoleObjId(nots[n].sent);
                 for(let u =0;u<users.length;u++){
                     let f = await this.FeedbackService.store({to:users[u]._id,message:nots[n].message})
-                    await Notification.create({status:2,date_time:new Date(),user:users[u]._id,type:'message',message:nots[n].message})
+                    await Notification.create({status:2,date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),user:users[u]._id,type:'message',message:nots[n].message})
                     notifEvent.emit('send',users[u]._id.toString(),JSON.stringify(f))
                 }
 

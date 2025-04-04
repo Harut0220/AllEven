@@ -338,7 +338,46 @@ class EventService {
     return await this.pushInCollection(event_id, col_id, col_name);
   };
 
-  update = async (id, data) => {
+  // update = async (id, data) => {
+  //   const d = data;
+  //   if (typeof data.images[0] === "string") {
+  //     await Event.findByIdAndUpdate(id, { $set: { images: [] } });
+
+  //     let imgArr = [];
+  //     for (let i = 0; i < data.images.length; i++) {
+  //       // let img = await EventImage.create({ name: image });
+  //       const newImage = new EventImage({ name: data.images[i] });
+  //       await newImage.save();
+  //       // imgArr.push(newImage);
+  //       console.log(newImage, "newImage");
+  //       console.log(id, "id");
+
+  //       const dbRes = await Event.findByIdAndUpdate(id, {
+  //         $push: { images: newImage._id },
+  //       });
+  //       console.log(dbRes, "dbRes push image");
+  //     }
+  //     delete d.images;
+  //     await Event.findByIdAndUpdate(id, { ...d });
+
+  //     const eventDb = await Event.findById(id);
+
+  //     return eventDb;
+  //   } else {
+  //     delete d.images;
+  //     console.log(d, "images deleted");
+
+  //     const eventDb = await Event.findByIdAndUpdate(
+  //       id,
+  //       { ...d },
+  //       { new: true }
+  //     );
+
+  //     return eventDb;
+  //   }
+  // };
+
+  updateAdmin = async (id, data) => {
     const eventDb = await Event.findById(id);
     const d = data;
 
@@ -359,6 +398,45 @@ class EventService {
     await eventDb.updateOne(d);
 
     return eventDb;
+  };
+
+  update = async (id, data) => {
+    const d = data;
+    if (typeof data.images[0] === "string") {
+      await Event.findByIdAndUpdate(id, { $set: { images: [] } });
+
+      let imgArr = [];
+      for (let i = 0; i < data.images.length; i++) {
+        // let img = await EventImage.create({ name: image });
+        const newImage = new EventImage({ name: data.images[i] });
+        await newImage.save();
+        // imgArr.push(newImage);
+        console.log(newImage, "newImage");
+        console.log(id, "id");
+
+        const dbRes = await Event.findByIdAndUpdate(id, {
+          $push: { images: newImage._id },
+        });
+        console.log(dbRes, "dbRes push image");
+      }
+      delete d.images;
+      await Event.findByIdAndUpdate(id, { ...d });
+
+      const eventDb = await Event.findById(id);
+
+      return eventDb;
+    } else {
+      delete d.images;
+      console.log(d, "images deleted");
+
+      const eventDb = await Event.findByIdAndUpdate(
+        id,
+        { ...d },
+        { new: true }
+      );
+
+      return eventDb;
+    }
   };
 
   isValidDate = (d) => {
@@ -859,7 +937,9 @@ class EventService {
             (events[e].participants[v].user.roles.name =
               "USER" && !events[e].situation === "passed")
           ) {
-            let ev_st_time = new Date(events[e].started_time);
+            // let ev_st_time = new Date(events[e].started_time);
+            let ev_st_time = moment.tz(events[e].started_time, process.env.TZ).format('YYYY-MM-DD HH:mm');
+
             const evLink = `alleven://myEvent/${events[e]._id}`;
             if (events[e].participants[v].notifEvent) {
               notifEvent.emit(
@@ -910,7 +990,7 @@ class EventService {
             await this.NotificationService.store({
               type: "message",
               link: evLink,
-              date_time: new Date().toLocaleString(),
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               status: 2,
               message: msg,
               user: events[e].participantsSpot[p]._id.toString(),
@@ -1057,34 +1137,44 @@ class EventService {
     const organizers = await this.UserService.getUsersForLastEvent(["USER"]);
     for (const organizer of organizers) {
       if (organizer.last_event_date) {
-        const lastDate = moment(organizer.last_event_date, "YYYY-MM-DDTHH:mm");
-        const dateNow = moment();
+        const lastDate = moment.tz(
+          organizer.last_event_date,
+          "YYYY-MM-DD HH:mm",
+          process.env.TZ
+        );
+        const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const difference = dateNow.diff(lastDate);
         const differenceInHours = Math.round(
           moment.duration(difference).asHours()
         );
         if (differenceInHours == 48) {
-          const link = `alleven://create`;
-          await this.NotificationService.store({
+          const evLink = `alleven://createEvent`;
+          const date_time = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
+          const dataNotif = {
             status: 2,
-            date_time: new Date(),
-            user: organizer._id,
+            date_time,
+            user: organizer._id.toString(),
             type: "create_new",
+            navigate: true,
             message: `Разместите информацию о вашем будущем событии.`,
-            link,
-          });
-          if (organizer.notifEvent) {
-            notifEvent.emit(
-              "send",
-              organizer._id.toString(),
-              JSON.stringify({
-                type: "create_new",
-                date_time: new Date(),
-                message: `Разместите информацию о вашем будущем событии.`,
-                link,
-              })
-            );
-          }
+            link: evLink,
+          };
+          const nt = new Notification(dataNotif);
+          await nt.save();
+
+          notifEvent.emit(
+            "send",
+            organizer._id.toString(),
+            JSON.stringify({
+              type: "create_new",
+              navigate: true,
+              date_time,
+              message: `Разместите информацию о вашем будущем событии.`,
+              link: evLink,
+            })
+          );
         }
       }
     }
@@ -1093,35 +1183,36 @@ class EventService {
     const usersDb = await User.find({ roles: roleDb._id });
     for (let i = 0; i < usersDb.length; i++) {
       const element = usersDb[i];
-      if (element.last_event_date) {
+      if (element.last_meeting_date) {
         const lastDate = moment.tz(
-          element.last_event_date,
-          "YYYY-MM-DD HH:mm:ss",
+          element.last_meeting_date,
+          "YYYY-MM-DD HH:mm",
           process.env.TZ
         );
-        const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
+        const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         const difference = dateNow.diff(lastDate);
         const differenceInHours = Math.round(
           moment.duration(difference).asHours()
         );
         if (differenceInHours === 48) {
-          const link = `alleven://create`;
+          const link = `alleven://step1`;
           await this.NotificationService.store({
             status: 2,
-            date_time: new Date(),
-            user: element._id,
+            date_time: dateNow,
+            user: element._id.toString(),
             type: "create_new",
             navigate: true,
             message: `Разместите информацию о вашем будущем встречи.`,
             link,
           });
-          if (element.notifEvent) {
+          if (element.notifMeeting) {
             notifEvent.emit(
               "send",
               element._id.toString(),
               JSON.stringify({
                 type: "create_new",
-                date_time: new Date(),
+                date_time: dateNow,
+                navigate: true,
                 message: `Разместите информацию о вашем будущем встречи.`,
                 link,
               })
@@ -1159,7 +1250,7 @@ class EventService {
             element._id.toString(),
             JSON.stringify({
               type: "create_new",
-              date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               navigate: true,
               message: `Разместите информацию о вашем будущем событии.`,
               link: evLink,

@@ -85,8 +85,8 @@ class NotificationController{
 
     storeFeedback = async (req,res) => {
         let data =  req.body;
-        await Notification.create({message:data.message,user:data.user,feedback:data.parent_id,date_time:new Date(),type:"feedback",status:2,createId:data.parent_id});
-        notifEvent.emit('send',data.user,JSON.stringify({message:data.message,user:data.user,feedback:data.parent_id,date_time:new Date(),type:"feedback"}))
+        await Notification.create({link:"feedback",message:data.message,user:data.user,feedback:data.parent_id,date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),type:"feedback",status:2,createId:data.parent_id});
+        notifEvent.emit('send',data.user,JSON.stringify({message:data.message,user:data.user,feedback:data.parent_id,date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),type:"feedback"}))
         delete data.user;
         let feedback = await this.FeedbackService.store(data);
         //notifEvent.emit('send',feedback.parent.user.toString(),JSON.stringify(feedback))

@@ -36,7 +36,7 @@ const Notification = new Schema(
         "Отклонение событий",
         "Отклонение услуги",
         "Присоединение",
-        "Записались на горящие предложения"
+        "Записались на горящие предложения",
       ],
       default: "system",
     },
@@ -95,6 +95,7 @@ const Notification = new Schema(
       type: String,
       required: false,
     },
+    serviceName: { type: String, required: false },
     categoryIcon: {
       type: String,
       required: false,
@@ -103,9 +104,13 @@ const Notification = new Schema(
       type: Boolean,
       default: false,
     },
-    navigate:{
-      type:Boolean,
-      default:false
+    navigate: {
+      type: Boolean,
+      default: false,
+    },
+    dealDate: {
+      type: String,
+      required: false,
     },
   },
   {

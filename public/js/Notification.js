@@ -1,4 +1,6 @@
 const saveNotification = () => {
+  console.log("notification.js");
+  
   const inputText = document.querySelector(".Input").value;
   const WhomInp = document.querySelector(".WhomInp").value;
   const TypeNotification1 = document.querySelector(".TypeNotification1").value;

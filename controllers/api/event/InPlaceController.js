@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import Notification from "../../../models/Notification.js";
 import Event from "../../../models/event/Event.js";
 import EventParticipants from "../../../models/event/EventParticipants.js";
+import moment from "moment-timezone";
 class InPlaceController {
   constructor() {
     this.EventService = new EventService();
@@ -22,13 +23,10 @@ class InPlaceController {
 
   store = async (req, res) => {
     const { id, couse } = req.body;
-    console.log(couse, "couse");
+    console.log(couse,id, "couse");
 
-    let eventId = id;
     const notif = await this.NotificationService.findById(id);
-    if (notif) {
-      eventId = notif.eventId;
-    }
+    const  eventId = notif.eventId;
     await this.NotificationService.changeConfirmByEventId(eventId);
     const event = await this.EventService.find(eventId);
     const EventParticipantsDb=await EventParticipants.findOne({user:req.user.id,eventId})
@@ -36,7 +34,7 @@ class InPlaceController {
 
 
     if (!event) {
-      return res.json({ status: false, message: "событие не найдено" });
+      return res.status(404).send({ status: false, message: "событие не найдено" });
     }
 
     const evLink = `alleven://myEvent/${event._id}`;
@@ -80,7 +78,7 @@ class InPlaceController {
         );
       }
     
-    return res.json({ status: "success" });
+    return res.status(200).send({ status: "success" });
   };
 }
 

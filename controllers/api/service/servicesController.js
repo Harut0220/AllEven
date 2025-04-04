@@ -16,6 +16,7 @@ import paysStore from "../../../models/paysStore.js";
 import axios from "axios";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
+import companyService from "../../../models/company/companyService.js";
 const { ObjectId } = mongoose.Types;
 
 const servicesController = {
@@ -39,9 +40,47 @@ const servicesController = {
         })
         .populate({
           path: "serviceId",
-          select: "type images description cost",
+          select: "_id type images description cost",
         })
         .lean();
+      const serviceDb = await companyService
+        .findById(updatedDoc.serviceId._id)
+        .populate({
+          path: "companyId",
+          select: "_id owner",
+        });
+
+      const evLink = `alleven://myCompany/${serviceDb.companyId._id}`;
+
+      const dataNotif = {
+        status: 2,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        user: serviceDb.companyId.owner.toString(),
+        type: "message",
+        message: `К сожалению пользователю ${updatedDoc.user.name} ${updatedDoc.user.surname} на услугу ${updatedDoc.serviceId.type} предложенное время не подходит.`,
+        serviceId: updatedDoc.serviceId._id,
+        register: id,
+        navigate: true,
+        // categoryIcon: service.serviceId.images[0],
+        link: evLink,
+      };
+      const nt = new Notification(dataNotif);
+      await nt.save();
+      notifEvent.emit(
+        "send",
+        serviceDb.companyId.owner.toString(),
+        JSON.stringify({
+          type: "message",
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          message: `К сожалению пользователю ${updatedDoc.user.name} ${updatedDoc.user.surname} на услугу ${updatedDoc.serviceId.type} предложенное время не подходит.`,
+          serviceId: updatedDoc.serviceId._id,
+          register: id,
+          navigate: true,
+          // categoryIcon: service.serviceId.images[0],
+          link: evLink,
+        })
+      );
+
       res.status(200).send({ message: "success", data: updatedDoc });
     } catch (error) {
       console.error(error);
@@ -351,37 +390,39 @@ const servicesController = {
         resObj.inPast = inPast;
       }
 
-      // if (!resObj.inFuture && !resObj.resToday && !resObj.inPast) {
-      //   res.status(200).send({ message: "у вас нет постов" });
-      // } else {
       const resObject = {};
       if (day === "today") {
-        // const dealsRegisters = [];
-        // for (let i = 0; i < company.hotDeals.length; i++) {
-        //   const register = await companyHotDealRegistrations
-        //     .find({
-        //       dealId: company.hotDeals[i]._id,
-        //     })
-        //     .populate({
-        //       path: "user",
-        //       select: "name surname avatar phone_number",
-        //     });
-        //   if (register) {
-        //     dealsRegisters.push(register);
-        //   }
-        // }
-        const hotDealsDb = await companyHotDeals.find({ companyId });
+        const nowInTz = moment().tz(process.env.TZ);
+
+        // Get start and end of day in the specified timezone
+        const startOfDay = nowInTz.clone().startOf("day").toDate();
+        const endOfDay = nowInTz.clone().endOf("day").toDate();
+        const hotDealsDb = await companyHotDeals.find({
+          companyId,
+          createdAt: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+        });
         let dealRegisters = [];
         for (let i = 0; i < hotDealsDb.length; i++) {
           const element = hotDealsDb[i];
+
           const dealRegistersDb = await companyHotDealRegistration
-            .findOne({ dealId: element._id, status: true })
+            .findOne({ dealId: element._id, pay: true })
             .populate({
               path: "user",
               select: "name surname avatar phone_number",
-            });
-          let obj = { description: element.description, ...dealRegistersDb };
-          dealRegisters.push(obj);
+            })
+            .exec();
+            if(dealRegistersDb){
+              let obj = { description: element.description,...dealRegistersDb.toObject()};
+
+
+              dealRegisters.push(obj);
+            }
+
+          console.log(dealRegisters, "dealRegisters loop");
         }
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
@@ -390,7 +431,8 @@ const servicesController = {
             resArray.push(resToday[i]);
           }
           resObject[resToday[0].dateSlice] = resArray;
-          
+          console.log(dealRegisters, "dealRegisters");
+
           res
             .status(200)
             .send({ message: "success", data: resObject, dealRegisters });
@@ -443,36 +485,42 @@ const servicesController = {
           await service.save();
         }
 
-        const evLink = `alleven://singleCompany/${service._id}`;
+        const serviceDb = await CompanyServiceModel.findById(
+          service.serviceId._id
+        );
+
+        const evLink = `alleven://singleCompany/${serviceDb.companyId}`;
 
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: service.user._id.toString(),
           type: "confirm_come",
-          message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
-          serviceId: service._id,
-          register:id,
+          message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}.Причин-${text}`,
+          serviceId: service.serviceId._id,
+          register: id,
+          navigate: false,
           // categoryIcon: service.serviceId.images[0],
           link: evLink,
         };
         const nt = new Notification(dataNotif);
         await nt.save();
-        if (service.user.notifCompany) {
-          notifEvent.emit(
-            "send",
-            service.user._id.toString(),
-            JSON.stringify({
-              type: "confirm_come",
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}`,
-              serviceId: service.serviceId._id,
-              register:id,
-              // categoryIcon: service.serviceId.images[0],
-              link: evLink,
-            })
-          );
-        }
+        // if (service.user.notifCompany) {
+        notifEvent.emit(
+          "send",
+          service.user._id.toString(),
+          JSON.stringify({
+            type: "confirm_come",
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}.Причин-${text}`,
+            serviceId: service.serviceId._id,
+            register: id,
+            navigate: false,
+            // categoryIcon: service.serviceId.images[0],
+            link: evLink,
+          })
+        );
+        // }
 
         const updatedRegister = await servicesRegistrations
           .findById(id)
@@ -528,8 +576,7 @@ const servicesController = {
         companyId: serviceDb.companyId,
       });
 
-
-      const daySlice = service.date.slice(8, 10);
+      const daySlice = service.dealDate.slice(8, 10);
       const monthSlice = service.date.slice(5, 7);
       const dateSlice = `${monthSlice}.${daySlice}`;
 
@@ -567,13 +614,14 @@ const servicesController = {
           .populate("owner")
           .populate("images")
           .exec();
-          const evLink = `alleven://singleCompany/${companyDb._id}`;
+        const evLink = `alleven://myCompany/${companyDb._id}`;
 
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: companyDb.owner._id.toString(),
           type: "Регистрации услугу",
+          navigate: true,
           message: `Пользователь пoтвердил ваше предложение на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
           companyId: confirmedRegister.serviceId._id,
           cotegoryIcon: companyDb.images[0].url,
@@ -581,56 +629,59 @@ const servicesController = {
         };
         const nt = new Notification(dataNotif);
         await nt.save();
-        if (companyDb.owner.notifCompany) {
-          notifEvent.emit(
-            "send",
-            companyDb.owner._id.toString(),
-            JSON.stringify({
-              type: "Регистрации услугу",
-              companyId: confirmedRegister.serviceId._id,
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь пoтвердил ваше предложение на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-              serviceId: confirmedRegister.serviceId._id,
-              cotegoryIcon: companyDb.images[0].url,
-              link: evLink,
-            })
-          );
-        }
+        // if (companyDb.owner.notifCompany) {
+        notifEvent.emit(
+          "send",
+          companyDb.owner._id.toString(),
+          JSON.stringify({
+            type: "Регистрации услугу",
+            companyId: confirmedRegister.serviceId._id,
+            navigate: true,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Пользователь пoтвердил ваше предложение на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
+            serviceId: confirmedRegister.serviceId._id,
+            cotegoryIcon: companyDb.images[0].url,
+            link: evLink,
+          })
+        );
+        // }
       } else {
         const companyDb = await companyModel
           .findById(confirmedRegister.serviceId.companyId.toString())
           .populate("owner")
           .populate("images")
           .exec();
-          const evLink = `alleven://singleCompany/${companyDb._id}`;
+        const evLink = `alleven://singleCompany/${companyDb._id}`;
 
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: confirmedRegister.user._id.toString(),
           type: "Регистрации услугу",
-          message: `Организатор пoтвердил ваша запис на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
+          message: `Организатор пoтвердил ваша запись на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
           companyId: confirmedRegister.serviceId._id,
+          navigate: true,
           cotegoryIcon: companyDb.images[0].url,
           link: evLink,
         };
         const nt = new Notification(dataNotif);
         await nt.save();
-        if (confirmedRegister.user.notifCompany) {
-          notifEvent.emit(
-            "send",
-            confirmedRegister.user._id.toString(),
-            JSON.stringify({
-              type: "Регистрации услугу",
-              companyId: confirmedRegister.serviceId._id,
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Организатор пoтвердил ваша запис на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
-              companyId: confirmedRegister.serviceId._id,
-              cotegoryIcon: companyDb.images[0].url,
-              link: evLink,
-            })
-          );
-        }
+        // if (confirmedRegister.user.notifCompany) {
+        notifEvent.emit(
+          "send",
+          confirmedRegister.user._id.toString(),
+          JSON.stringify({
+            type: "Регистрации услугу",
+            companyId: confirmedRegister.serviceId._id,
+            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            message: `Организатор пoтвердил ваша запись на услугу ${confirmedRegister.serviceId.type} время ${confirmedRegister.date}`,
+            companyId: confirmedRegister.serviceId._id,
+            navigate: true,
+            cotegoryIcon: companyDb.images[0].url,
+            link: evLink,
+          })
+        );
+        // }
       }
 
       const dat = confirmedRegister.date;
@@ -646,8 +697,8 @@ const servicesController = {
           serviceId: service.serviceId._id,
         });
         await newCompanyParticipants.save();
-        await companyModel.findByIdAndUpdate(serviceDb.companyId,{
-          $set:{participants:newCompanyParticipants._id}
+        await companyModel.findByIdAndUpdate(serviceDb.companyId, {
+          $set: { participants: newCompanyParticipants._id },
         });
       }
 
@@ -876,7 +927,7 @@ const servicesController = {
           companyId: companyDb._id,
           serviceId,
           date,
-          payTime:datePayment
+          payTime: datePayment,
         });
         await comm.save();
 

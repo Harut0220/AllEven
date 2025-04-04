@@ -364,8 +364,13 @@ class EventController {
           const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
           if (event.started_time > dateNow) {
+            console.log(event.started_time, "event.started_time upcoming");
+            // console.log(event);
+
             upcoming.push(event);
           } else {
+            console.log(event.started_time, "event.started_time passed");
+
             passed.push(event);
           }
         });
@@ -421,6 +426,67 @@ class EventController {
       const data = {};
       data.upcoming = upcomPass.upcoming;
       data.passed = upcomPass.passed;
+
+      for (let g = 0; g < data.upcoming.length; g++) {
+        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        const eventTime = new Date(data.upcoming[g].started_time);
+        const dateNow = new Date(timeMoscow);
+
+        const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+
+        // Check if the event is within 1 hour before or 3 hours after
+
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+          data.upcoming[g].hour = true;
+        }
+        // if (isJoin) {
+        //   result.upcoming[z].joinStatus = 2;
+        // }
+        // const isSpot = await EventParticipantsSpot.findOne({
+        //   user: user.id,
+        //   eventId: result.upcoming[z]._id,
+        // });
+        // if (isSpot) {
+
+        //   result.upcoming[z].joinStatus = 3;
+        // }
+        const isLikeDb = await EventLike.findOne({
+          eventId: data.upcoming[g]._id,
+          user: user.id,
+        });
+        if (isLikeDb) {
+          data.upcoming[g].isLike = true;
+        }
+        const isFavoriteDb = await EventFavorites.findOne({
+          eventId: data.upcoming[g]._id,
+          user: user.id,
+        });
+        if (isFavoriteDb) {
+          data.upcoming[g].isFavorite = true;
+        }
+        const participant = await EventParticipants.findOne({
+          eventId: data.upcoming[g]._id,
+          user: user.id,
+        });
+        console.log(participant, "participant");
+
+        const participantSpot = await EventParticipantsSpot.findOne({
+          eventId: data.upcoming[g]._id,
+          user: user.id,
+        });
+        if (participant) {
+          console.log("status 2");
+
+          data.upcoming[g].joinStatus = 2;
+
+          if (participantSpot) {
+            console.log("status 3");
+
+            data.upcoming[g].joinStatus = 3;
+          }
+        }
+      }
 
       return res.status(200).send({ message: "success", data });
     } catch (error) {
@@ -744,8 +810,7 @@ class EventController {
     const dateNow = new Date(timeMoscow);
 
     const timeDifference = eventTime - dateNow;
-    const differenceInMinutes = timeDifference / 60000; 
-
+    const differenceInMinutes = timeDifference / 60000;
 
     if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
       eventUpdate.hour = true;
@@ -764,9 +829,11 @@ class EventController {
 
     const user = jwt.decode(token);
     let event = await this.EventService.store(req, user.id);
-    const lastDate=moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss")
+    const lastDate = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
-    await User.findByIdAndUpdate(user.id,{$set:{last_event_date:lastDate}})
+    await User.findByIdAndUpdate(user.id, {
+      $set: { last_event_date: lastDate },
+    });
     notifEvent.emit(
       "send",
       "ADMIN",
@@ -808,68 +875,38 @@ class EventController {
               const element = eventDb.participants[i].user;
               if (element.fcm_token[0]) {
                 const evLink = `alleven://singleEvent/${eventDb._id}`;
-                const date_time = moment.tz(process.env.TZ).format();
+                const date_time = moment
+                  .tz(process.env.TZ)
+                  .format("YYYY-MM-DD HH:mm");
                 const dataNotif = {
                   status: 2,
-                  date_time: moment
-                    .tz(process.env.TZ)
-                    .format("YYYY-MM-DD HH:mm"),
+                  date_time,
                   user: element._id.toString(),
                   type: "confirm_come",
                   navigate: true,
                   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                  categoryIcon: eventDb.category.avatar,
+                  situation: "upcoming",
                   eventId: eventDb._id.toString(),
                   link: evLink,
                 };
                 const nt = new Notification(dataNotif);
                 await nt.save();
-                notifEvent.emit(
-                  "send",
-                  element._id.toString(),
-                  JSON.stringify({
-                    type: "confirm_come",
-                    date_time,
-                    navigate: true,
-                    eventId: eventDb._id.toString(),
-                    message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                    categoryIcon: eventDb.category.avatar,
-                    link: evLink,
-                  })
-                );
-                // const evLink = `alleven://singleEvent/${eventDb._id}`;
-                // const dataNotif = {
-                //   status: 2,
-                //   date_time: moment
-                //     .tz(process.env.TZ)
-                //     .format("YYYY-MM-DD HH:mm"),
-                //   user: element._id.toString(),
-                //   type: "confirm_come",
-                //   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                //   categoryIcon: eventDb.category.avatar,
-                //   eventId: eventDb._id.toString(),
-                //   link: evLink,
-                // };
-                // const nt = new Notification(dataNotif);
-                // await nt.save();
-                // console.log(
-                //   `Событие ${eventDb.name} начнется через час. Не пропустите.`
-                // );
-                // const date_time = moment.tz(process.env.TZ).format();
-                // if (element.notifEvent) {
-                //   notifEvent.emit(
-                //     "send",
-                //     element._id.toString(),
-                //     JSON.stringify({
-                //       type: "confirm_come",
-                //       date_time,
-                //       eventId: eventDb._id.toString(),
-                //       message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
-                //       categoryIcon: eventDb.category.avatar,
-                //       link: evLink,
-                //     })
-                //   );
-                // }
+                if (element.notifEvent) {
+                  notifEvent.emit(
+                    "send",
+                    element._id.toString(),
+                    JSON.stringify({
+                      type: "confirm_come",
+                      date_time,
+                      navigate: true,
+                      user: element._id.toString(),
+                      eventId: eventDb._id.toString(),
+                      situation: "upcoming",
+                      message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+                      link: evLink,
+                    })
+                  );
+                }
               }
             }
           }
@@ -890,6 +927,7 @@ class EventController {
                   user: element._id.toString(),
                   type: "participation",
                   message: `Событие ${eventDb.name} началось.`,
+                  navigate:true,
                   categoryIcon: eventDb.category.avatar,
                   eventId: eventDb._id.toString(),
                   link: evLink,
@@ -905,6 +943,7 @@ class EventController {
                     JSON.stringify({
                       type: "participation",
                       date_time,
+                      navigate:true,
                       eventId: eventDb._id.toString(),
                       message: `Событие ${eventDb.name} началось.`,
                       categoryIcon: eventDb.category.avatar,
@@ -939,6 +978,8 @@ class EventController {
     const event_id = req.params.id;
     const datas = req.body;
 
+    console.log(req.body,"req.body");
+    
     const updated = await this.EventService.update(event_id, datas);
     const updatedEvent = await Event.findById(event_id)
       .populate({ path: "owner", select: "-password" })
@@ -1099,8 +1140,7 @@ class EventController {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
-
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           data.hour = true;
@@ -1177,7 +1217,6 @@ class EventController {
 
         const timeDifference = eventTime - dateNow;
         const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
-
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           data.hour = true;

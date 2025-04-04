@@ -10,6 +10,7 @@ class NotificationEvent extends EventEmitter{}
 const notifEvent = new NotificationEvent();
 
 notifEvent.on('send', async (id,data) => {
+  console.log(id,data,"id,data");
   
   if(id !='ADMIN'){
     let user = await UserServ.findAndLean(id);
@@ -33,7 +34,11 @@ notifEvent.on('send', async (id,data) => {
   }
 
   if(notifCol[id]){
+    console.log("admin if");
+    
     if(Object.keys(notifCol[id]).length){
+      console.log("1");
+      
       notifCol[id].send(data);
     }else{
       console.log('no connected socket id')

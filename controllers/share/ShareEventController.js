@@ -36,6 +36,7 @@ class ShareEventController {
       event,
       date,
       time,
+      description:event.description,
       images:event.images,
       phone_number:event.user.phone_number,
       imageHeader: event.images[0].path,
@@ -67,10 +68,17 @@ class ShareEventController {
     //   meta: {
     //     title: event.name,
     //     description: event.description || "Check out this event on AllEven",
-    //     image: `https://alleven.ru/${event.images[0].name}`,
-    //     url: `https://alleven.ru/event/${req.params.id}`,
+    //     image: `https://chatapi.trigger.ltd/${event.images[0].name}`,
+    //     url: `https://chatapi.trigger.ltd/event/${req.params.id}`,
     //   },
     // });
+    let arr=[]
+
+    event.services.map((el)=>{
+      arr.push(el.type)
+    })
+    const serviceName=arr.join(" , ")
+    console.log(serviceName,"serviceName");
 
     res.render("profile/company-share", {
       title: event.companyName,
@@ -82,7 +90,7 @@ class ShareEventController {
       category: event.category.name,
       phone: event.phoneNumbers[0],
       services:event.services,
-
+      serviceName
     });
   };
 
@@ -130,12 +138,13 @@ class ShareEventController {
       imageHeader: event.images[0].name,
       imageHeader,
       baseUrl,
+      description:event.description,
       category: event.category.name,
       meta: {
         title: event.name,
         description: event.description || "Check out this event on AllEven",
-        image: `https://alleven.ru/${event.images[0].name}`,
-        url: `https://alleven.ru/event/${req.params.id}`,
+        image: `https://chatapi.trigger.ltd/${event.images[0].name}`,
+        url: `https://chatapi.trigger.ltd/event/${req.params.id}`,
       },
     });
   };

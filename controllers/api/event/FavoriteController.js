@@ -39,7 +39,7 @@ class FavoriteController {
       const msg = `Пользователь ${userName} ${userSurname} добавил в «избранное» ваше событие ${event.name}`;
       const notif = await this.NotificationService.store({
         type: "message",
-        date_time: new Date(),
+        date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         status: 2,
         message: msg,
         user: event.owner._id.toString(),

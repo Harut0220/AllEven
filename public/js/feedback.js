@@ -31,6 +31,7 @@ function generateMes(data){
   return ms
 }
 
+      // <p class="organ">${data.user && data.user.roles && data.user.roles.name ? lng(data.user.roles.name) : ""}</p>
 const generateDiv = function(data){
   return`<div class="Notification1">
     <p>Ответ, пользователю</p>
@@ -39,7 +40,6 @@ const generateDiv = function(data){
     ${data.user && data.user.avatar ? `<img src="/${data.user.avatar}" class="profPic">` : ''}
     <div class="profilPic">
       <p class="name" id="name">${data.user && data.user.name ? data.user.name : ''}</p>
-      <p class="organ">${data.user && data.user.roles && data.user.roles.name ? lng(data.user.roles.name) : ""}</p>
     </div>
     </div>
     <div class="messageArea">
@@ -98,6 +98,10 @@ function appendIncomMessage(data){
 }
 
 function saveNotification(id, user = null){
+  console.log("feedbackjs");
+  console.log(id,user,"id,user");
+  
+  
   let message = document.getElementById('inpSend')
   appendMessage({message:message.value, createdAt: new Date().toISOString()})
   storeMessage('/admin/profile/notification/feedback/store',{message:message.value,parent_id:id,user})

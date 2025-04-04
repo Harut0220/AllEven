@@ -1,13 +1,24 @@
-const socketProt = window.location.protocol == "http:" ? "ws" : "wss";
-const socket = new WebSocket(
-  `${socketProt}://${window.location.host}/notification/ADMIN`
-);
-let notifListMod = document.getElementById("notifModal");
-console.log(`${socketProt}://${window.location.host}/notification/ADMIN`,"${socketProt}://${window.location.host}/notification/ADMIN");
+// const socketProt = window.location.protocol == "http:" ? "ws" : "wss";
+// const socket = new WebSocket(
+//   `${socketProt}://${window.location.host}/notification/ADMIN`
+// );
+// let notifListMod = document.getElementById("notifModal");
+// console.log(`${socketProt}://${window.location.host}/notification/ADMIN`,"${socketProt}://${window.location.host}/notification/ADMIN");
 
-socket.onopen = function (e) {
-  console.log("connected success");
-};
+// socket.onopen = function (e) {
+//   console.log("connected success");
+// };
+const socketProt = window.location.protocol === "http:" ? "ws" : "wss";
+const socketUrl = `${socketProt}://${window.location.host}/notification/ADMIN`;
+console.log("WebSocket URL: ", socketUrl); // Debugging
+
+const socket = new WebSocket(socketUrl);
+
+socket.onopen = () => console.log("WebSocket connected successfully!");
+// socket.onmessage = (event) => console.log("Received:", event.data);
+socket.onerror = (error) => console.error("WebSocket error:", error);
+// socket.onclose = () => console.log("WebSocket closed");
+
 
 function genRoute(data) {
   console.log('genRoute: ', data);

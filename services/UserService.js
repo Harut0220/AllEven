@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import User from "../models/User.js";
 import Role from "../models/Role.js";
 import bcrypt from "bcryptjs";
@@ -301,7 +301,8 @@ class UserService {
           ],
         },
       ]);
-
+      console.log(user,"user");
+      
     return user;
   };
 
@@ -535,6 +536,8 @@ class UserService {
   };
 
   getCountNotif = async (id) => {
+    console.log("id",id);
+    
     const usr = await this.find(id);
     // console.log(usr, "usr count notif");
 

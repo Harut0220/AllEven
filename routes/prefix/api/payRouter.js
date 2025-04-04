@@ -12,16 +12,18 @@ import companyHotDeals from "../../../models/company/companyHotDeals.js";
 import commission from "../../../models/commission.js";
 import newAuthJWT from "../../../middlewares/newAuthJWT.js";
 import notifEvent from "../../../events/NotificationEvent.js";
+import companyParticipants from "../../../models/company/companyParticipants.js";
 
 const payRouter = Router();
 
-payRouter.get("/price",newAuthJWT, async (req, res) => {
-try {
-  const priceComm=await commission.find();
-  res.status(200).send({message:"success",price:priceComm[0].price});
-} catch (error) {
-  res.status(500).send({message:"Server Error"});
-}});
+payRouter.get("/price", newAuthJWT, async (req, res) => {
+  try {
+    const priceComm = await commission.find();
+    res.status(200).send({ message: "success", price: priceComm[0].price });
+  } catch (error) {
+    res.status(500).send({ message: "Server Error" });
+  }
+});
 
 payRouter.get("/success/:id", async (req, res) => {
   console.log("success");
@@ -60,11 +62,22 @@ payRouter.get("/success/:id", async (req, res) => {
     message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
     register: registerDb._id,
     serviceId: service._id,
+    navigate: true,
     link: evLink,
   };
-  const nt = new Notification(dataNotif);
-  await nt.save();
-  if (companyDb.owner.notifCompany) {
+  const existMessage = await Notification.findOne({
+    status: 2,
+    user: companyDb.owner._id.toString(),
+    type: "Записались на услуги",
+    message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
+    register: registerDb._id,
+    serviceId: service._id,
+    navigate: true,
+    link: evLink,
+  });
+  if (!existMessage) {
+    const nt = new Notification(dataNotif);
+    await nt.save();
     notifEvent.emit(
       "send",
       companyDb.owner._id.toString(),
@@ -72,7 +85,7 @@ payRouter.get("/success/:id", async (req, res) => {
         type: "Записались на услуги",
         serviceId: service._id,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        navigate: false,
+        navigate: true,
         register: registerDb._id,
         serviceId: service._id,
         message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
@@ -101,8 +114,6 @@ payRouter.get("/success/:id", async (req, res) => {
 payRouter.get("/reject/:id", async (req, res) => {
   console.log("reject");
 
-  const result = req.query.result;
-  const pdfPath = req.query.pdf;
   console.log(req.params, "req.params");
   const payStoreDB = await paysStore.findById(req.params.id);
   const registerDb = await servicesRegistrations.findOne({
@@ -138,24 +149,30 @@ payRouter.get("/deal/success/:id", async (req, res) => {
 
   const dealRegistr = await companyHotDealRegistration
     .findById(req.params.id)
-    .populate("user");
+    .populate("user")
+    .exec();
   dealRegistr.status = true;
-  dealRegistr.pay=true;
-  dealRegistr.free=false
-  dealRegistr.payTime=moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss")
+  dealRegistr.pay = true;
+  dealRegistr.free = false;
+  dealRegistr.payTime = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
   await dealRegistr.save();
   const dealDb = await companyHotDeals.findById(dealRegistr.dealId);
-  dealDb.free=false
+  dealDb.free = false;
+  dealDb.registration = dealRegistr._id;
+  dealDb.situation = "passed";
   await dealDb.save();
   const companyDb = await companyModel
     .findById(dealDb.companyId)
     .populate("owner")
     .populate("images");
+
+ 
   const userDB = await User.findById(dealRegistr.user);
   const evLink = `alleven://singleCompany/${dealDb.companyId}`;
   const time = dealDb.date.split(" ")[1];
   const dataNotif = {
     status: 2,
+    dealDate: dealDb.date,
     date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
     user: companyDb.owner._id.toString(),
     type: "Присоединение",
@@ -164,9 +181,35 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     categoryIcon: companyDb.images[0].url, //sarqel
     link: evLink,
   };
-  const nt = new Notification(dataNotif);
-  await nt.save();
-  if (companyDb.owner.notifCompany) {
+  const existMessage = await Notification.findOne({
+    status: 2,
+    dealDate: dealDb.date,
+    user: companyDb.owner._id.toString(),
+    type: "Присоединение",
+    navigate: true,
+    message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
+    categoryIcon: companyDb.images[0].url, //sarqel
+    link: evLink,
+  });
+  if (!existMessage) {
+    const CompanyParticipants = await companyParticipants.findOne({
+      user: dealRegistr.user._id,
+      companyId: dealDb.companyId,
+    });
+
+    if (!CompanyParticipants) {
+      const newCompanyParticipants = new companyParticipants({
+        user: dealRegistr.user._id,
+        companyId: dealDb.companyId,
+      });
+      await newCompanyParticipants.save();
+      await companyModel.findByIdAndUpdate(dealDb.companyId, {
+        $set: { participants: newCompanyParticipants._id },
+      });
+    }
+    const nt = new Notification(dataNotif);
+    await nt.save();
+    // if (companyDb.owner.notifCompany) {
     notifEvent.emit(
       "send",
       companyDb.owner._id.toString(),

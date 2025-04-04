@@ -21,6 +21,7 @@ import { dateNow } from "./config/timestamps.js";
 // import moment from "moment-timezone";
 import shareRoutes from "./routes/share.js";
 import fs from "fs";
+// import notifEvent from "./ws_state/notificationNew.js";
 import notifEvent from "./events/NotificationEvent.js";
 import punycode from "punycode/punycode.js";
 import Event from "./models/event/Event.js";
@@ -51,7 +52,7 @@ const hbs = create({
   defaultLayout: "main",
   extname: "hbs",
   helpers: h,
-  partialsDir: __dirname + '/views/partials/'
+  partialsDir: __dirname + "/views/partials/",
   // allowProtoPropertiesByDefault: true,
   // allowProtoMethodsByDefault: true
 });
@@ -102,95 +103,179 @@ app.get("/page/:num/", async function (req, res) {
   }
 });
 
-app.get("/test/notif", async (req, res) => {
-  const idMeet = "67adef36cd710d9318475a14";
-  const eventDb = await meetingModel.findById(idMeet)
-    .populate({
-      path: "participants",
-      populate: { path: "user", select: "_id fcm_token notifEvent" },
-    })
-    .populate({
-      path: "participantSpot",
-      populate: { path: "user", select: "_id fcm_token notifEvent" },
-    })
-    // .populate("category")
-    .exec();
 
-  const evLink = `alleven://singleMeeting/${eventDb._id}`;
-  const date_time = moment.tz(process.env.TZ).format();
-  const dataNotif = {
-    status: 2,
-    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-    user: "67ad9c03a219da26a4a315a1",
-    type: "confirm_come",
-    navigate: false,
-    message: `Событие ${eventDb.purpose} начнется через час. Не пропустите.`,
-    // categoryIcon: eventDb.category.avatar,
-    eventId: eventDb._id.toString(),
-    link: evLink,
-  };
-  // Событие ${eventDb.name} начнется через час. Не пропустите.
-  const nt = new Notification(dataNotif);
-  await nt.save();
-  notifEvent.emit(
-    "send",
-    "67ad9c03a219da26a4a315a1",
-    JSON.stringify({
-      type: "confirm_come",
-      date_time,
-      navigate: true,
-      user:"67ad9c03a219da26a4a315a1",
-      eventId: eventDb._id.toString(),
-      message: `${eventDb.purpose} начнется через час. Не пропустите.`,
-      // categoryIcon: eventDb.category.avatar,
-      link: "alleven://NotificationsScreen",
-    })
-  );
 
-  return res.send("Test");
-});
+// app.get("/create/meeting", async (req, res) => {
+//   const evLink = `alleven://createEvent`;
+//   const date_time = moment.tz(process.env.TZ).format();
+//   const dataNotif = {
+//     status: 2,
+//     date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+//     user: "67ad9c03a219da26a4a315a1",
+//     type: "create_new",
+//     navigate: true,
+//     message: `Разместите информацию о вашем будущем событии.`,
+//     link: evLink,
+//   };
+//   const nt = new Notification(dataNotif);
+//   await nt.save();
 
+//   notifEvent.emit(
+//     "send",
+//     "67ad9c03a219da26a4a315a1",
+//     JSON.stringify({
+//       type: "create_new",
+//       navigate: true,
+//       date_time: new Date(),
+//       message: `Разместите информацию о вашем будущем событии.`,
+//       link: evLink,
+//     })
+//   );
+//   res.send({ message: "success" });
+//   // }
+// });
+
+// app.get("/test/event", async (req, res) => {
+//   const idMeet = "67e9b926dcbf708e7ec0d906";
+//   const eventDb = await Event
+//     .findById(idMeet)
+//     .populate({
+//       path: "participants",
+//       populate: { path: "user", select: "_id fcm_token notifEvent" },
+//     })
+//     .populate({
+//       path: "participantsSpot",
+//       populate: { path: "user", select: "_id fcm_token notifEvent" },
+//     })
+//     .exec();
+
+//   const evLink = `alleven://singleEvent/${eventDb._id}`;
+//   const date_time = moment.tz(process.env.TZ).format();
+//   const dataNotif = {
+//     status: 2,
+//     date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+//     user: "6763ec4fbed192bc99eaf23d",
+//     type: "confirm_come",
+//     navigate: true,
+//     message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+//     situation:"upcoming",
+//     // categoryIcon: eventDb.category.avatar,
+//     eventId: eventDb._id.toString(),
+//     link: evLink,
+//   };
+//   // Событие ${eventDb.name} начнется через час. Не пропустите.
+//   const nt = new Notification(dataNotif);
+//   await nt.save();
+//   notifEvent.emit(
+//     "send",
+//     "6763ec4fbed192bc99eaf23d",
+//     JSON.stringify({
+//       type: "confirm_come",
+//       date_time,
+//       navigate: true,
+//       user: "6763ec4fbed192bc99eaf23d",
+//       eventId: eventDb._id.toString(),
+//       situation:"upcoming",
+//       message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+//       // categoryIcon: eventDb.category.avatar,
+//       link: evLink,
+//     })
+//   );
+
+//   return res.send("Test");
+// });
+
+// app.get("/test/notif", async (req, res) => {
+//   const idMeet = "67adef36cd710d9318475a14";
+//   const eventDb = await meetingModel
+//     .findById(idMeet)
+//     .populate({
+//       path: "participants",
+//       populate: { path: "user", select: "_id fcm_token notifEvent" },
+//     })
+//     .populate({
+//       path: "participantSpot",
+//       populate: { path: "user", select: "_id fcm_token notifEvent" },
+//     })
+//     .exec();
+
+//   const evLink = `alleven://singleMeeting/${eventDb._id}`;
+//   const date_time = moment.tz(process.env.TZ).format();
+//   const dataNotif = {
+//     status: 2,
+//     date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+//     user: "67ad9c03a219da26a4a315a1",
+//     type: "confirm_come",
+//     navigate: true,
+//     message: `Событие ${eventDb.purpose} начнется через час. Не пропустите.`,
+//     situation:"upcoming",
+//     // categoryIcon: eventDb.category.avatar,
+//     meetingId: eventDb._id.toString(),
+//     link: evLink,
+//   };
+//   // Событие ${eventDb.name} начнется через час. Не пропустите.
+//   const nt = new Notification(dataNotif);
+//   await nt.save();
+//   notifEvent.emit(
+//     "send",
+//     "67ad9c03a219da26a4a315a1",
+//     JSON.stringify({
+//       type: "confirm_come",
+//       date_time,
+//       navigate: true,
+//       user: "67ad9c03a219da26a4a315a1",
+//       meetingId: eventDb._id.toString(),
+//       situation:"upcoming",
+//       message: `${eventDb.purpose} начнется через час. Не пропустите.`,
+//       // categoryIcon: eventDb.category.avatar,
+//       link: evLink,
+//     })
+//   );
+
+//   return res.send("Test");
+// });
 
 app.get("/test/register", async (req, res) => {
   const idMeet = "67c9491ce280217a88f0a457";
-  const eventDb = await companyModel.findById(idMeet)
+  const eventDb = await companyModel
+    .findById(idMeet)
     .populate("category")
     .exec();
 
-    const evLink = `alleven://myCompany/${companyDb._id}`;
+  const evLink = `alleven://myCompany/${companyDb._id}`;
 
-    const time = date.split(" ")[1];
-    const day = date.split(" ")[0].split("-")[2];
-    const monthName = moment(date).locale("ru").format("MMMM");
-  
-    const dataNotif = {
-      status: 2,
-      date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      user: companyDb.owner._id.toString(),
-      type: "confirm_come",
-      message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-      registerId: registerDb._id,
-      serviceId: service._id,
-      link: evLink,
-    };
-    const nt = new Notification(dataNotif);
-    await nt.save();
-    if (companyDb.owner.notifCompany) {
-      notifEvent.emit(
-        "send",
-        companyDb.owner._id.toString(),
-        JSON.stringify({
-          type: "confirm_come",
-          serviceId: service._id,
-          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-          navigate: false,
-          registerId: registerDb._id,
-          serviceId: service._id,
-          message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-          link: evLink,
-        })
-      );
-    }
+  const time = date.split(" ")[1];
+  const day = date.split(" ")[0].split("-")[2];
+  const monthName = moment(date).locale("ru").format("MMMM");
+
+  const dataNotif = {
+    status: 2,
+    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+    user: companyDb.owner._id.toString(),
+    type: "confirm_come",
+    message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
+    registerId: registerDb._id,
+    serviceId: service._id,
+    link: evLink,
+  };
+  const nt = new Notification(dataNotif);
+  await nt.save();
+  if (companyDb.owner.notifCompany) {
+    notifEvent.emit(
+      "send",
+      companyDb.owner._id.toString(),
+      JSON.stringify({
+        type: "confirm_come",
+        serviceId: service._id,
+        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+        navigate: false,
+        registerId: registerDb._id,
+        serviceId: service._id,
+        message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
+        link: evLink,
+      })
+    );
+  }
 
   return res.send("Test");
 });

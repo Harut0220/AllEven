@@ -33,10 +33,7 @@ webRoutes.post('/logout',AuthController.logOut);
 
 webRoutes.use('/profile',authCookieJWT,profileRoutes);
 
-webRoutes.get('/test',(req,res)=>{
-    notifEvent.emit('send','63a44848b352b7dcded288a3',JSON.stringify({type:'Новая категория',message:'тестовое сообщение с AllEven'}));
-    return res.send('Test'); 
-});
+
 
 
 
