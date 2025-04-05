@@ -1,5 +1,5 @@
 import EventService from "../../../services/EventService.js";
-import ImpressionService from "../../../services/ImpressionService.js";
+// import ImpressionService from "../../../services/ImpressionService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import EventRatingService from "../../../services/EventRatingService.js";
 // import CalculateTheDistance from "../../../services/CalculateTheDistance.js";
@@ -28,7 +28,7 @@ import calculateDistance from "../../../helper/distanceCalculate.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
-    this.ImpressionService = new ImpressionService();
+    // this.ImpressionService = new ImpressionService();
     this.EventRatingService = new EventRatingService();
     // this.CalculateTheDistance = new CalculateTheDistance();
     this.UserService = new UserService();
@@ -997,14 +997,7 @@ class EventController {
     }
   };
 
-  // userImpressions = async (req, res) => {
-  //   const { user_id, event_id } = req.query;
-  //   let impressions = await this.ImpressionService.getByUserEvent({
-  //     user_id,
-  //     event_id,
-  //   });
-  //   return res.json({ status: "success", data: impressions });
-  // };
+ 
 
   nearEvent = async (req, res) => {
     const id = req.params.id;
