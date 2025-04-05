@@ -106,6 +106,11 @@ class NotificationController {
             user: el.user,
           });
 
+          await Notification.findByIdAndUpdate(el._id, {
+            $set: { situation: eventDb.situation },
+          });
+          el.situation = eventDb.situation;
+
           if (eventParticipantSpotDb || eventDidNotComeDb) {
             await Notification.findByIdAndUpdate(el._id, {
               $set: { confirmed: true },

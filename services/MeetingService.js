@@ -1,20 +1,13 @@
 import mongoose from "mongoose";
 import meetingImages from "../models/meeting/meetingImages.js";
-// import meetingImages from "../models/meeting/meetingImages.js";
 import meetingModel from "../models/meeting/meetingModel.js";
 import meetingVerify from "../models/meeting/meetingVerify.js";
 import MeetingVerify from "../models/meeting/meetingVerify.js";
 import MeetingParticipants from "../models/meeting/meetingParticipant.js";
 import User from "../models/User.js";
 import meetingFavorit from "../models/meeting/meetingFavorit.js";
-// import moment from "moment-timezone";
 import jwt from "jsonwebtoken";
-// import meetingComment from "../models/meeting/meetingComment.js";
-import Role from "../models/Role.js";
-import NotificatationList from "../models/NotificationList.js";
 import Notification from "../models/Notification.js";
-import UserService from "./UserService.js";
-import NotificationService from "./NotificationService.js";
 import notifEvent from "../events/NotificationEvent.js";
 import meetingCommentLikes from "../models/meeting/meetingCommentLikes.js";
 import meetingLikes from "../models/meeting/meetingLikes.js";
@@ -25,16 +18,14 @@ import meetingCommentAnswer from "../models/meeting/meetingCommentAnswer.js";
 import meetingRating from "../models/meeting/meetingRating.js";
 import MeetingAnswerLikes from "../models/meeting/meetingCommentAnswerLike.js";
 import meetingParticipantSpot from "../models/meeting/meetingParticipantSpot.js";
-import e from "express";
 import meetingComment from "../models/meeting/meetingComment.js";
 import meetingView from "../models/meeting/meetingView.js";
-import companyModel from "../models/company/companyModel.js";
 import meetingImpressionImage from "../models/meeting/meetingImpressionImage.js";
 import ImpressionsMeeting from "../models/ImpressionsMeeting.js";
 import AnswerLikes from "../models/meeting/meetingCommentAnswerLike.js";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 import Report from "../models/Report.js";
+import calculateAverageRating from "../helper/ratingCalculate.js";
+import calculateDistance from "../helper/distanceCalculate.js";
 
 const meetingService = {
   myParticipant: async (user) => {
@@ -80,7 +71,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+        const differenceInMinutes = timeDifference / 60000; 
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -186,7 +177,6 @@ const meetingService = {
 
         await User.findByIdAndUpdate(meeting.user.toString(), {
           $pull: { meetings: meeting._id, meeting_favorites: meeting._id },
-          // $pull: { meeting_favorites: meeting._id },
         });
         await meeting.remove();
         console.log("Meetings and all related data deleted successfully");
@@ -228,7 +218,6 @@ const meetingService = {
       await meetingImpressionImage.deleteMany({ meetingId: des_events });
       await User.findByIdAndUpdate(meeting.user.toString(), {
         $pull: { meetings: meeting._id, meeting_favorites: meeting._id },
-        // $pull: { meeting_favorites: meeting._id },
       });
       await meeting.remove();
 
@@ -299,8 +288,15 @@ const meetingService = {
     };
   },
   meetings: async (authHeader, longitude, latitude) => {
-    console.log(authHeader,"authHeader",longitude,"longitude",latitude,"latitude");
-    
+    console.log(
+      authHeader,
+      "authHeader",
+      longitude,
+      "longitude",
+      latitude,
+      "latitude"
+    );
+
     if (authHeader && longitude && latitude) {
       const token = authHeader.split(" ")[1];
       const userToken = jwt.decode(token);
@@ -308,29 +304,7 @@ const meetingService = {
       const myLatitude = latitude;
       const myLongitude = longitude;
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        // Haversine formula
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
-      // const userDb=await User.findById(user.id)
 
       const meetings = await meetingModel
         .find({ user: { $ne: user }, status: { $eq: 1 } })
@@ -354,21 +328,29 @@ const meetingService = {
           ],
         })
         .exec();
-        console.log(meetings,"meetings bolor@ ka");
-        
+      console.log(meetings, "meetings bolor@ ka");
+
       function separateUpcomingAndPassed(events) {
         const now = new Date();
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  bolor@ ka");
-          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) bolor@ ka");
-          
+          console.log(
+            event.date,
+            "event.date",
+            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            event.purpose,
+            "event.purpose  bolor@ ka"
+          );
+          console.log(
+            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) bolor@ ka"
+          );
+
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
-            
             upcoming.push(event);
           } else {
             passed.push(event);
@@ -381,7 +363,8 @@ const meetingService = {
       const filter = separatedEvents.passed.filter(
         (event) => event.status === 1
       );
-      separatedEvents.upcoming.forEach((meeting) => {
+      separatedEvents.upcoming.forEach(async (meeting) => {
+
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -399,7 +382,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+        const differenceInMinutes = timeDifference / 60000; 
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -441,33 +424,12 @@ const meetingService = {
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
-        // passed: filter,
       };
     } else if (!authHeader && longitude && latitude) {
       const myLatitude = latitude;
       const myLongitude = longitude;
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
       const meetings = await meetingModel
         .find({ status: 1 })
         .populate({ path: "user", select: "-password" })
@@ -489,15 +451,24 @@ const meetingService = {
             },
           ],
         });
-        console.log(meetings,"meetings token chka");
-        
+      console.log(meetings, "meetings token chka");
+
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  token@ chka");
-          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token@ chka");
+          console.log(
+            event.date,
+            "event.date",
+            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            event.purpose,
+            "event.purpose  token@ chka"
+          );
+          console.log(
+            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token@ chka"
+          );
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -533,7 +504,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+        const differenceInMinutes = timeDifference / 60000; 
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -542,37 +513,12 @@ const meetingService = {
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
-        // passed: filter,
       };
-    } else if (
-      !authHeader &&
-      !longitude &&
-      !latitude
-    ) {
+    } else if (!authHeader && !longitude && !latitude) {
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
       const meetings = await meetingModel
         .find({ status: { $eq: 1 } })
         .populate({ path: "user", select: "-password" })
@@ -595,15 +541,24 @@ const meetingService = {
           ],
         })
         .exec();
-        console.log(meetings,"meetings vochmiban chka");
-        
+      console.log(meetings, "meetings vochmiban chka");
+
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  vochmiban chka");
-          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) vochmiban chka");
+          console.log(
+            event.date,
+            "event.date",
+            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            event.purpose,
+            "event.purpose  vochmiban chka"
+          );
+          console.log(
+            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) vochmiban chka"
+          );
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -637,7 +592,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+        const differenceInMinutes = timeDifference / 60000; 
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -646,7 +601,6 @@ const meetingService = {
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
-        // passed: filter,
       };
     } else if (authHeader && !longitude && !latitude) {
       const token = authHeader.split(" ")[1];
@@ -654,27 +608,7 @@ const meetingService = {
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
       const meetings = await meetingModel
         .find({ user: { $ne: user.id }, status: { $eq: 1 } })
         .populate({ path: "user", select: "-password" })
@@ -697,32 +631,25 @@ const meetingService = {
           ],
         })
         .exec();
-      // for (let i = 0; i < meetings.length; i++) {
-      //   const isRating = await meetingRating.findOne({
-      //     meetingId: meetings[i]._id,
-      //     user: user,
-      //   });
-      //   meetings[i].isRating = isRating ? true : false;
-      //   const findLike = await meetingLikes.findOne({
-      //     meetingId: meetings[i]._id,
-      //     user: user.id,
-      //   });
-      //   meetings[i].isLike = findLike ? true : false;
-      //   const findFavorite = await meetingFavorit.findOne({
-      //     meetingId: meetings[i]._id,
-      //     user: user.id,
-      //   });
-      //   meetings[i].isFavorite = findFavorite ? true : false;
-      // }
-      console.log(meetings,"meetings token ka lon lan chka");
-      
+
+      console.log(meetings, "meetings token ka lon lan chka");
+
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  token ka lon lan chka");
-          console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token ka lon lan chka");
+          console.log(
+            event.date,
+            "event.date",
+            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            event.purpose,
+            "event.purpose  token ka lon lan chka"
+          );
+          console.log(
+            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token ka lon lan chka"
+          );
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -757,7 +684,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+        const differenceInMinutes = timeDifference / 60000; 
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -799,13 +726,11 @@ const meetingService = {
       return {
         message: "success",
         upcoming: separatedEvents.upcoming,
-        // passed: filter,
       };
     } else {
       return {
         message: "error",
         upcoming: [],
-        // passed: [],
       };
     }
   },
@@ -905,15 +830,7 @@ const meetingService = {
         { new: true }
       );
       const ratingDb = await meetingRating.find({ meetingId });
-      function calculateAverageRating(ratings) {
-        if (ratings.length === 0) return 0;
 
-        const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-        const average = total / ratings.length;
-
-        return Math.round(average * 10) / 10;
-      }
       const averageRating = calculateAverageRating(ratingDb);
       await meetingModel.findByIdAndUpdate(meetingId, {
         rating: averageRating,
@@ -932,7 +849,6 @@ const meetingService = {
         .exec();
       if (ifImpressions) {
         await ImpressionsMeeting.findByIdAndUpdate(ifImpressions._id, {
-          // $set: { rating },
           $set: { date: dateTime, rating },
         });
       } else {
@@ -1154,15 +1070,7 @@ const meetingService = {
       })
       .exec();
 
-    function calculateAverageRating(ratings) {
-      if (ratings.length === 0) return 0;
 
-      const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-      const average = total / ratings.length;
-
-      return Math.round(average * 10) / 10;
-    }
 
     const averageRating = calculateAverageRating(result.ratings);
     const resultChanged1 = await meetingModel
@@ -1240,10 +1148,10 @@ const meetingService = {
     try {
       if (authHeader) {
         const token = authHeader.split(" ")[1];
-        
+
         const userToken = jwt.decode(token);
         const user = userToken.id;
-        console.log(user,"userId");
+        console.log(user, "userId");
 
         const resDb = await meetingModel
           .find({ user, status: { $ne: 2 } })
@@ -1270,8 +1178,8 @@ const meetingService = {
           })
           .exec();
 
-          console.log(resDb,"resDb");
-          
+        console.log(resDb, "resDb");
+
         let pastLikes;
         let pastComment;
         let view;
@@ -1342,17 +1250,26 @@ const meetingService = {
           const passed = [];
 
           events.forEach((event) => {
-            console.log(event.date,"event.date",moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),event.purpose,"event.purpose  myMeeting");
-            console.log(event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),"event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) myMeeting");
+            console.log(
+              event.date,
+              "event.date",
+              moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              event.purpose,
+              "event.purpose  myMeeting"
+            );
+            console.log(
+              event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) myMeeting"
+            );
             if (
               event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
             ) {
-              console.log(event.purpose,"upcoming");
+              console.log(event.purpose, "upcoming");
 
               upcoming.push(event);
             } else {
-              console.log(event.purpose,"passed");
-              
+              console.log(event.purpose, "passed");
+
               passed.push(event);
             }
           });
@@ -1364,16 +1281,9 @@ const meetingService = {
         const filter = separatedEvents.passed.filter(
           (event) => event.status === 1
         );
-        console.log(filter,"filter meetings");
-        
-        // let passed = [];
-        // for (let i = 0; i < filter.length; i++) {
-        //   for (let j = 0; j < filter[i].participants.length; j++) {
-        //     if (filter[i].participants[j]._id.toString() === user) {
-        //       passed.push(filter[i]);
-        //     }
-        //   }
-        // }
+        console.log(filter, "filter meetings");
+
+
 
         const dateChange = await meetingModel.find({ user });
 
@@ -1387,27 +1297,7 @@ const meetingService = {
           dateChange[x].changedStatusDate = moment.tz(process.env.TZ).format();
           await dateChange[x].save();
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         separatedEvents.upcoming.forEach((meeting) => {
@@ -1433,7 +1323,7 @@ const meetingService = {
         return {
           message: "success",
           upcoming: separatedEvents.upcoming,
-          passed:filter,
+          passed: filter,
           count: countAll,
         };
       } else {
@@ -1463,27 +1353,7 @@ const meetingService = {
         }
         const separatedEvents = separateUpcomingAndPassed(resDb);
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         separatedEvents.upcoming.forEach((meeting) => {
@@ -1528,32 +1398,61 @@ const meetingService = {
         .populate("comments")
         .populate("likes");
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       const myLatitude = latitude;
       const myLongitude = longitude;
 
-      meetings.forEach((meeting) => {
+      meetings.forEach(async (meeting) => {
+
+        const isRating = await meetingRating.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        meeting.isRating = isRating ? true : false;
+
+        const findLike = await meetingLikes.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        const findParticipant = await MeetingParticipants.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+        if (findParticipant) {
+          meeting.joinStatus = 2;
+        }
+
+        const findParticipantSpot = await meetingParticipantSpot.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+        if (findParticipantSpot) {
+          meeting.joinStatus = 3;
+        }
+
+        meeting.isLike = findLike ? true : false;
+
+        const findFavorite = await meetingFavorit.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        meeting.isFavorite = findFavorite ? true : false;
+
+        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        const eventTime = new Date(meeting.date);
+        const dateNow = new Date(timeMoscow);
+
+        const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000;
+
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+          meeting.hour = true;
+        }
+
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -1573,27 +1472,7 @@ const meetingService = {
         .populate("comments")
         .populate("likes")
         .populate("images");
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       const myLatitude = latitude;
       const myLongitude = longitude;
@@ -1622,32 +1501,59 @@ const meetingService = {
         .populate("comments")
         .populate("likes");
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
 
-      meetings.forEach((meeting) => {
+      meetings.forEach(async (meeting) => {
+        const isRating = await meetingRating.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        meeting.isRating = isRating ? true : false;
+
+        const findLike = await meetingLikes.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        const findParticipant = await MeetingParticipants.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+        if (findParticipant) {
+          meeting.joinStatus = 2;
+        }
+
+        const findParticipantSpot = await meetingParticipantSpot.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+        if (findParticipantSpot) {
+          meeting.joinStatus = 3;
+        }
+
+        meeting.isLike = findLike ? true : false;
+
+        const findFavorite = await meetingFavorit.findOne({
+          meetingId: meeting._id,
+          user: user.id,
+        });
+
+        meeting.isFavorite = findFavorite ? true : false;
+
+        const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        const eventTime = new Date(meeting.date);
+        const dateNow = new Date(timeMoscow);
+
+        const timeDifference = eventTime - dateNow;
+        const differenceInMinutes = timeDifference / 60000;
+
+        if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+          meeting.hour = true;
+        }
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -1733,36 +1639,7 @@ const meetingService = {
         { $set: { statusMeeting: "noVerified" } },
         { new: true }
       );
-      // const store = async (data) => {
-      //   let ex_notif_type = false;
-      //   if (data.user && data.type) {
-      //     const user = await User.findById(data.user);
-      //     if (
-      //       user &&
-      //       user.list_of_notifications &&
-      //       user.list_of_notifications.length
-      //     ) {
-      //       for (let l = 0; l < user.list_of_notifications.length; l++) {
-      //         if (data.notif_type == user.list_of_notifications[l].name) {
-      //           ex_notif_type = true;
-      //           break;
-      //         }
-      //       }
-      //     }
-      //   }
-      //   const getNotificatationListByName = async (name) => {
-      //     return await NotificatationList.findOne({ name });
-      //   };
-      //   const notificationLists = await getNotificatationListByName(data.type);
 
-      //   if (!ex_notif_type && notificationLists) {
-      //     return 1;
-      //   }
-
-      //   let roles = await Role.find({ name: data.sent }, { _id: 1 });
-      //   data.sent = roles;
-      //   return await Notification.create(data);
-      // };
       const evLink = `alleven://myMeeting/${meetingDb._id}`;
 
       const dataNotif = {
@@ -1771,7 +1648,6 @@ const meetingService = {
         user: userDb._id,
         type: "message",
         message: `К сожалению, ваше событие ${meetingDb.purpose} ${meetingDb.description} отклонено модератором, причина - ${status}`,
-        // categoryIcon: meetingDb.images[0].path,
         meetingId: meetingDb._id,
         navigate: true,
         link: evLink,
@@ -1785,7 +1661,6 @@ const meetingService = {
           JSON.stringify({
             type: "message",
             date_time: moment.tz(process.env.TZ).format(),
-            // categoryIcon: meetingDb.images[0].path,
             meetingId: meetingDb._id,
             navigate: true,
             message: `К сожалению, ваше событие ${meetingDb.purpose} ${meetingDb.description} отклонено модератором, причина - ${status}`,
@@ -1911,7 +1786,6 @@ const meetingService = {
       );
     }
 
-    // await event.updateOne(data);
     return meeting;
   },
   addComment: async (user, meetingId, comment) => {
@@ -2087,23 +1961,15 @@ const meetingService = {
           .populate({
             path: "comments",
             populate: [
-              { path: "user", select: "_id name surname avatar" }, // Populate user in comments
+              { path: "user", select: "_id name surname avatar" },
               {
-                path: "answer", // Populate the answer array
-                populate: { path: "user", select: "name surname avatar" }, // Populate user in the nested answer array
+                path: "answer",
+                populate: { path: "user", select: "name surname avatar" }, 
               },
             ],
           })
           .populate("ratings");
-        function calculateAverageRating(ratings) {
-          if (ratings.length === 0) return 0;
 
-          const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-          const average = total / ratings.length;
-
-          return Math.round(average * 10) / 10;
-        }
 
         const averageRating = calculateAverageRating(resDb.ratings);
         const ifView = await MeetingViews.findOne({ meetingId: id, user });
@@ -2177,7 +2043,7 @@ const meetingService = {
             .populate({
               path: "comments",
               populate: [
-                { path: "user", select: "_id name surname avatar isLike" }, // Populate user in comments
+                { path: "user", select: "_id name surname avatar isLike" },
                 {
                   path: "answer",
                   populate: {
@@ -2247,7 +2113,6 @@ const meetingService = {
           }
         }
       } else {
-        // let resultChanged1;
         const resDb = await meetingModel
           .findById(id)
           .populate({
@@ -2257,32 +2122,24 @@ const meetingService = {
           .populate({
             path: "comments",
             populate: [
-              { path: "user", select: "_id name surname avatar" }, // Populate user in comments
+              { path: "user", select: "_id name surname avatar" }, 
               {
-                path: "answer", // Populate the answer array
-                populate: { path: "user", select: "name surname avatar" }, // Populate user in the nested answer array
+                path: "answer",
+                populate: { path: "user", select: "name surname avatar" }, 
               },
             ],
           })
           .populate("ratings");
-        function calculateAverageRating(ratings) {
-          if (ratings.length === 0) return 0;
 
-          const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-          const average = total / ratings.length;
-
-          return Math.round(average * 10) / 10;
-        }
 
         const averageRating = calculateAverageRating(resDb.ratings);
         resultChanged1 = await meetingModel
           .findOneAndUpdate(
             { _id: id },
             {
-              $set: { ratingCalculated: averageRating }, // Set new rating
+              $set: { ratingCalculated: averageRating }, 
             },
-            { new: true } // Return the updated document
+            { new: true } 
           )
           .populate({ path: "user", select: "-password" })
           .populate("participants")
@@ -2302,10 +2159,10 @@ const meetingService = {
           .populate({
             path: "comments",
             populate: [
-              { path: "user", select: "_id name surname avatar" }, // Populate user in comments
+              { path: "user", select: "_id name surname avatar" }, 
               {
                 path: "answer",
-                populate: { path: "user", select: "name surname avatar" }, // Populate user in the nested answer array
+                populate: { path: "user", select: "name surname avatar" },
               },
             ],
           })
@@ -2317,7 +2174,7 @@ const meetingService = {
       const dateNow = new Date(timeMoscow);
 
       const timeDifference = eventTime - dateNow;
-      const differenceInMinutes = timeDifference / 60000; // Convert ms to minutes
+      const differenceInMinutes = timeDifference / 60000;
 
       if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
         resultChanged1.hour = true;
@@ -2454,10 +2311,6 @@ const meetingService = {
 
         await db.save();
 
-        // const resDb=await MeetingVerify.find({passport:body.passport})
-        // const userDb=await User.findById(user)
-        // userDb.meetings.push(db._id)
-        // const user=(await userDb.save()).populate("meetings").exec()
         const updatedUser = await User.findByIdAndUpdate(
           user,
           { $set: { statusMeeting: "inProgress" } },
@@ -2537,61 +2390,6 @@ const meetingService = {
       let event = await meetingModel.updateOne(d);
 
       return event;
-
-      // let event = await meetingModel.findById(id);
-      // if (!event) {
-      //   return 0;
-      // }
-      // const newObj = { id, ...data };
-
-      // delete newObj.images;
-
-      // const evLink = `alleven://myMeeting/${event._id}`;
-
-      // const updatedCompany = await meetingModel
-      //   .findByIdAndUpdate(
-      //     id,
-      //     { ...newObj, updatedAt: moment.tz(process.env.TZ).format() },
-      //     { new: true }
-      //   )
-      //   .populate("images");
-      // const __filename = fileURLToPath(import.meta.url);
-      // const __dirname = dirname(__filename);
-      // // const dirPath = __dirname.split("");
-
-      // for (let i = 0; i < updatedCompany.images.length; i++) {
-
-      //   const element = updatedCompany.images[i];
-      //   try {
-      //     const filePath = path.join(__dirname, "..", "storage", element.name);
-
-      //     if (fs.existsSync(filePath)) {
-      //       await fs.promises.unlink(filePath);
-      //       console.log("File deleted successfully:", filePath);
-      //     } else {
-      //       console.log("File not found:", filePath);
-      //     }
-      //   } catch (err) {
-      //     console.error("Error deleting file:", err);
-      //   }
-      //   await meetingImages.findByIdAndDelete(element._id);
-      // }
-      // await meetingModel.findByIdAndUpdate(id, { $set: { images: [] } });
-
-      // await data.images.map(async (el) => {
-      //   const evImg = new meetingImages({
-      //     name: el,
-      //   });
-
-      //   const evimgDb = await evImg.save();
-      //   // console.log(evimgDb,"new image");
-      //   await meetingModel.findByIdAndUpdate(id, {
-      //     $push: { images: evimgDb._id },
-      //   });
-      // });
-      // // console.log(updatedCompany,"updatedCompany res");
-
-      // return updatedCompany;
     } catch (err) {
       console.error(err);
     }

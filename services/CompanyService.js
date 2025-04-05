@@ -29,6 +29,8 @@ import Report from "../models/Report.js";
 import paysStore from "../models/paysStore.js";
 import companyHotDealRegistration from "../models/company/companyHotDealRegistration.js";
 import ImpressionsCompany from "../models/ImpressionsCompany.js";
+import calculateAverageRating from "../helper/ratingCalculate.js";
+import calculateDistance from "../helper/distanceCalculate.js";
 
 const companyService = {
   myparticipant: async (id, latitude, longitude) => {
@@ -96,28 +98,7 @@ const companyService = {
 
       const openBool = isCompanyOpen(company.startHour, company.endHour, hours);
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        // Haversine formula
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
       if (!latitude && !longitude) {
         obj.kilometr = null;
       } else {
@@ -813,15 +794,7 @@ const companyService = {
           $push: { ratings: ratingDb._id },
         });
         const ratings = await companyRating.find({ companyId: eventId }).lean();
-        function calculateAverageRating(ratings) {
-          if (ratings.length === 0) return 0;
 
-          const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-          const average = total / ratings.length;
-
-          return Math.round(average * 10) / 10;
-        }
         const averageRating = calculateAverageRating(ratings);
 
         const newGet = await companyModel.findByIdAndUpdate(
@@ -1233,27 +1206,7 @@ const companyService = {
   //       .populate("comments");
   //     const myLatitude = 55.7558;
   //     const myLongitude = 37.6176;
-  //     function calculateDistance(lat1, lon1, lat2, lon2) {
-  //       const earthRadius = 6371;
 
-  //       const latRad1 = (lat1 * Math.PI) / 180;
-  //       const lonRad1 = (lon1 * Math.PI) / 180;
-  //       const latRad2 = (lat2 * Math.PI) / 180;
-  //       const lonRad2 = (lon2 * Math.PI) / 180;
-
-  //       const dLat = latRad2 - latRad1;
-  //       const dLon = lonRad2 - lonRad1;
-  //       const a =
-  //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-  //         Math.cos(latRad1) *
-  //           Math.cos(latRad2) *
-  //           Math.sin(dLon / 2) *
-  //           Math.sin(dLon / 2);
-  //       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  //       const distance = earthRadius * c;
-
-  //       return distance;
-  //     }
   //     company.forEach((company) => {
   //       company.kilometr = calculateDistance(
   //         myLatitude,

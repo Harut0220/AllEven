@@ -6,6 +6,7 @@ import User from "../../../models/User.js";
 import EventRatingService from "../../../services/EventRatingService.js";
 import jwt from "jsonwebtoken";
 import Notification from "../../../models/Notification.js";
+import calculateAverageRating from "../../../helper/ratingCalculate.js";
 class RatingController {
   constructor() {
     this.EventRatingService = new EventRatingService();
@@ -30,15 +31,7 @@ class RatingController {
       )
         .populate("ratings")
         .exec();
-      function calculateAverageRating(ratings) {
-        if (ratings.length === 0) return 0;
 
-        const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-        const average = total / ratings.length;
-
-        return Math.round(average * 10) / 10;
-      }
 
       const averageRating = calculateAverageRating(result.ratings);
 

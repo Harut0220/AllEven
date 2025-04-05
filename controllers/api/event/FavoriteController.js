@@ -13,66 +13,9 @@ class FavoriteController {
     this.NotificationService = new NotificationService();
   }
 
-  index = async (req, res) => {
-    let datas = await this.EventService.getByCollectionId({
-      favorites: req.user.id,
-    });
-    return res.json({ status: "success", data: datas });
-  };
 
-  store = async (req, res) => {
-    const { event_id } = req.body;
-    const event = await this.EventService.find(event_id);
-    let evEx = 0;
 
-    for (let e = 0; e < event.favorites.length; e++) {
-      if (event.favorites[e]._id == req.user.id) {
-        evEx = 1;
-      }
-    }
 
-    const userName = req.user.name ? req.user.name : "";
-    const userSurname = req.user.surname ? req.user.surname : "";
-
-    if (!evEx && event.owner) {
-      const evLink = `alleven://myEvent/${event._id}`;
-      const msg = `Пользователь ${userName} ${userSurname} добавил в «избранное» ваше событие ${event.name}`;
-      const notif = await this.NotificationService.store({
-        type: "message",
-        date_time:moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        status: 2,
-        message: msg,
-        user: event.owner._id.toString(),
-        link: evLink,
-        notif_type: "Добавлено в избранное",
-        // categoryIcon: event.category.avatar,
-        eventId: event._id,
-      });
-      //   if(event.owner.notifEvent){
-
-      //   }
-      notifEvent.emit(
-        "send",
-        event.owner._id.toString(),
-        JSON.stringify({
-          type: "message",
-          date_time: new Date(),
-          message: msg,
-          eventId: event._id,
-          link: evLink,
-          notif_type: "Добавлено в избранное",
-          // categoryIcon: event.category.avatar,
-        })
-      );
-    }
-
-    let ev = await this.EventService.addOrRemoveCollectionData(
-      event_id,
-      req.user.id,
-      "favorites"
-    );
-    return res.json({ status: "success" });
-  };
 
   favorite = async (req, res) => {
     const authHeader = req.headers.authorization;

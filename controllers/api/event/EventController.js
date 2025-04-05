@@ -23,6 +23,8 @@ import Notification from "../../../models/Notification.js";
 import EventImpressionImages from "../../../models/event/EventImpressionImages.js";
 import EventComment from "../../../models/event/EventComment.js";
 import ImpressionsEvent from "../../../models/ImpressionsEvent.js";
+import calculateAverageRating from "../../../helper/ratingCalculate.js";
+import calculateDistance from "../../../helper/distanceCalculate.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -380,32 +382,13 @@ class EventController {
 
       const upcomPass = separateUpcomingAndPassed(resArray);
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       const myLatitude = 55.7558;
       const myLongitude = 37.6176;
 
       upcomPass.upcoming.forEach((meeting) => {
+        
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -719,15 +702,7 @@ class EventController {
     const token = authHeader.split(" ")[1];
     const user = jwt.decode(token);
     const event = await Event.findById(id).populate("ratings");
-    function calculateAverageRating(ratings) {
-      if (ratings.length === 0) return 0;
 
-      const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-      const average = total / ratings.length;
-
-      return Math.round(average * 10) / 10;
-    }
     const averageRating = calculateAverageRating(event.ratings);
     const eventUpdate = await Event.findOneAndUpdate(
       { _id: id },
@@ -1022,14 +997,14 @@ class EventController {
     }
   };
 
-  userImpressions = async (req, res) => {
-    const { user_id, event_id } = req.query;
-    let impressions = await this.ImpressionService.getByUserEvent({
-      user_id,
-      event_id,
-    });
-    return res.json({ status: "success", data: impressions });
-  };
+  // userImpressions = async (req, res) => {
+  //   const { user_id, event_id } = req.query;
+  //   let impressions = await this.ImpressionService.getByUserEvent({
+  //     user_id,
+  //     event_id,
+  //   });
+  //   return res.json({ status: "success", data: impressions });
+  // };
 
   nearEvent = async (req, res) => {
     const id = req.params.id;
@@ -1041,15 +1016,7 @@ class EventController {
       const resDb = await Event.findById(id).populate("ratings");
       const ifView = await EventView.findOne({ user: user.id, eventId: id });
 
-      function calculateAverageRating(ratings) {
-        if (ratings.length === 0) return 0;
 
-        const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-        const average = total / ratings.length;
-
-        return Math.round(average * 10) / 10;
-      }
 
       const averageRating = calculateAverageRating(resDb.ratings);
 
@@ -1115,6 +1082,9 @@ class EventController {
             data.comments[i].isLike = true;
           }
         }
+
+
+        
         const isRating = await EventRating.findOne({
           user: user.id,
           event: id,
@@ -1255,15 +1225,7 @@ class EventController {
       }
     } else {
       const resDb = await Event.findById(id).populate("ratings").exec();
-      function calculateAverageRating(ratings) {
-        if (ratings.length === 0) return 0;
 
-        const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-        const average = total / ratings.length;
-
-        return Math.round(average * 10) / 10;
-      }
 
       const averageRating = calculateAverageRating(resDb.ratings);
 
@@ -1314,28 +1276,28 @@ class EventController {
     }
   };
 
-  eventImpressions = async (req, res) => {
-    try {
-      const { event_id } = req.query;
-      let events = [];
-      if (req.user.role_name === "USER") {
-        events = await this.EventService.findVisitorImpressions(req.user.id);
-      } else {
-        events = await this.EventService.findOwnerImpressions(req.user.id);
-      }
+  // eventImpressions = async (req, res) => {
+  //   try {
+  //     const { event_id } = req.query;
+  //     let events = [];
+  //     if (req.user.role_name === "USER") {
+  //       events = await this.EventService.findVisitorImpressions(req.user.id);
+  //     } else {
+  //       events = await this.EventService.findOwnerImpressions(req.user.id);
+  //     }
 
-      for (const event of events) {
-        if (!isNaN(+event.status)) {
-          event._doc.eventStatus = +event.status;
-          delete event._doc.status;
-        }
-      }
-      return res.json({ status: "success", data: events });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send({ message: "Server error" });
-    }
-  };
+  //     for (const event of events) {
+  //       if (!isNaN(+event.status)) {
+  //         event._doc.eventStatus = +event.status;
+  //         delete event._doc.status;
+  //       }
+  //     }
+  //     return res.json({ status: "success", data: events });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).send({ message: "Server error" });
+  //   }
+  // };
 
   allEvent = async (req, res) => {
     try {
@@ -1376,31 +1338,56 @@ class EventController {
             });
           }
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371; // Radius of the Earth in kilometers
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
 
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
-        result.forEach((meeting) => {
+        result.forEach(async(meeting) => {
+
+          const isRating = await EventRating.findOne({
+            user: user.id,
+            event:meeting._id,
+          });
+          meeting.isRating = isRating ? true : false;
+          const isLike = await EventLike.findOne({
+            user: user.id,
+            eventId: meeting._id,
+          });
+          meeting.isLike = isLike ? true : false;
+          const isFavorite = await EventFavorites.findOne({
+            user: user.id,
+            eventId: meeting._id,
+          });
+          meeting.isFavorite = isFavorite ? true : false;
+          const isJoin = await EventParticipants.findOne({
+            user: user.id,
+            eventId: meeting._id,
+          });
+  
+
+          if (isJoin) {
+            meeting.joinStatus = 2;
+          }
+  
+          const isSpot = await EventParticipantsSpot.findOne({
+            user: user.id,
+            eventId: meeting._id,
+          });
+          if (isSpot) {
+            meeting.joinStatus = 3;
+          }
+
+          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const eventTime = new Date(meeting.started_time);
+          const dateNow = new Date(timeMoscow);
+  
+          const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000;
+  
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+            meeting.hour = true;
+          }
+
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1444,31 +1431,22 @@ class EventController {
             });
           }
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371; // Radius of the Earth in kilometers
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
 
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         result.forEach((meeting) => {
+
+          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const eventTime = new Date(meeting.started_time);
+          const dateNow = new Date(timeMoscow);
+  
+          const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000;
+  
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+            meeting.hour = true;
+          }
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1520,6 +1498,16 @@ class EventController {
 
         for (let z = 0; z < sortArray.length; z++) {
           for (let r = 0; r < sortArray[z].events.length; r++) {
+            const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+            const eventTime = new Date(sortArray[z].events[r].started_time);
+            const dateNow = new Date(timeMoscow);
+    
+            const timeDifference = eventTime - dateNow;
+            const differenceInMinutes = timeDifference / 60000;
+    
+            if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+              sortArray[z].events[r].hour = true;
+            }
             eventsArray.push(sortArray[z].events[r]);
           }
         }
@@ -1581,27 +1569,7 @@ class EventController {
       const authHeader = req.headers.authorization;
       const { longitude, latitude } = req.body;
 
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371; // Radius of the Earth in kilometers
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       const myLatitude = latitude;
       const myLongitude = longitude;
@@ -1630,6 +1598,16 @@ class EventController {
         const pointsOfInterest = await Event.find({ owner: { $ne: user.id } });
 
         pointsOfInterest.forEach((meeting) => {
+          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const eventTime = new Date(meeting.started_time);
+          const dateNow = new Date(timeMoscow);
+  
+          const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000;
+  
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+            meeting.hour = true;
+          }
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1709,7 +1687,6 @@ class EventController {
           const passed = [];
 
           events.forEach((event) => {
-            // const eventDate = new Date(event.started_time);
             if (event.started_time > now) {
               upcoming.push(event);
             } else {
@@ -1729,23 +1706,8 @@ class EventController {
           }
         }
         for (let z = 0; z < result.upcoming.length; z++) {
-          const isJoin = await EventParticipants.findOne({
-            user: user.id,
-            eventId: result.upcoming[z]._id,
-          });
-          // const timeMoscow = moment
-          //   .tz(process.env.TZ)
-          //   .format("YYYY-MM-DD HH:mm");
-          // const eventTime = new Date(result.upcoming[z].started_time);
-          // const dateNow = new Date(timeMoscow);
 
-          // const timeDifference = eventTime - dateNow;
 
-          // const differenceInMinutes = timeDifference / 60000; // 60000 ms in one minute
-
-          // if (differenceInMinutes > 0 && differenceInMinutes <= 60) {
-          //   result.upcoming[z].hour = true;
-          // }
           const timeMoscow = moment
             .tz(process.env.TZ)
             .format("YYYY-MM-DD HH:mm");
@@ -1760,17 +1722,7 @@ class EventController {
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             result.upcoming[z].hour = true;
           }
-          // if (isJoin) {
-          //   result.upcoming[z].joinStatus = 2;
-          // }
-          // const isSpot = await EventParticipantsSpot.findOne({
-          //   user: user.id,
-          //   eventId: result.upcoming[z]._id,
-          // });
-          // if (isSpot) {
 
-          //   result.upcoming[z].joinStatus = 3;
-          // }
           const isLikeDb = await EventLike.findOne({
             eventId: result.upcoming[z]._id,
             user: user.id,
@@ -1801,29 +1753,7 @@ class EventController {
             }
           }
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371; // Radius of the Earth in kilometers
 
-          // Convert latitude and longitude from degrees to radians
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance; // Distance in kilometers
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         result.upcoming.forEach((meeting) => {
@@ -1878,32 +1808,22 @@ class EventController {
             });
           }
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371; // Radius of the Earth in kilometers
 
-          // Convert latitude and longitude from degrees to radians
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance; // Distance in kilometers
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         result.upcoming.forEach((meeting) => {
+
+          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const eventTime = new Date(meeting.started_time);
+          const dateNow = new Date(timeMoscow);
+  
+          const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000;
+  
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+            meeting.hour = true;
+          }
+
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1912,6 +1832,16 @@ class EventController {
           );
         });
         result.passed.forEach((meeting) => {
+          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const eventTime = new Date(meeting.started_time);
+          const dateNow = new Date(timeMoscow);
+  
+          const timeDifference = eventTime - dateNow;
+          const differenceInMinutes = timeDifference / 60000;
+  
+          if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
+            meeting.hour = true;
+          }
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -2073,48 +2003,6 @@ class EventController {
       return res.status(500).send("Server Error");
     }
   };
-  // testUpcoming = async (req, res) => {
-  //   // const authHeader = req.headers.authorization;
-  //   // if (authHeader) {
-  //   //   const token = authHeader.split(" ")[1];
-  //   //   const user = jwt.decode(token);
-  //   const user = { id: "656ecb2e923c5a66768f4cd3" };
-  //     const events = await Event.find({
-  //       owner: { $ne: user.id },
-  //       status: 1,
-  //     })
-  //       .populate({ path: "category", select: "avatar name map_avatar" })
-  //       .populate({ path: "images", select: "name" });
-  //     function separateUpcomingAndPassed(events) {
-  //       const now = new Date();
-  //       const upcoming = [];
-  //       const passed = [];
-
-  //       events.forEach((event) => {
-  //         const eventDate = new Date(event.started_time);
-  //         if (eventDate > now) {
-  //           upcoming.push(event);
-  //         } else {
-  //           passed.push(event);
-  //         }
-  //       });
-
-  //       return { upcoming, passed };
-  //     }
-
-  //     const result = separateUpcomingAndPassed(events);
-  //     if (result.passed.length > 0) {
-  //       for (let i = 0; i < result.passed.length; i++) {
-  //         await Event.findByIdAndUpdate(result.passed[i]._id, { situation: "passed"} );
-  //       }
-  //     }
-  //     res.status(200).send({
-  //       message: "success",
-  //       upcoming: result.upcoming,
-  //       passed: result.passed,
-  //     });
-  //   // }
-  // }
 }
 
 export default new EventController();

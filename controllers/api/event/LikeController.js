@@ -13,12 +13,7 @@ class LikeController {
     this.NotificationService = new NotificationService();
   }
 
-  index = async (req, res) => {
-    let datas = await this.EventService.getByCollectionId({
-      likes: req.user.id,
-    });
-    return res.json({ status: "success", data: datas });
-  };
+
 
   // store = async (req,res) => {
   //     const {event_id} = req.body;

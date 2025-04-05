@@ -178,7 +178,6 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     type: "Присоединение",
     navigate: true,
     message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
-    categoryIcon: companyDb.images[0].url, //sarqel
     link: evLink,
   };
   const existMessage = await Notification.findOne({
@@ -188,7 +187,6 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     type: "Присоединение",
     navigate: true,
     message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
-    categoryIcon: companyDb.images[0].url, //sarqel
     link: evLink,
   });
   if (!existMessage) {
@@ -209,7 +207,6 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     }
     const nt = new Notification(dataNotif);
     await nt.save();
-    // if (companyDb.owner.notifCompany) {
     notifEvent.emit(
       "send",
       companyDb.owner._id.toString(),
@@ -218,7 +215,6 @@ payRouter.get("/deal/success/:id", async (req, res) => {
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         navigate: true,
         message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
-        categoryIcon: companyDb.images[0].url, //sarqel
         link: evLink,
       })
     );

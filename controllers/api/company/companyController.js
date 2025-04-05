@@ -32,6 +32,8 @@ import CompanyServiceModel from "../../../models/company/companyService.js";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import Report from "../../../models/Report.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
+import calculateAverageRating from "../../../helper/ratingCalculate.js";
+import calculateDistance from "../../../helper/distanceCalculate.js";
 
 const companyController = {
   deleteServiceImage: async (req, res) => {
@@ -470,33 +472,9 @@ const companyController = {
             populate: {
               path: "images category", // The field within `companyId` to populate
             },
-            // populate: {
-            //   path: "category",
-            // }
           });
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
 
         result.forEach((company) => {
           company.companyId.kilometr = calculateDistance(
@@ -562,28 +540,7 @@ const companyController = {
           // }
         });
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
 
         result.forEach((company) => {
           company.companyId.kilometr = calculateDistance(
@@ -652,28 +609,7 @@ const companyController = {
             //   path: "category",
             // }
           });
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6173;
         result.forEach((company) => {
@@ -739,28 +675,7 @@ const companyController = {
           //   path: "category",
           // }
         });
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         const myLatitude = 55.7558;
         const myLongitude = 37.6173;
         result.forEach((company) => {
@@ -2028,15 +1943,7 @@ const companyController = {
         const user = jwt.decode(token);
         const result = await Company.findById(id).populate("ratings");
 
-        function calculateAverageRating(ratings) {
-          if (ratings.length === 0) return 0;
 
-          const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-          const average = total / ratings.length;
-
-          return Math.round(average * 10) / 10;
-        }
         let resultChanged1;
         const averageRating = calculateAverageRating(result.ratings);
         const ifView = await companyView.findOne({
@@ -2280,28 +2187,7 @@ const companyController = {
             resultChanged1.comments[i].isLike = true;
           }
         }
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         if (latitude && longitude) {
           resultChanged1.kilometr = calculateDistance(
             latitude,
@@ -2324,15 +2210,6 @@ const companyController = {
 
         const result = await Company.findById(id).populate("ratings");
 
-        function calculateAverageRating(ratings) {
-          if (ratings.length === 0) return 0;
-
-          const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-          const average = total / ratings.length;
-
-          return Math.round(average * 10) / 10;
-        }
 
         const averageRating = calculateAverageRating(result.ratings);
 
@@ -2456,28 +2333,7 @@ const companyController = {
           }
         }
         resultChanged1.hotDeals = upcomingDeals;
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         if (latitude && longitude) {
           resultChanged1.kilometr = calculateDistance(
             latitude,
@@ -2507,28 +2363,7 @@ const companyController = {
       const { latitude, longitude } = req.query;
       const mskLatitude = 55.7558;
       const mskLongitude = 37.6173;
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-        const earthRadius = 6371;
 
-        const latRad1 = (lat1 * Math.PI) / 180;
-        const lonRad1 = (lon1 * Math.PI) / 180;
-        const latRad2 = (lat2 * Math.PI) / 180;
-        const lonRad2 = (lon2 * Math.PI) / 180;
-
-        // Haversine formula
-        const dLat = latRad2 - latRad1;
-        const dLon = lonRad2 - lonRad1;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(latRad1) *
-            Math.cos(latRad2) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = earthRadius * c;
-
-        return distance;
-      }
 
       if (!authHeader) {
         let dbObj = [];
@@ -2769,28 +2604,7 @@ const companyController = {
           // .populate("comments")
           .populate("hotDeals")
           .populate("category");
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          // Haversine formula
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         result.forEach((company) => {
           company.kilometr = calculateDistance(
             myLatitude,
@@ -2876,27 +2690,7 @@ const companyController = {
           // .populate("comments")
           .populate("hotDeals")
           .populate("category");
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-          const earthRadius = 6371;
 
-          const latRad1 = (lat1 * Math.PI) / 180;
-          const lonRad1 = (lon1 * Math.PI) / 180;
-          const latRad2 = (lat2 * Math.PI) / 180;
-          const lonRad2 = (lon2 * Math.PI) / 180;
-
-          const dLat = latRad2 - latRad1;
-          const dLon = lonRad2 - lonRad1;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(latRad1) *
-              Math.cos(latRad2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = earthRadius * c;
-
-          return distance;
-        }
         result.forEach((company) => {
           company.kilometr = calculateDistance(
             myLatitude,
@@ -3015,17 +2809,7 @@ const companyController = {
       const result = await Company.findById(userDb.company._id)
         .populate("ratings")
         .exec();
-      function calculateAverageRating(ratings) {
-        if (ratings.length === 0) return 0;
 
-        // Sum all the ratings
-        const total = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-
-        // Calculate the average
-        const average = total / ratings.length;
-
-        return Math.round(average * 10) / 10; // Rounds to 1 decimal place
-      }
 
       const averageRating = calculateAverageRating(result.ratings);
 
@@ -3509,28 +3293,7 @@ const companyController = {
             .populate("likes")
             .populate("hotDeals")
             .populate("comments");
-          function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371;
 
-            const latRad1 = (lat1 * Math.PI) / 180;
-            const lonRad1 = (lon1 * Math.PI) / 180;
-            const latRad2 = (lat2 * Math.PI) / 180;
-            const lonRad2 = (lon2 * Math.PI) / 180;
-
-            // Haversine formula
-            const dLat = latRad2 - latRad1;
-            const dLon = lonRad2 - lonRad1;
-            const a =
-              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(latRad1) *
-                Math.cos(latRad2) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = earthRadius * c;
-
-            return distance;
-          }
           company.forEach((company) => {
             company.kilometr = calculateDistance(
               myLatitude,
@@ -3641,27 +3404,7 @@ const companyController = {
             .populate("likes")
             .populate("hotDeals")
             .populate("comments");
-          function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371;
 
-            const latRad1 = (lat1 * Math.PI) / 180;
-            const lonRad1 = (lon1 * Math.PI) / 180;
-            const latRad2 = (lat2 * Math.PI) / 180;
-            const lonRad2 = (lon2 * Math.PI) / 180;
-
-            const dLat = latRad2 - latRad1;
-            const dLon = lonRad2 - lonRad1;
-            const a =
-              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(latRad1) *
-                Math.cos(latRad2) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = earthRadius * c;
-
-            return distance;
-          }
           company.forEach((company) => {
             company.kilometr = calculateDistance(
               myLatitude,
@@ -3768,28 +3511,7 @@ const companyController = {
             .populate({ path: "owner", select: "-password" })
             .populate("likes")
             .populate("comments");
-          function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371;
 
-            const latRad1 = (lat1 * Math.PI) / 180;
-            const lonRad1 = (lon1 * Math.PI) / 180;
-            const latRad2 = (lat2 * Math.PI) / 180;
-            const lonRad2 = (lon2 * Math.PI) / 180;
-
-            // Haversine formula
-            const dLat = latRad2 - latRad1;
-            const dLon = lonRad2 - lonRad1;
-            const a =
-              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(latRad1) *
-                Math.cos(latRad2) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = earthRadius * c;
-
-            return distance;
-          }
           company.forEach((company) => {
             company.kilometr = calculateDistance(
               myLatitude,
@@ -3894,28 +3616,7 @@ const companyController = {
             .populate({ path: "owner", select: "-password" })
             .populate("likes")
             .populate("comments");
-          function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371;
 
-            const latRad1 = (lat1 * Math.PI) / 180;
-            const lonRad1 = (lon1 * Math.PI) / 180;
-            const latRad2 = (lat2 * Math.PI) / 180;
-            const lonRad2 = (lon2 * Math.PI) / 180;
-
-            // Haversine formula
-            const dLat = latRad2 - latRad1;
-            const dLon = lonRad2 - lonRad1;
-            const a =
-              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(latRad1) *
-                Math.cos(latRad2) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = earthRadius * c;
-
-            return distance;
-          }
           company.forEach((company) => {
             company.kilometr = calculateDistance(
               myLatitude,
