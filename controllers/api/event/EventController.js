@@ -2,7 +2,7 @@ import EventService from "../../../services/EventService.js";
 import ImpressionService from "../../../services/ImpressionService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import EventRatingService from "../../../services/EventRatingService.js";
-import CalculateTheDistance from "../../../services/CalculateTheDistance.js";
+// import CalculateTheDistance from "../../../services/CalculateTheDistance.js";
 import UserService from "../../../services/UserService.js";
 import Event from "../../../models/event/Event.js";
 import EventCategory from "../../../models/event/EventCategory.js";
@@ -30,7 +30,7 @@ class EventController {
     this.EventService = new EventService();
     this.ImpressionService = new ImpressionService();
     this.EventRatingService = new EventRatingService();
-    this.CalculateTheDistance = new CalculateTheDistance();
+    // this.CalculateTheDistance = new CalculateTheDistance();
     this.UserService = new UserService();
   }
 
