@@ -262,6 +262,7 @@ const companyService = {
         
       });
       await companyImage.deleteMany({ companyId: data._id });
+      await companyModel.findByIdAndUpdate(data._id, { $set: { images: [] } });
       for (let i = 0; i < data.images.length; i++) {
         const image = new companyImage({
           url: data.images[i],
