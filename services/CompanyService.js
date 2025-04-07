@@ -258,6 +258,8 @@ const companyService = {
         console.log(imgId.url,__dirname, "imgId.url dirname");
         
         const imageDel = await deleteImage(__dirname, imgId.url);
+        console.log(imageDel, "imageDel");
+        
       });
       await companyImage.deleteMany({ companyId: data._id });
       for (let i = 0; i < data.images.length; i++) {

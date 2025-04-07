@@ -7,7 +7,7 @@ const deleteImage =async (dirname,filePathArg) => {
 
     
     if (!filePath) {
-      return res.status(400).json({ error: "File path is required." });
+      return ({ error: "File path is required." });
     }
 
     try {
@@ -21,11 +21,13 @@ const deleteImage =async (dirname,filePathArg) => {
       
 
       if (!fs.existsSync(fullPath)) {
+        console.log("img not exist");
+        
         return { error: "File not found.", success: false };
       }
-
+      console.log("img exist");
       fs.unlinkSync(fullPath);
-
+      console.log("img deleted");
       return { message: "File deleted successfully.", success: true };
     } catch (err) {
       return {
