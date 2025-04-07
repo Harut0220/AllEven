@@ -23,7 +23,6 @@ class InPlaceController {
 
   store = async (req, res) => {
     const { id, couse } = req.body;
-    console.log(couse,id, "couse");
 
     const notif = await this.NotificationService.findById(id);
     const  eventId = notif.eventId;

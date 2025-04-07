@@ -422,7 +422,6 @@ const servicesController = {
               dealRegisters.push(obj);
             }
 
-          console.log(dealRegisters, "dealRegisters loop");
         }
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
@@ -431,7 +430,6 @@ const servicesController = {
             resArray.push(resToday[i]);
           }
           resObject[resToday[0].dateSlice] = resArray;
-          console.log(dealRegisters, "dealRegisters");
 
           res
             .status(200)

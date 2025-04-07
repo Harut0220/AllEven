@@ -3,10 +3,8 @@ import User from "../../models/User.js";
 
 const signup = async (req,res,next)=>{
     const validationRule = {
-        // "email": "required|string|email",
         "name": "required|string",
         "surname": "required|string",
-        // "middlename": "required|string",
         "password": "required|string",
     };
 

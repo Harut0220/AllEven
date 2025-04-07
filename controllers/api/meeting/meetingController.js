@@ -23,11 +23,9 @@ const meetingController = {
   in_place: async (req, res) => {
     try {
       const { id, couse } = req.body;
-      console.log(couse, id, "couse");
 
       const notif = await Notification.findById(id);
       // if (notif) {
-      console.log(notif.meetingId, "notif.meetingId,");
 
       const meetingId = notif.meetingId;
       // }
@@ -44,7 +42,6 @@ const meetingController = {
         },
         { new: true }
       );
-      console.log(dbNotif, "dbNotif");
 
       const meeting = await meetingModel
         .findById(notif.meetingId)
@@ -1191,7 +1188,7 @@ const meetingController = {
 
       const result = await meetingService.editMeeting(id, meeting);
       if (!result) {
-        res.status(400).send({ message: "Event not found" });
+        res.status(400).send({ message: "Meeting not found" });
       }
       res.status(200).send(result);
     } catch (error) {

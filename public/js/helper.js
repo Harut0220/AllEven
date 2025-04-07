@@ -24,7 +24,6 @@ function padTo2Digits(num) {
 
 function conntDateToYMD(date) {
   
-  // console.log(items,"date error");
   
   return date.substring(0, 10);
 }
@@ -53,7 +52,6 @@ function conntDateToHM(isoTime) {
 
 function appendDiv(id, data, ap = "afterbegin", clean = null) {
   let d = document.getElementById(id);
-  // console.log(d,"d", data,"data", ap,"ap", clean," clean");
   
   if (clean) {
     d.innerHTML = "";

@@ -88,7 +88,6 @@ class EventController {
       template += "-rejected";
     }
 
-    console.log(event,"event");
     
     res.render(template, {
       layout: "profile",
@@ -144,8 +143,6 @@ class EventController {
     const { name, category, date_from } = req.query;
 
     const eventDb=await Event.findById(req.params.id).populate("category")
-    console.log(eventDb.status===2,"eventDb.status===2");
-    console.log(eventDb.status===0,"eventDb.status===0");
     
     if(eventDb.status===0 || eventDb.status===2){
       console.log("notif send");

@@ -1,8 +1,6 @@
 import EventService from "../../../services/EventService.js";
-// import ImpressionService from "../../../services/ImpressionService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import EventRatingService from "../../../services/EventRatingService.js";
-// import CalculateTheDistance from "../../../services/CalculateTheDistance.js";
 import UserService from "../../../services/UserService.js";
 import Event from "../../../models/event/Event.js";
 import EventCategory from "../../../models/event/EventCategory.js";
@@ -54,7 +52,6 @@ class EventController {
     if (impressionImages.length) {
       for (let i = 0; i < impressionImages.length; i++) {
         const impression = impressionImages[i];
-        // impressionImages.map(async (impression) => {
         const obj = {};
         const comments = await EventComment.find({
           user: user.id,
@@ -86,7 +83,6 @@ class EventController {
           obj.comments = null;
         }
         obj.name = impression.event.name;
-        // obj.url = impression.event.images[0].name;
         obj.date = impression.event.started_time;
         obj._id = impression.event._id;
         obj.address = impression.event.address;
@@ -110,7 +106,6 @@ class EventController {
     if (likeEvents.length) {
       for (let i = 0; i < likeEvents.length; i++) {
         const like = likeEvents[i];
-        // likeEvents.map(async (like) => {
         const obj = {};
         const ifFavorite = await EventFavorites.findOne({
           user: user.id,
@@ -366,12 +361,9 @@ class EventController {
           const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
           if (event.started_time > dateNow) {
-            console.log(event.started_time, "event.started_time upcoming");
-            // console.log(event);
 
             upcoming.push(event);
           } else {
-            console.log(event.started_time, "event.started_time passed");
 
             passed.push(event);
           }
@@ -452,7 +444,6 @@ class EventController {
           eventId: data.upcoming[g]._id,
           user: user.id,
         });
-        console.log(participant, "participant");
 
         const participantSpot = await EventParticipantsSpot.findOne({
           eventId: data.upcoming[g]._id,
@@ -953,7 +944,6 @@ class EventController {
     const event_id = req.params.id;
     const datas = req.body;
 
-    console.log(req.body,"req.body");
     
     const updated = await this.EventService.update(event_id, datas);
     const updatedEvent = await Event.findById(event_id)

@@ -6,13 +6,10 @@ class AccessTokenService{
 
     store = async (email,password) => {
         const user = await User.findOne({email});
-        // console.log("user",user && !user.block);
         if (user && !user.block) {
             let passCheck = await bcrypt.compare(password, user.password);
-            // console.log("passCheck",passCheck);
             if(!passCheck){
                 console.log("0");
-                //res.json({"success":false,"message":"Wrong password"},401);
                 return 0;
             }
           

@@ -12,7 +12,6 @@ let compCatName = []
 let compCatUt = []
 let compCatCol = []
 let meetingUt=[]
-// console.log("data.eventCategories",data.eventCategories);
 meetingUt.push(data.meetingLength)
 for(let e=0;e<data.eventCategories.length;e++){
     eventCatName.push(data.eventCategories[e].name)
@@ -20,7 +19,6 @@ for(let e=0;e<data.eventCategories.length;e++){
     eventCatCol.push(random_rgba())
 }
 
-// console.log("data.meetingLength",data.meetingLength);
 
 
 const ctx2 = document.getElementById('myChart').getContext('2d');

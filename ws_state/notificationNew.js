@@ -40,7 +40,6 @@ notifEvent.on('send', async (id, data) => {
   
     // Send notification through the socket if connected
     if (notifCol[id]) {
-      console.log("123");
       
       if (Object.keys(notifCol[id]).length) {
         notifCol[id].send(data);

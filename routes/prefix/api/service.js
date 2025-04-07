@@ -2,22 +2,14 @@ import { Router } from "express";
 import servicesController from "../../../controllers/api/service/servicesController.js";
 import { isEmpParamObjId } from "../../../middlewares/isEmpty.js";
 import newAuthJWT from "../../../middlewares/newAuthJWT.js";
+import { serviceRegisterMiddl } from "../../../middlewares/validate/api/company.js";
 
 const serviceRouter = Router();
 
 serviceRouter.post(
   "/register",
   newAuthJWT,
-  async (req, res, next) => {
-    const { serviceId, date, route } = req.body;
-    console.log(serviceId, date,"serviceId && date");
-    
-    if (serviceId && date) {
-      return next();
-    } else {
-      return res.status(403).send({ message: "INVALID DATA" });
-    }
-  },
+  serviceRegisterMiddl,
   servicesController.registr
 );
 

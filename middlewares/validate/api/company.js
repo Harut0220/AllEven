@@ -37,3 +37,15 @@ export const company = async (req, res, next) => {
         });
       }
 }
+
+
+
+export const serviceRegisterMiddl=async (req, res, next) => {
+  const { serviceId, date, route } = req.body;
+  
+  if (serviceId && date) {
+    return next();
+  } else {
+    return res.status(403).send({ message: "INVALID DATA" });
+  }
+}

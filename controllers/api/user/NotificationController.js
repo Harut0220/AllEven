@@ -176,17 +176,14 @@ class NotificationController {
 
     //     el.serviceName=serviceDb.type
     //     if (el.register) {
-    //       console.log(el.register,"el.register");
 
     //       const existRegister = await servicesRegistrations.findOne({
     //         _id: el.register,
     //         pay: true,
     //         status: 1,
     //       });
-    //       console.log(existRegister,"existRegister");
 
     //       if (existRegister) {
-    //         console.log("confirmed");
 
     //         el.confirmed = true;
     //       }

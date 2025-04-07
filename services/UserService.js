@@ -301,7 +301,6 @@ class UserService {
           ],
         },
       ]);
-      console.log(user,"user");
       
     return user;
   };
@@ -539,7 +538,6 @@ class UserService {
     console.log("id",id);
     
     const usr = await this.find(id);
-    // console.log(usr, "usr count notif");
 
     console.log(usr.name, "usr count notif");
 

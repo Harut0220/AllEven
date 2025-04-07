@@ -26,6 +26,8 @@ import AnswerLikes from "../models/meeting/meetingCommentAnswerLike.js";
 import Report from "../models/Report.js";
 import calculateAverageRating from "../helper/ratingCalculate.js";
 import calculateDistance from "../helper/distanceCalculate.js";
+import { __dirname } from "../index.js";
+import deleteImage from "../helper/imageDelete.js";
 
 const meetingService = {
   myParticipant: async (user) => {
@@ -288,14 +290,7 @@ const meetingService = {
     };
   },
   meetings: async (authHeader, longitude, latitude) => {
-    console.log(
-      authHeader,
-      "authHeader",
-      longitude,
-      "longitude",
-      latitude,
-      "latitude"
-    );
+
 
     if (authHeader && longitude && latitude) {
       const token = authHeader.split(" ")[1];
@@ -328,7 +323,6 @@ const meetingService = {
           ],
         })
         .exec();
-      console.log(meetings, "meetings bolor@ ka");
 
       function separateUpcomingAndPassed(events) {
         const now = new Date();
@@ -336,17 +330,7 @@ const meetingService = {
         const passed = [];
 
         events.forEach((event) => {
-          console.log(
-            event.date,
-            "event.date",
-            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            event.purpose,
-            "event.purpose  bolor@ ka"
-          );
-          console.log(
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) bolor@ ka"
-          );
+
 
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
@@ -451,24 +435,14 @@ const meetingService = {
             },
           ],
         });
-      console.log(meetings, "meetings token chka");
 
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(
-            event.date,
-            "event.date",
-            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            event.purpose,
-            "event.purpose  token@ chka"
-          );
-          console.log(
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token@ chka"
-          );
+
+
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -541,24 +515,13 @@ const meetingService = {
           ],
         })
         .exec();
-      console.log(meetings, "meetings vochmiban chka");
 
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(
-            event.date,
-            "event.date",
-            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            event.purpose,
-            "event.purpose  vochmiban chka"
-          );
-          console.log(
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) vochmiban chka"
-          );
+
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -632,24 +595,13 @@ const meetingService = {
         })
         .exec();
 
-      console.log(meetings, "meetings token ka lon lan chka");
 
       function separateUpcomingAndPassed(events) {
         const upcoming = [];
         const passed = [];
 
         events.forEach((event) => {
-          console.log(
-            event.date,
-            "event.date",
-            moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            event.purpose,
-            "event.purpose  token ka lon lan chka"
-          );
-          console.log(
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) token ka lon lan chka"
-          );
+
           if (
             event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
           ) {
@@ -1151,7 +1103,6 @@ const meetingService = {
 
         const userToken = jwt.decode(token);
         const user = userToken.id;
-        console.log(user, "userId");
 
         const resDb = await meetingModel
           .find({ user, status: { $ne: 2 } })
@@ -1178,7 +1129,6 @@ const meetingService = {
           })
           .exec();
 
-        console.log(resDb, "resDb");
 
         let pastLikes;
         let pastComment;
@@ -1250,25 +1200,13 @@ const meetingService = {
           const passed = [];
 
           events.forEach((event) => {
-            console.log(
-              event.date,
-              "event.date",
-              moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              event.purpose,
-              "event.purpose  myMeeting"
-            );
-            console.log(
-              event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              "event.date > moment.tz(process.env.TZ).format(YYYY-MM-DD HH:mm) myMeeting"
-            );
+
             if (
               event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
             ) {
-              console.log(event.purpose, "upcoming");
 
               upcoming.push(event);
             } else {
-              console.log(event.purpose, "passed");
 
               passed.push(event);
             }
@@ -1281,7 +1219,6 @@ const meetingService = {
         const filter = separatedEvents.passed.filter(
           (event) => event.status === 1
         );
-        console.log(filter, "filter meetings");
 
 
 
@@ -2375,21 +2312,63 @@ const meetingService = {
   },
   editMeeting: async (id, data) => {
     try {
-      const d = data;
+      // const meetingDbforImg = await meetingModel.findById(id).select({ images: 1 }).populate("images");
+      // meetingDbforImg.images.map(async (imgId) => {
+       
+      //  const imageDel=await deleteImage(__dirname, imgId.path);
+       
+      // });
+      // const d = data;
 
-      if (d.images && d.images.length) {
-        let imgArr = [];
-        for (const image of d.images) {
-          let img = await meetingImages.create({ path: image, meetingId: id });
+      // if (d.images && d.images.length) {
+      //   let imgArr = [];
+      //   for (const image of d.images) {
+      //     let img = await meetingImages.create({ path: image, meetingId: id });
 
-          imgArr.push(img);
-        }
-        d.images = imgArr;
-      }
+      //     imgArr.push(img);
+      //   }
+      //   d.images = imgArr;
+      // }
 
-      let event = await meetingModel.updateOne(d);
-
-      return event;
+      // let event = await meetingModel.updateOne(d);
+      
+      // return event;
+          const d = data;
+          if (typeof data.images[0] === "string") {
+        
+            const meetingDbforImg = await meetingModel.findById(id).select({ images: 1 }).populate("images");
+            meetingDbforImg.images.map(async (imgId) => {
+             
+             const imageDel=await deleteImage(__dirname, imgId.path);
+             
+            });
+            await meetingModel.findByIdAndUpdate(id, { $set: { images: [] } });
+            await meetingImages.deleteMany({ meetingId: id });
+            for (let i = 0; i < data.images.length; i++) {
+              const newImage = new meetingImages({ path: data.images[i] });
+              await newImage.save();
+      
+              const dbRes = await meetingModel.findByIdAndUpdate(id, {
+                $push: { images: newImage._id },
+              });
+            }
+            delete d.images;
+            await meetingModel.findByIdAndUpdate(id, { ...d });
+            
+            const meetingDb = await meetingModel.findById(id);
+      
+            return meetingDb;
+          } else {
+            delete d.images;
+      
+            const meetingDb = await meetingModel.findByIdAndUpdate(
+              id,
+              { ...d },
+              { new: true }
+            );
+      
+            return meetingDb;
+          }
     } catch (err) {
       console.error(err);
     }

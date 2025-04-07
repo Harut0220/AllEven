@@ -25,10 +25,8 @@ class ShareEventController {
 
   meetIndex = async (req, res) => {
     const meetingId = req.params.id;
-    console.log(meetingId,"meetingId");
 
     const event = await meetingModel.findById(meetingId).populate("images").populate({path:"user",select:"phone_number"});
-    console.log(event,"event");
     const date=event.date.split(" ")[0]
     const time=event.date.split(" ")[1]
     res.render("profile/meeting-share", {
@@ -78,7 +76,6 @@ class ShareEventController {
       arr.push(el.type)
     })
     const serviceName=arr.join(" , ")
-    console.log(serviceName,"serviceName");
 
     res.render("profile/company-share", {
       title: event.companyName,
@@ -117,10 +114,8 @@ class ShareEventController {
 
   indexshare = async (req, res) => {
     const eventId = req.params.id;
-    console.log(eventId,"eventId");
     
     const event = await this.EventService.findAndLean(eventId);
-    console.log(event,"event");
 
     const images = event.images;
     

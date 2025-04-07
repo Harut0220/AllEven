@@ -24,7 +24,7 @@ import moment from "moment-timezone";
 import companyModel from "./models/company/companyModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+export const __dirname = dirname(__filename);
 dotenv.config();
 
 const app = express();
@@ -95,7 +95,6 @@ app.get("/page/:num/", async function (req, res) {
     res.status(404).send("not found");
   }
 });
-
 
 
 // app.get("/create/meeting", async (req, res) => {

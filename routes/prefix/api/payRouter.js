@@ -28,7 +28,6 @@ payRouter.get("/price", newAuthJWT, async (req, res) => {
 payRouter.get("/success/:id", async (req, res) => {
   console.log("success");
 
-  console.log(req.params, "req.params");
   const date = req.query.date;
   const payStoreDB = await paysStore.findById(req.params.id);
   const registerDb = await servicesRegistrations.findOne({
@@ -112,9 +111,8 @@ payRouter.get("/success/:id", async (req, res) => {
 });
 
 payRouter.get("/reject/:id", async (req, res) => {
-  console.log("reject");
+  console.log("reject deal");
 
-  console.log(req.params, "req.params");
   const payStoreDB = await paysStore.findById(req.params.id);
   const registerDb = await servicesRegistrations.findOne({
     payStoreId: req.params.id,
@@ -143,9 +141,8 @@ payRouter.get("/reject/:id", async (req, res) => {
 });
 
 payRouter.get("/deal/success/:id", async (req, res) => {
-  console.log("success");
+  console.log("success deal");
 
-  console.log(req.params, "req.params");
 
   const dealRegistr = await companyHotDealRegistration
     .findById(req.params.id)
@@ -240,7 +237,6 @@ payRouter.get("/deal/success/:id", async (req, res) => {
 payRouter.get("/deal/reject/:id", async (req, res) => {
   console.log("deal reject");
 
-  console.log(req.params, "req.params deal reject");
 
   const dealRegistr = await companyHotDealRegistration
     .findById(req.params.id)

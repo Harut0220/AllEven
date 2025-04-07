@@ -27,7 +27,6 @@ class FeedbackService{
         try {
             let feedback = await Feedback.create(data);
             if(data.parent_id){
-                console.log("mtav data.parent_id mej");
                 
                 await this.pushInCollection(data.parent_id,feedback._id,'sub_message');
                 feedback.parent = data.parent_id;

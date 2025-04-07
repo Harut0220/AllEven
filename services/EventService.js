@@ -33,6 +33,19 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import Report from "../models/Report.js";
 import ImpressionsEvent from "../models/ImpressionsEvent.js";
+import deleteImage from "../helper/imageDelete.js";
+import { __dirname } from "../index.js";
+// app.delete("/delete-file", async (req, res) => {
+//   const filePathReq = req.query.path;
+
+//   const delImgRes = deleteImage(filePathReq);
+
+//   if (delImgRes.success) {
+//     res.status(200).json({ message: "File deleted successfully." });
+//   } else {
+//     res.status(500).json({ error: delImgRes.error });
+//   }
+// });
 
 class EventService {
   constructor() {
@@ -349,13 +362,10 @@ class EventService {
   //       const newImage = new EventImage({ name: data.images[i] });
   //       await newImage.save();
   //       // imgArr.push(newImage);
-  //       console.log(newImage, "newImage");
-  //       console.log(id, "id");
 
   //       const dbRes = await Event.findByIdAndUpdate(id, {
   //         $push: { images: newImage._id },
   //       });
-  //       console.log(dbRes, "dbRes push image");
   //     }
   //     delete d.images;
   //     await Event.findByIdAndUpdate(id, { ...d });
@@ -365,7 +375,6 @@ class EventService {
   //     return eventDb;
   //   } else {
   //     delete d.images;
-  //     console.log(d, "images deleted");
 
   //     const eventDb = await Event.findByIdAndUpdate(
   //       id,
@@ -403,21 +412,23 @@ class EventService {
   update = async (id, data) => {
     const d = data;
     if (typeof data.images[0] === "string") {
+      // const __filename = fileURLToPath(import.meta.url);
+      // const __dirname = dirname(__filename);
+      const eventDbforImg = await Event.findById(id).select({ images: 1 }).populate("images");
+      eventDbforImg.images.map(async (imgId) => {
+       
+       const imageDel=await deleteImage(__dirname, imgId.name);
+       
+      });
       await Event.findByIdAndUpdate(id, { $set: { images: [] } });
 
-      let imgArr = [];
       for (let i = 0; i < data.images.length; i++) {
-        // let img = await EventImage.create({ name: image });
         const newImage = new EventImage({ name: data.images[i] });
         await newImage.save();
-        // imgArr.push(newImage);
-        console.log(newImage, "newImage");
-        console.log(id, "id");
 
         const dbRes = await Event.findByIdAndUpdate(id, {
           $push: { images: newImage._id },
         });
-        console.log(dbRes, "dbRes push image");
       }
       delete d.images;
       await Event.findByIdAndUpdate(id, { ...d });
@@ -427,7 +438,6 @@ class EventService {
       return eventDb;
     } else {
       delete d.images;
-      console.log(d, "images deleted");
 
       const eventDb = await Event.findByIdAndUpdate(
         id,
@@ -938,7 +948,9 @@ class EventService {
               "USER" && !events[e].situation === "passed")
           ) {
             // let ev_st_time = new Date(events[e].started_time);
-            let ev_st_time = moment.tz(events[e].started_time, process.env.TZ).format('YYYY-MM-DD HH:mm');
+            let ev_st_time = moment
+              .tz(events[e].started_time, process.env.TZ)
+              .format("YYYY-MM-DD HH:mm");
 
             const evLink = `alleven://myEvent/${events[e]._id}`;
             if (events[e].participants[v].notifEvent) {

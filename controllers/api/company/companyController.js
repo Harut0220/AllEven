@@ -207,8 +207,6 @@ const companyController = {
         //   obj.comments=null
         // }
         obj._id = like.companyId._id;
-        console.log(like.companyId, "like.companyId.");
-        console.log(like.companyId.images[0], "like.companyId.images[0]");
 
         obj.url = like.companyId.images[0].url;
         obj.likes = like.companyId.likes.length;
@@ -778,13 +776,7 @@ const companyController = {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
-      console.log(
-        companyId,
-        description,
-        cost,
-        date,
-        "companyId, description, cost, date"
-      );
+
 
       const result = await companyService.addHotDeals(
         companyId,
@@ -1100,7 +1092,6 @@ const companyController = {
       if (event.onlinePay == 3) {
         template += "-rejected";
       }
-      console.log(template, "template");
 
       res.render(template, {
         layout: "profile",
@@ -1218,7 +1209,6 @@ const companyController = {
 
       const eventCats = await companyCategory.find();
       events.reverse();
-      console.log(events, "events");
 
       res.render("profile/companyPay", {
         layout: "profile",
@@ -1923,11 +1913,8 @@ const companyController = {
       const authHeader = req.headers.authorization;
       const id = req.params.id;
       const { longitude, latitude } = req.query;
-      console.log(req.params.id, "req.params.id");
-      console.log(authHeader, "authHeader");
 
       const compUpdate = await Company.findById(id);
-      console.log(compUpdate, "compUpdate");
 
       compUpdate.isLike = false;
       compUpdate.isRating = false;
@@ -2986,11 +2973,9 @@ const companyController = {
         if(resultChanged1.hotDeals[i].registration){
           
           countToday.push(1)
-          console.log(countToday,"countToday inner");
           
         }
       }
-      console.log(countToday,"countToday outer");
       
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);

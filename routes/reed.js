@@ -265,19 +265,7 @@ reedRouter.get("/docs/:filename",(req,res)=>{
   }
 })
 
-// reedRouter.get('/uploads/:image',(req,res)=>{
-//   const imageCategory = req.params.image;
- 
-  
-//   const imagePath = path.join(__dirname,"..", "storage","uploads", imageCategory);
-//   // console.log(imagePath);
-//   // Check if the file exists
-//   if (imageCategory && imagePath) {
-//     res.status(200).sendFile(imagePath);
-//   } else {
-//     res.status(404).send("Image not found");
-//   }
-// })
+
 
 reedRouter.get("/uploads/:image", async (req, res) => {
   const { image } = req.params;
