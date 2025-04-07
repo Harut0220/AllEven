@@ -237,7 +237,6 @@ const companyService = {
       user,
     });
     await hotDeal.save();
- 
 
     const result = await companyModel
       .findByIdAndUpdate(companyId, { $push: { hotDeals: hotDeal._id } })
@@ -248,64 +247,74 @@ const companyService = {
     return hotDeal;
   },
   companyEdit: async (data) => {
-    const companyDbforImg = await companyModel
-      .findById(data._id)
-      .select("images")
-      .populate("images");
-    companyDbforImg.images.map(async (imgId) => {
-      const imageDel = await deleteImage(__dirname, imgId.url);
-    });
-    await companyImage.deleteMany({ companyId: data._id });
-    for (let i = 0; i < data.images.length; i++) {
-      const image = new companyImage({
-        url: data.images[i],
-        companyId: data._id,
+    try {
+      const companyDbforImg = await companyModel
+        .findById(data._id)
+        .select("images")
+        .populate("images");
+        console.log(companyDbforImg,"companyDbforImg");
+        
+      companyDbforImg.images.map(async (imgId) => {
+        console.log(imgId.url,__dirname, "imgId.url dirname");
+        
+        const imageDel = await deleteImage(__dirname, imgId.url);
       });
-      await image.save();
-      await companyModel.findByIdAndUpdate(data._id, {
-        $push: { images: image._id },
-      });
-    }
+      await companyImage.deleteMany({ companyId: data._id });
+      for (let i = 0; i < data.images.length; i++) {
+        const image = new companyImage({
+          url: data.images[i],
+          companyId: data._id,
+        });
+        await image.save();
+        await companyModel.findByIdAndUpdate(data._id, {
+          $push: { images: image._id },
+        });
+      }
 
-    await companyPhones.deleteMany({ companyId: data._id });
-    for (let i = 0; i < data.phoneNumbers.length; i++) {
-      const phone = new companyPhones({
-        number: data.phoneNumbers[i].number,
-        companyId: data._id,
-        whatsApp: data.phoneNumbers[i].whatsApp,
-        telegram: data.phoneNumbers[i].telegram,
-      });
-      await phone.save();
-      await companyModel.findByIdAndUpdate(data._id, {
-        $push: { phoneNumbers: phone._id },
-      });
-    }
-    const newData = {};
-    newData.companyName = data.companyName;
-    newData.web = data.web;
-    newData.latitude = data.latitude;
-    newData.longitude = data.longitude;
-    newData.address = data.address;
-    // newData.email = data.email;
-    newData.startHour = data.startHour;
-    newData.endHour = data.endHour;
-    newData.days = data.days;
-    const startTime = moment.tz(data.startHour, "HH:mm", process.env.TZ);
-    const endTime = moment.tz(data.endHour, "HH:mm", process.env.TZ);
-    if (startTime < endTime) {
-      newData.isNight = false;
-    } else {
-      newData.isNight = true;
-    }
-    const updatedCompany = await companyModel
-      .findByIdAndUpdate(
-        data._id,
-        { ...newData, updatedAt: moment.tz(process.env.TZ).format() },
-        { new: true }
-      )
-      .populate("services");
+      await companyPhones.deleteMany({ companyId: data._id });
+      for (let i = 0; i < data.phoneNumbers.length; i++) {
+        const phone = new companyPhones({
+          number: data.phoneNumbers[i].number,
+          companyId: data._id,
+          whatsApp: data.phoneNumbers[i].whatsApp,
+          telegram: data.phoneNumbers[i].telegram,
+        });
+        await phone.save();
+        await companyModel.findByIdAndUpdate(data._id, {
+          $push: { phoneNumbers: phone._id },
+        });
+      }
+      const newData = {};
+      newData.companyName = data.companyName;
+      newData.web = data.web;
+      newData.latitude = data.latitude;
+      newData.longitude = data.longitude;
+      newData.address = data.address;
+      // newData.email = data.email;
+      newData.startHour = data.startHour;
+      newData.endHour = data.endHour;
+      newData.days = data.days;
+      const startTime = moment.tz(data.startHour, "HH:mm", process.env.TZ);
+      const endTime = moment.tz(data.endHour, "HH:mm", process.env.TZ);
+      if (startTime < endTime) {
+        newData.isNight = false;
+      } else {
+        newData.isNight = true;
+      }
+      const updatedCompany = await companyModel
+        .findByIdAndUpdate(
+          data._id,
+          { ...newData, updatedAt: moment.tz(process.env.TZ).format() },
+          { new: true }
+        )
+        .populate("services");
 
-    return updatedCompany;
+      return updatedCompany;
+    } catch (error) {
+      console.log(error);
+
+      return false;
+    }
   },
   impressionImagesStore: async (companyId, path, user) => {
     const companyImpressionImagesDb = await companyImpressionImages

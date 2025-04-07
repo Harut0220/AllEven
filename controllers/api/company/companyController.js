@@ -462,7 +462,7 @@ const companyController = {
         const token = authHeader.split(" ")[1];
         const user = jwt.decode(token);
         result = await companyHotDeals
-          .find({ user: { $ne: user.id },free:true })
+          .find({ user: { $ne: user.id }, free: true })
           .populate({
             path: "companyId",
             select:
@@ -471,8 +471,6 @@ const companyController = {
               path: "images category", // The field within `companyId` to populate
             },
           });
-
-
 
         result.forEach((company) => {
           company.companyId.kilometr = calculateDistance(
@@ -526,7 +524,7 @@ const companyController = {
           result[z].open = openBool;
         }
       } else if (latitude && longitude && !authHeader) {
-        result = await companyHotDeals.find({free:true }).populate({
+        result = await companyHotDeals.find({ free: true }).populate({
           path: "companyId",
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
@@ -537,8 +535,6 @@ const companyController = {
           //   path: "category",
           // }
         });
-
-
 
         result.forEach((company) => {
           company.companyId.kilometr = calculateDistance(
@@ -595,7 +591,7 @@ const companyController = {
         const token = authHeader.split(" ")[1];
         const user = jwt.decode(token);
         result = await companyHotDeals
-          .find({ user: { $ne: user.id },free:true  })
+          .find({ user: { $ne: user.id }, free: true })
           .populate({
             path: "companyId",
             select:
@@ -662,7 +658,7 @@ const companyController = {
           result[z].open = openBool;
         }
       } else {
-        result = await companyHotDeals.find({free:true }).populate({
+        result = await companyHotDeals.find({ free: true }).populate({
           path: "companyId",
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
@@ -777,7 +773,6 @@ const companyController = {
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
 
-
       const result = await companyService.addHotDeals(
         companyId,
         description,
@@ -795,11 +790,19 @@ const companyController = {
     }
   },
   companyEdit: async (req, res) => {
-    const data = req.body;
+    try {
+      const data = req.body;
 
-    const result = await companyService.companyEdit(data);
-
-    res.status(200).send(result);
+      const result = await companyService.companyEdit(data);
+      if (result) {
+        res.status(200).send(result);
+      } else {
+        res.status(400).send({ message: "Company not found" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "Server error" });
+    }
   },
   impressionImagesStore: async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -1502,20 +1505,6 @@ const companyController = {
       res.status(500).send({ message: "Server Error" });
     }
   },
-  // confirm: async (req, res) => {
-  //   try {
-  //     const { companyId } = req.body;
-  //     await Company.findOneAndUpdate(
-  //       { _id: companyId }, // Filter criteria
-  //       { $set: { status: 1 } }, // Update action
-  //       { returnOriginal: false } // Return the updated document
-  //     );
-
-  //     res.status(200).send({ message: "заявка одобрена" });
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // },
   deleteCompany: async (req, res) => {
     try {
       const company = await Company.findById(req.params.id);
@@ -1930,7 +1919,6 @@ const companyController = {
         const user = jwt.decode(token);
         const result = await Company.findById(id).populate("ratings");
 
-
         let resultChanged1;
         const averageRating = calculateAverageRating(result.ratings);
         const ifView = await companyView.findOne({
@@ -2005,7 +1993,10 @@ const companyController = {
 
             // Check if the fixed time is after now
             const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-            if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
+            if (
+              fixedTime.isAfter(now) &&
+              resultChanged1.hotDeals[i].free === true
+            ) {
               upcomingDeals.push(resultChanged1.hotDeals[i]);
             } else {
               await companyHotDeals.findByIdAndUpdate(
@@ -2074,7 +2065,10 @@ const companyController = {
             );
 
             const now = moment.tz(process.env.TZ);
-            if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
+            if (
+              fixedTime.isAfter(now) &&
+              resultChanged1.hotDeals[i].free === true
+            ) {
               upcomingDeals.push(resultChanged1.hotDeals[i]);
             } else {
               await companyHotDeals.findByIdAndUpdate(
@@ -2197,7 +2191,6 @@ const companyController = {
 
         const result = await Company.findById(id).populate("ratings");
 
-
         const averageRating = calculateAverageRating(result.ratings);
 
         const resultChanged1 = await Company.findOneAndUpdate(
@@ -2310,7 +2303,10 @@ const companyController = {
           );
 
           const now = moment.tz(process.env.TZ);
-          if (fixedTime.isAfter(now)&&resultChanged1.hotDeals[i].free===true) {
+          if (
+            fixedTime.isAfter(now) &&
+            resultChanged1.hotDeals[i].free === true
+          ) {
             upcomingDeals.push(resultChanged1.hotDeals[i]);
           } else {
             await companyHotDeals.findByIdAndUpdate(
@@ -2350,7 +2346,6 @@ const companyController = {
       const { latitude, longitude } = req.query;
       const mskLatitude = 55.7558;
       const mskLongitude = 37.6173;
-
 
       if (!authHeader) {
         let dbObj = [];
@@ -2797,7 +2792,6 @@ const companyController = {
         .populate("ratings")
         .exec();
 
-
       const averageRating = calculateAverageRating(result.ratings);
 
       const resultChanged1 = await Company.findOneAndUpdate(
@@ -2968,15 +2962,12 @@ const companyController = {
         countAfter.push(serviceRegisterAfter.length);
         countToday.push(serviceRegisterToday.length);
       }
-      for(let i=0;i<resultChanged1.hotDeals.length;i++){
-        
-        if(resultChanged1.hotDeals[i].registration){
-          
-          countToday.push(1)
-          
+      for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
+        if (resultChanged1.hotDeals[i].registration) {
+          countToday.push(1);
         }
       }
-      
+
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
 
@@ -3001,13 +2992,6 @@ const companyController = {
       res.status(500).send({ message: "Server error" });
     }
   },
-  // documents: async (req, res) => {
-  //   try {
-  //     const documentArray = ["", "", ""];
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // },
   getCategory: async (req, res) => {
     try {
       const dbResult = await companyCategory.find();
@@ -3128,61 +3112,6 @@ const companyController = {
       res.status(500).send({ message: "Server error" });
     }
   },
-  // getMy: async (req, res) => {
-  //   try {
-  //     const authHeader = req.headers.authorization;
-
-  //     const token = authHeader.split(" ")[1];
-
-  //     const userToken = jwt.decode(token);
-  //     const user = userToken.id;
-  //     const result = await companyService.getMy(user);
-  //     for (let z = 0; z < result.length; z++) {
-  //       const hours = moment.tz(process.env.TZ).format("HH:mm");
-  //       const splitOpen = result[z].startHour.split(":");
-  //       const splitClose = result[z].endHour.split(":");
-  //       const isLiked = await companyLikes.findOne({
-  //         user,
-  //         companyId: result[z]._id,
-  //       });
-  //       if (isLiked) {
-  //         result[z].isLike = true;
-  //       }
-  //       const isFavorite = await companyFavorit.findOne({
-  //         user,
-  //         companyId: result[z]._id,
-  //       });
-  //       if (isFavorite) {
-  //         result[z].isFavorite = true;
-  //       }
-  //       const isRating = await companyRating.findOne({
-  //         user,
-  //         companyId: result[z]._id,
-  //       });
-
-  //       if (isRating) {
-  //         result[z].isRating = true;
-  //       }
-
-  //       if (
-  //         Number(hours) >= Number(splitOpen[0]) &&
-  //         Number(hours) < Number(splitClose[0])
-  //       ) {
-  //         result[z].open = true;
-  //       }
-  //     }
-  //     // for (let z = 0; z < result.length; z++) {
-  //     // for (let i = 0; i < result[z].services.length; i++) {
-
-  //     // }
-  //     // }
-
-  //     res.status(200).send(result);
-  //   } catch (error) {
-  //     console.error(error);
-  //     res.status(500).send({ message: "Server error" });
-  //   }
-  // },
   index: async (req, res) => {
     try {
       const { name, category, date_from } = req.query;

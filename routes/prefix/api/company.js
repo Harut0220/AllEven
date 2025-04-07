@@ -20,8 +20,6 @@ companyRoutes.get("/near/:id", isEmpParamObjId, companyController.near);
 
 companyRoutes.get("/radius", companyController.radius); //kilometer motikic heru
 
-// companyRoutes.get("/my/company",newAuthJWT, companyController.getMy);
-
 companyRoutes.get("/popular", companyController.popular);
 
 companyRoutes.get("/page", companyController.index); //for admin
@@ -38,13 +36,9 @@ companyRoutes.post(
 
 companyRoutes.post("/online/pay", newAuthJWT, companyController.online);
 
-// companyRoutes.post("/confirm", companyController.confirm);
-
 companyRoutes.post("/add/service", companyController.addService);
 
 // companyRoutes.post("/delete/service", companyController.deleteService);
-
-// companyRoutes.get("/documents",companyController.documents)
 
 companyRoutes.get("/allCompanies", companyController.getCompanys); //kilometer motikic heru
 
