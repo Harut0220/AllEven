@@ -272,6 +272,20 @@ app.get("/test/register", async (req, res) => {
   return res.send("Test");
 });
 
+
+// app.get("/test/admin", async (req, res) => {
+//   notifEvent.emit(
+//     "send",
+//     "ADMIN",
+//     JSON.stringify({
+//       type: "Новая события",
+//       message: "event.name",
+//       data: "event",
+//     })
+//   );
+//   res.send("Test");
+// })
+
 const start = async () => {
   await connect();
   app.listen(process.env.PORT, () =>

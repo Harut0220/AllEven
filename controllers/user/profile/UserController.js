@@ -52,7 +52,9 @@ class UserController {
   index = async (req, res) => {
     let view = "";
     let usersInfo = {};
-
+    console.log("req.user.roles.name", req.user.roles.name);
+    console.log("req.user", req.user);
+    
     if (req.user.roles.name == "MODERATOR") {
       const getUsers = async (roles, params = {}) => {
         let limit = params.limit ? +params.limit : 10;
@@ -87,12 +89,14 @@ class UserController {
         let users = User.find(findObj).sort({ createdAt: "desc" });
         let usersCount = await User.countDocuments({ roles: r });
         users = await users.populate("roles").limit(limit).skip(skip).lean();
-
+        console.log(users, usersCount, "users");
+        
         return { users, usersCount };
       };
 
       usersInfo.users = await getUsers(["USER", "USER"], req.query);
-
+      console.log(usersInfo.users, "usersInfo.users");
+      
       view = "profile/moderator/users";
       res.render(view, {
         layout: "profile",
@@ -170,7 +174,7 @@ class UserController {
     const meetings = await meetingModel
       .find({ owner: req.params.id })
       .populate("images")
-      .populate({ path: "userId", select: "-password" })
+      .populate({ path: "user", select: "-password" })
       .lean();
 
     const company = await companyModel
@@ -182,7 +186,7 @@ class UserController {
         path: "services",
         populate: {
           path: "serviceRegister",
-          select: "serviceId date status userId text time",
+          select: "serviceId date status user",
         },
       })
       .lean();

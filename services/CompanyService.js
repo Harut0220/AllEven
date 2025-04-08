@@ -252,26 +252,30 @@ const companyService = {
         .findById(data._id)
         .select("images")
         .populate("images");
-        console.log(companyDbforImg,"companyDbforImg");
-        
+      console.log(companyDbforImg, "companyDbforImg");
+
       companyDbforImg.images.map(async (imgId) => {
-        console.log(imgId.url,__dirname, "imgId.url dirname");
-        
+        console.log(imgId.url, __dirname, "imgId.url dirname");
+
         const imageDel = await deleteImage(__dirname, imgId.url);
         console.log(imageDel, "imageDel");
-        
       });
       await companyImage.deleteMany({ companyId: data._id });
       await companyModel.findByIdAndUpdate(data._id, { $set: { images: [] } });
-      for (let i = 0; i < data.images.length; i++) {
-        const image = new companyImage({
-          url: data.images[i],
-          companyId: data._id,
-        });
-        await image.save();
-        await companyModel.findByIdAndUpdate(data._id, {
-          $push: { images: image._id },
-        });
+
+      if (typeof data.images[0] === "string") {
+        for (let i = 0; i < data.images.length; i++) {
+          const image = new companyImage({
+            url: data.images[i],
+            companyId: data._id,
+          });
+          console.log(image,"imagedb new");
+          
+          await image.save();
+           await companyModel.findByIdAndUpdate(data._id, {
+            $push: { images: image._id },
+          });
+        }
       }
 
       await companyPhones.deleteMany({ companyId: data._id });

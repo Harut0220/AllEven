@@ -60,7 +60,7 @@ class NotificationController {
       console.error(`WebSocket error for ${req.params.id}:`, error);
     });
 
-    ws.send(JSON.stringify({ message: "WebSocket connected!" }));
+    // ws.send(JSON.stringify({ message: "WebSocket connected!" }));
   };
 }
 
