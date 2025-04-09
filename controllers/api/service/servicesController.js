@@ -475,11 +475,11 @@ const servicesController = {
           .populate("user");
         if (text) {
           service.dealDate = date;
-          service.dateSlice = dateSlice;
+          // service.dateSlice = dateSlice;
           service.messages.unshift(text);
           await service.save();
         } else {
-          service.dateSlice = dateSlice;
+          // service.dateSlice = dateSlice;
 
           service.dealDate = date;
           await service.save();
@@ -577,7 +577,7 @@ const servicesController = {
       });
 
       const daySlice = service.dealDate.slice(8, 10);
-      const monthSlice = service.date.slice(5, 7);
+      const monthSlice = service.dealDate.slice(5, 7);
       const dateSlice = `${monthSlice}.${daySlice}`;
 
       const confirmedRegister = await servicesRegistrations
