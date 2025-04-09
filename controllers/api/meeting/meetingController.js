@@ -1105,7 +1105,9 @@ const meetingController = {
             .populate("participantSpot")
             .populate("images")
             .exec();
-          if ((type = "participants")) {
+          if (type === "participants") {
+            console.log("participants", meetingDb.participants);
+
             if (meetingDb) {
               for (let i = 0; i < meetingDb.participants.length; i++) {
                 const element = meetingDb.participants[i].user;
@@ -1149,7 +1151,9 @@ const meetingController = {
               }
             }
           }
-          if ((type = "participantsSpot")) {
+          if (type === "participantsSpot") {
+            console.log("participantsSpot", meetingDb.participantSpot);
+
             if (meetingDb) {
               for (let i = 0; i < meetingDb.participantSpot.length; i++) {
                 const element = meetingDb.participantSpot[i].user;
