@@ -2914,6 +2914,11 @@ const companyController = {
           upcomingDeals.push(resultChanged1.hotDeals[i]);
         }
 
+        const fixedTime = moment.tz(
+          resultChanged1.hotDeals[i].date,
+          "YYYY-MM-DD HH:mm",
+          process.env.TZ
+        );
 
         if (!fixedTime.isAfter(now)) {
           await companyHotDeals.findByIdAndUpdate(
