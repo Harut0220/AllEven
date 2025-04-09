@@ -22,6 +22,7 @@ import notifEvent from "./events/NotificationEvent.js";
 import Notification from "./models/Notification.js";
 import moment from "moment-timezone";
 import companyModel from "./models/company/companyModel.js";
+import Agenda from "agenda";
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -30,6 +31,23 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+export const agenda = new Agenda({
+  db: {
+    address: process.env.MONGO_URL,
+    collection: "agendaJobs",
+    options: {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    },
+  },
+});
+agenda.on("ready", () => {
+  console.log("✅ Agenda connected to MongoDB");
+});
+
+agenda.on("error", (err) => {
+  console.error("❌ Agenda connection error:", err);
+});
 
 app.set("etag", false);
 
@@ -95,7 +113,6 @@ app.get("/page/:num/", async function (req, res) {
     res.status(404).send("not found");
   }
 });
-
 
 // app.get("/create/meeting", async (req, res) => {
 //   const evLink = `alleven://createEvent`;
@@ -271,7 +288,6 @@ app.get("/test/register", async (req, res) => {
 
   return res.send("Test");
 });
-
 
 // app.get("/test/admin", async (req, res) => {
 //   notifEvent.emit(

@@ -24,6 +24,8 @@ import ImpressionsEvent from "../../../models/ImpressionsEvent.js";
 import calculateAverageRating from "../../../helper/ratingCalculate.js";
 import calculateDistance from "../../../helper/distanceCalculate.js";
 import { separateUpcomingAndPassedEvents } from "../../../helper/upcomingAndPassed.js";
+import Agenda from "agenda";
+import { agenda } from "../../../index.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -355,16 +357,12 @@ class EventController {
         resArray.push(resDb[i].eventId);
       }
 
-
       const upcomPass = separateUpcomingAndPassedEvents(resArray);
-
-
 
       const myLatitude = 55.7558;
       const myLongitude = 37.6176;
 
       upcomPass.upcoming.forEach((meeting) => {
-        
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -559,7 +557,6 @@ class EventController {
           }
           await resDb[i].save();
         }
-
 
         const separatedEvents = separateUpcomingAndPassedEvents(resDb);
         if (separatedEvents.passed.length > 0) {
@@ -776,18 +773,40 @@ class EventController {
       })
     );
     const userDb = await User.findById(user.id);
+    async function runAgenda(id, type) {
+      await agenda.start(); // <-- Important!
+      console.log("Agenda started!");
+      const eventDb = await Event.findById(id).select("started_time");
+      const dat = eventDb.started_time + ":00";
 
-    const dat = event.started_time + ":00";
+      const eventTime = moment.tz(dat, process.env.TZ);
 
-    const eventTime = moment.tz(dat, process.env.TZ);
+      const notificationTime = eventTime.clone().subtract(1, "hour");
+      if (type === "participants") {
+        await agenda.schedule(
+          notificationTime.toDate(),
+          "send event notification",
+          {
+            eventId: event._id,
+            type: "participants",
+          }
+        );
+      }
+      if (type === "participantsSpot") {
+        await agenda.schedule(eventTime.toDate(), "send event notification", {
+          eventId: event._id,
+          type: "participantsSpot",
+        });
+      }
+      console.log("Job scheduled for:", notificationTime.toDate());
+    }
 
-    const notificationTime = eventTime.clone().subtract(1, "hour");
-
-    const currentTime = moment.tz(process.env.TZ).format();
-
-    async function sendMessage(idMeet, type) {
+    agenda.define("send event notification", async (job) => {
       try {
-        const eventDb = await Event.findById(idMeet)
+        const { eventId, type } = job.attrs.data;
+        console.log("mtav define mej");
+        
+        const eventDb = await Event.findById(eventId)
           .populate({
             path: "participants",
             populate: { path: "user", select: "_id fcm_token notifEvent" },
@@ -798,7 +817,6 @@ class EventController {
           })
           .populate("category")
           .exec();
-
         if (type === "participants") {
           console.log("mek jam araj");
 
@@ -861,7 +879,7 @@ class EventController {
                   user: element._id.toString(),
                   type: "participation",
                   message: `Событие ${eventDb.name} началось.`,
-                  navigate:true,
+                  navigate: true,
                   categoryIcon: eventDb.category.avatar,
                   eventId: eventDb._id.toString(),
                   link: evLink,
@@ -877,7 +895,7 @@ class EventController {
                     JSON.stringify({
                       type: "participation",
                       date_time,
-                      navigate:true,
+                      navigate: true,
                       eventId: eventDb._id.toString(),
                       message: `Событие ${eventDb.name} началось.`,
                       categoryIcon: eventDb.category.avatar,
@@ -889,21 +907,151 @@ class EventController {
             }
           }
         }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    schedule.scheduleJob(notificationTime.toDate(), () => {
-      sendMessage(event._id.toString(), "participants");
+        console.log(`Job triggered: ${eventId}, type: ${type}`);
+      } catch (error) {}
+      // await sendMessage(eventId, type); // uncomment when `sendMessage` is available
     });
-    console.log(notificationTime.toDate(), "notificationTime.toDate()");
 
-    console.log(eventTime.toDate(), "eventTime.toDate()");
+    runAgenda(event._id.toString(), "participants");
+    runAgenda(event._id.toString(), "participantsSpot");
 
-    schedule.scheduleJob(eventTime.toDate(), () => {
-      sendMessage(event._id.toString(), "participantsSpot");
-    });
+
+
+
+
+
+
+
+
+
+
+    // const dat = event.started_time + ":00";
+
+    // const eventTime = moment.tz(dat, process.env.TZ);
+
+    // const notificationTime = eventTime.clone().subtract(1, "hour");
+
+    // const currentTime = moment.tz(process.env.TZ).format();
+
+    // async function sendMessage(idMeet, type) {
+    //   try {
+    //     const eventDb = await Event.findById(idMeet)
+    //       .populate({
+    //         path: "participants",
+    //         populate: { path: "user", select: "_id fcm_token notifEvent" },
+    //       })
+    //       .populate({
+    //         path: "participantsSpot",
+    //         populate: { path: "user", select: "_id fcm_token notifEvent" },
+    //       })
+    //       .populate("category")
+    //       .exec();
+
+    //     if (type === "participants") {
+    //       console.log("mek jam araj");
+
+    //       if (eventDb.participants.length) {
+    //         for (let i = 0; i < eventDb.participants.length; i++) {
+    //           const element = eventDb.participants[i].user;
+    //           if (element.fcm_token[0]) {
+    //             const evLink = `alleven://singleEvent/${eventDb._id}`;
+    //             const date_time = moment
+    //               .tz(process.env.TZ)
+    //               .format("YYYY-MM-DD HH:mm");
+    //             const dataNotif = {
+    //               status: 2,
+    //               date_time,
+    //               user: element._id.toString(),
+    //               type: "confirm_come",
+    //               navigate: true,
+    //               message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+    //               situation: "upcoming",
+    //               categoryIcon: eventDb.category.avatar,
+    //               eventId: eventDb._id.toString(),
+    //               link: evLink,
+    //             };
+    //             const nt = new Notification(dataNotif);
+    //             await nt.save();
+    //             if (element.notifEvent) {
+    //               notifEvent.emit(
+    //                 "send",
+    //                 element._id.toString(),
+    //                 JSON.stringify({
+    //                   type: "confirm_come",
+    //                   date_time,
+    //                   navigate: true,
+    //                   user: element._id.toString(),
+    //                   eventId: eventDb._id.toString(),
+    //                   situation: "upcoming",
+    //                   categoryIcon: eventDb.category.avatar,
+    //                   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
+    //                   link: evLink,
+    //                 })
+    //               );
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //     if (type === "participantsSpot") {
+    //       console.log("eventi sksman pah@");
+
+    //       if (eventDb.participants.length) {
+    //         for (let i = 0; i < eventDb.participants.length; i++) {
+    //           const element = eventDb.participants[i].user;
+    //           if (element.fcm_token[0]) {
+    //             const evLink = `alleven://singleEvent/${eventDb._id}`;
+    //             const dataNotif = {
+    //               status: 2,
+    //               date_time: moment
+    //                 .tz(process.env.TZ)
+    //                 .format("YYYY-MM-DD HH:mm"),
+    //               user: element._id.toString(),
+    //               type: "participation",
+    //               message: `Событие ${eventDb.name} началось.`,
+    //               navigate: true,
+    //               categoryIcon: eventDb.category.avatar,
+    //               eventId: eventDb._id.toString(),
+    //               link: evLink,
+    //             };
+    //             const nt = new Notification(dataNotif);
+    //             await nt.save();
+    //             console.log(`Событие ${eventDb.name} началось.`);
+    //             const date_time = moment.tz(process.env.TZ).format();
+    //             if (element.notifEvent) {
+    //               notifEvent.emit(
+    //                 "send",
+    //                 element._id.toString(),
+    //                 JSON.stringify({
+    //                   type: "participation",
+    //                   date_time,
+    //                   navigate: true,
+    //                   eventId: eventDb._id.toString(),
+    //                   message: `Событие ${eventDb.name} началось.`,
+    //                   categoryIcon: eventDb.category.avatar,
+    //                   link: evLink,
+    //                 })
+    //               );
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // }
+
+    // schedule.scheduleJob(notificationTime.toDate(), () => {
+    //   sendMessage(event._id.toString(), "participants");
+    // });
+    // console.log(notificationTime.toDate(), "notificationTime.toDate()");
+
+    // console.log(eventTime.toDate(), "eventTime.toDate()");
+
+    // schedule.scheduleJob(eventTime.toDate(), () => {
+    //   sendMessage(event._id.toString(), "participantsSpot");
+    // });
 
     return res.json({ status: "success", data: event });
   };
@@ -912,7 +1060,6 @@ class EventController {
     const event_id = req.params.id;
     const datas = req.body;
 
-    
     const updated = await this.EventService.update(event_id, datas);
     const updatedEvent = await Event.findById(event_id)
       .populate({ path: "owner", select: "-password" })
@@ -955,8 +1102,6 @@ class EventController {
     }
   };
 
- 
-
   nearEvent = async (req, res) => {
     const id = req.params.id;
     const authHeader = req.headers.authorization;
@@ -966,8 +1111,6 @@ class EventController {
       const user = jwt.decode(token);
       const resDb = await Event.findById(id).populate("ratings");
       const ifView = await EventView.findOne({ user: user.id, eventId: id });
-
-
 
       const averageRating = calculateAverageRating(resDb.ratings);
 
@@ -1034,8 +1177,6 @@ class EventController {
           }
         }
 
-
-        
         const isRating = await EventRating.findOne({
           user: user.id,
           event: id,
@@ -1177,7 +1318,6 @@ class EventController {
     } else {
       const resDb = await Event.findById(id).populate("ratings").exec();
 
-
       const averageRating = calculateAverageRating(resDb.ratings);
 
       data = await Event.findByIdAndUpdate(
@@ -1276,14 +1416,12 @@ class EventController {
           }
         }
 
-
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
-        result.forEach(async(meeting) => {
-
+        result.forEach(async (meeting) => {
           const isRating = await EventRating.findOne({
             user: user.id,
-            event:meeting._id,
+            event: meeting._id,
           });
           meeting.isRating = isRating ? true : false;
           const isLike = await EventLike.findOne({
@@ -1300,12 +1438,11 @@ class EventController {
             user: user.id,
             eventId: meeting._id,
           });
-  
 
           if (isJoin) {
             meeting.joinStatus = 2;
           }
-  
+
           const isSpot = await EventParticipantsSpot.findOne({
             user: user.id,
             eventId: meeting._id,
@@ -1314,13 +1451,15 @@ class EventController {
             meeting.joinStatus = 3;
           }
 
-          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const timeMoscow = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
           const eventTime = new Date(meeting.started_time);
           const dateNow = new Date(timeMoscow);
-  
+
           const timeDifference = eventTime - dateNow;
           const differenceInMinutes = timeDifference / 60000;
-  
+
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             meeting.hour = true;
           }
@@ -1355,18 +1494,18 @@ class EventController {
           }
         }
 
-
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         result.forEach((meeting) => {
-
-          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const timeMoscow = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
           const eventTime = new Date(meeting.started_time);
           const dateNow = new Date(timeMoscow);
-  
+
           const timeDifference = eventTime - dateNow;
           const differenceInMinutes = timeDifference / 60000;
-  
+
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             meeting.hour = true;
           }
@@ -1421,13 +1560,15 @@ class EventController {
 
         for (let z = 0; z < sortArray.length; z++) {
           for (let r = 0; r < sortArray[z].events.length; r++) {
-            const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+            const timeMoscow = moment
+              .tz(process.env.TZ)
+              .format("YYYY-MM-DD HH:mm");
             const eventTime = new Date(sortArray[z].events[r].started_time);
             const dateNow = new Date(timeMoscow);
-    
+
             const timeDifference = eventTime - dateNow;
             const differenceInMinutes = timeDifference / 60000;
-    
+
             if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
               sortArray[z].events[r].hour = true;
             }
@@ -1492,8 +1633,6 @@ class EventController {
       const authHeader = req.headers.authorization;
       const { longitude, latitude } = req.body;
 
-
-
       const myLatitude = latitude;
       const myLongitude = longitude;
 
@@ -1521,13 +1660,15 @@ class EventController {
         const pointsOfInterest = await Event.find({ owner: { $ne: user.id } });
 
         pointsOfInterest.forEach((meeting) => {
-          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const timeMoscow = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
           const eventTime = new Date(meeting.started_time);
           const dateNow = new Date(timeMoscow);
-  
+
           const timeDifference = eventTime - dateNow;
           const differenceInMinutes = timeDifference / 60000;
-  
+
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             meeting.hour = true;
           }
@@ -1629,8 +1770,6 @@ class EventController {
           }
         }
         for (let z = 0; z < result.upcoming.length; z++) {
-
-
           const timeMoscow = moment
             .tz(process.env.TZ)
             .format("YYYY-MM-DD HH:mm");
@@ -1706,8 +1845,6 @@ class EventController {
           })
           .exec();
 
-
-
         const result = separateUpcomingAndPassedEvents(events);
         if (result.passed.length > 0) {
           for (let i = 0; i < result.passed.length; i++) {
@@ -1720,14 +1857,15 @@ class EventController {
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
         result.upcoming.forEach((meeting) => {
-
-          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const timeMoscow = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
           const eventTime = new Date(meeting.started_time);
           const dateNow = new Date(timeMoscow);
-  
+
           const timeDifference = eventTime - dateNow;
           const differenceInMinutes = timeDifference / 60000;
-  
+
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             meeting.hour = true;
           }
@@ -1740,13 +1878,15 @@ class EventController {
           );
         });
         result.passed.forEach((meeting) => {
-          const timeMoscow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+          const timeMoscow = moment
+            .tz(process.env.TZ)
+            .format("YYYY-MM-DD HH:mm");
           const eventTime = new Date(meeting.started_time);
           const dateNow = new Date(timeMoscow);
-  
+
           const timeDifference = eventTime - dateNow;
           const differenceInMinutes = timeDifference / 60000;
-  
+
           if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
             meeting.hour = true;
           }

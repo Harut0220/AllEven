@@ -19,6 +19,7 @@ import { link } from "fs";
 import meetingParticipant from "../../../models/meeting/meetingParticipant.js";
 import meetingDidNotComeUser from "../../../models/meeting/meetingDidNotComeUser.js";
 import { separateUpcomingAndPassedMeetings } from "../../../helper/upcomingAndPassed.js";
+import { agenda } from "../../../index.js";
 
 const meetingController = {
   in_place: async (req, res) => {
@@ -83,7 +84,7 @@ const meetingController = {
         navigate: true,
         message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше встречу ${meeting.purpose}.`,
         meetingId: meeting._id.toString(),
-        categoryIcon: meeting.images[0].path, 
+        categoryIcon: meeting.images[0].path,
         link: evLink,
         date_time,
       };
@@ -99,7 +100,7 @@ const meetingController = {
             meetingId: meeting._id.toString(),
             date_time,
             navigate: true,
-            categoryIcon: meeting.images[0].path, 
+            categoryIcon: meeting.images[0].path,
             message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше встречу ${meeting.purpose}`,
             link: evLink,
             date_time,
@@ -1022,9 +1023,7 @@ const meetingController = {
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {
         const result = await meetingService.addMeeting(meeting, user.id, phone);
-        const lastDate = moment
-          .tz(process.env.TZ)
-          .format("YYYY-MM-DD HH:mm");
+        const lastDate = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         await User.findByIdAndUpdate(user.id, {
           $set: { last_meeting_date: lastDate },
         });
@@ -1062,17 +1061,43 @@ const meetingController = {
           );
         }
 
-        const dat = result[1].date + ":00";
+        async function runAgenda(id, type) {
+          await agenda.start(); // <-- Important!
+          console.log("Agenda started!");
+          const meetingDb = await meetingModel.findById(id).select("date");
+          const dat = meetingDb.date + ":00";
 
-        const eventTime = moment.tz(dat, process.env.TZ);
+          const eventTime = moment.tz(dat, process.env.TZ);
 
-        const notificationTime = eventTime.clone().subtract(1, "hour");
+          const notificationTime = eventTime.clone().subtract(1, "hour");
+          if (type === "participants") {
+            await agenda.schedule(
+              notificationTime.toDate(),
+              "send meeting notification",
+              {
+                meetingId: meetingDb._id,
+                type: "participants",
+              }
+            );
+          }
+          if (type === "participantsSpot") {
+            await agenda.schedule(
+              eventTime.toDate(),
+              "send meeting notification",
+              {
+                eventId: meetingDb._id,
+                meetingId: "participantsSpot",
+              }
+            );
+          }
+          console.log("Job scheduled for:", notificationTime.toDate());
+        }
 
-        const currentTime = moment.tz(process.env.TZ).format();
-
-        async function sendMessage(idMeet, type) {
+        agenda.define("send meeting notification", async (job) => {
+          const { meetingId, type } = job.attrs.data;
+          console.log(`Job triggered: ${meetingId}, type: ${type}`);
           const meetingDb = await meetingModel
-            .findById(idMeet)
+            .findById(meetingId)
             .populate({
               path: "participants",
               populate: { path: "user", select: "_id fcm_token notifMeeting" },
@@ -1080,104 +1105,204 @@ const meetingController = {
             .populate("participantSpot")
             .populate("images")
             .exec();
-          if (meetingDb) {
-            for (let i = 0; i < meetingDb.participants.length; i++) {
-              const element = meetingDb.participants[i].user;
-              if (element.fcm_token[0]) {
-                const evLink = `alleven://singleMeeting/${meetingDb._id}`;
-                const date_time = moment
-                  .tz(process.env.TZ)
-                  .format("YYYY-MM-DD HH:mm");
-                const dataNotif = {
-                  status: 2,
-                  date_time,
-                  user: element._id.toString(),
-                  type: "confirm_come",
-                  navigate: true,
-                  message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
-                  situation: "upcoming",
-                  categoryIcon: meetingDb.images[0].path,
-                  meetingId: meetingDb._id.toString(),
-                  link: evLink,
-                };
-                const nt = new Notification(dataNotif);
-                await nt.save();
-                if (element.notifMeeting) {
-                  notifEvent.emit(
-                    "send",
-                    element._id.toString(),
-                    JSON.stringify({
-                      type: "confirm_come",
-                      date_time,
-                      navigate: true,
-                      user: element._id.toString(),
-                      meetingId: meetingDb._id.toString(),
-                      situation: "upcoming",
-                      categoryIcon: meetingDb.images[0].path,
-                      message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
-                      link: evLink,
-                    })
-                  );
+          if ((type = "participants")) {
+            if (meetingDb) {
+              for (let i = 0; i < meetingDb.participants.length; i++) {
+                const element = meetingDb.participants[i].user;
+                if (element.fcm_token[0]) {
+                  const evLink = `alleven://singleMeeting/${meetingDb._id}`;
+                  const date_time = moment
+                    .tz(process.env.TZ)
+                    .format("YYYY-MM-DD HH:mm");
+                  const dataNotif = {
+                    status: 2,
+                    date_time,
+                    user: element._id.toString(),
+                    type: "confirm_come",
+                    navigate: true,
+                    message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
+                    situation: "upcoming",
+                    categoryIcon: meetingDb.images[0].path,
+                    meetingId: meetingDb._id.toString(),
+                    link: evLink,
+                  };
+                  const nt = new Notification(dataNotif);
+                  await nt.save();
+                  if (element.notifMeeting) {
+                    notifEvent.emit(
+                      "send",
+                      element._id.toString(),
+                      JSON.stringify({
+                        type: "confirm_come",
+                        date_time,
+                        navigate: true,
+                        user: element._id.toString(),
+                        meetingId: meetingDb._id.toString(),
+                        situation: "upcoming",
+                        categoryIcon: meetingDb.images[0].path,
+                        message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
+                        link: evLink,
+                      })
+                    );
+                  }
                 }
               }
             }
           }
-        }
+          if ((type = "participantsSpot")) {
+            if (meetingDb) {
+              for (let i = 0; i < meetingDb.participantSpot.length; i++) {
+                const element = meetingDb.participantSpot[i].user;
+                if (element.fcm_token[0]) {
+                  const date_time = moment
+                    .tz(process.env.TZ)
+                    .format("YYYY-MM-DD HH:mm");
+                  const evLink = `alleven://myMeeting/${meetingDb._id}`;
+                  const dataNotif = {
+                    status: 2,
+                    date_time,
+                    user: element._id.toString(),
+                    type: "participationSpot",
+                    message: `Встреча ${meetingDb.purpose} началось.`,
+                    categoryIcon: meetingDb.images[0].path,
+                    meetingId: meetingDb._id,
+                    link: evLink,
+                  };
+                  const nt = new Notification(dataNotif);
+                  await nt.save();
+                  console.log(`Встреча ${meetingDb.purpose} началось.`);
+                  if (element.notifMeeting) {
+                    notifEvent.emit(
+                      "send",
+                      element._id.toString(),
+                      JSON.stringify({
+                        type: "participationSpot",
+                        meetingId: meetingDb._id,
+                        date_time,
+                        categoryIcon: meetingDb.images[0].path,
+                        message: `Встреча ${meetingDb.purpose} началось.`,
+                        link: evLink,
+                      })
+                    );
+                  }
+                }
+              }
+            }
+          }
+          // await sendMessage(eventId, type); // uncomment when `sendMessage` is available
+        });
 
-        schedule.scheduleJob(notificationTime.toDate(), () => {
-          sendMessage(result[1]._id.toString());
-        });
-        async function sendEventMessage(idMeetSpot) {
-          const meetingDb = await meetingModel
-            .findById(idMeetSpot)
-            .populate({
-              path: "participantSpot",
-              populate: { path: "user", select: "_id fcm_token notifMeeting" },
-            })
-            .populate("images")
-            .exec();
-          if (meetingDb) {
-            for (let i = 0; i < meetingDb.participantSpot.length; i++) {
-              const element = meetingDb.participantSpot[i].user;
-              if (element.fcm_token[0]) {
-                const date_time=moment
-                .tz(process.env.TZ)
-                .format("YYYY-MM-DD HH:mm")
-                const evLink = `alleven://myMeeting/${meetingDb._id}`;
-                const dataNotif = {
-                  status: 2,
-                  date_time,
-                  user: element._id.toString(),
-                  type: "participationSpot",
-                  message: `Встреча ${meetingDb.purpose} началось.`,
-                  categoryIcon: meetingDb.images[0].path,
-                  meetingId: meetingDb._id,
-                  link: evLink,
-                };
-                const nt = new Notification(dataNotif);
-                await nt.save();
-                console.log(`Встреча ${meetingDb.purpose} началось.`);
-                if (element.notifMeeting) {
-                  notifEvent.emit(
-                    "send",
-                    element._id.toString(),
-                    JSON.stringify({
-                      type: "participationSpot",
-                      meetingId: meetingDb._id,
-                      date_time,
-                      categoryIcon: meetingDb.images[0].path,
-                      message: `Встреча ${meetingDb.purpose} началось.`,
-                      link: evLink,
-                    })
-                  );
-                }
-              }
-            }
-          }
-        }
-        schedule.scheduleJob(eventTime.toDate(), () => {
-          sendEventMessage(result[1]._id.toString());
-        });
+        runAgenda(result[1]._id.toString(), "participantsSpot");
+        runAgenda(result[1]._id.toString(), "participants");
+
+        // async function sendMessage(idMeet, type) {
+        //   const meetingDb = await meetingModel
+        //     .findById(idMeet)
+        //     .populate({
+        //       path: "participants",
+        //       populate: { path: "user", select: "_id fcm_token notifMeeting" },
+        //     })
+        //     .populate("participantSpot")
+        //     .populate("images")
+        //     .exec();
+        //   if (meetingDb) {
+        //     for (let i = 0; i < meetingDb.participants.length; i++) {
+        //       const element = meetingDb.participants[i].user;
+        //       if (element.fcm_token[0]) {
+        //         const evLink = `alleven://singleMeeting/${meetingDb._id}`;
+        //         const date_time = moment
+        //           .tz(process.env.TZ)
+        //           .format("YYYY-MM-DD HH:mm");
+        //         const dataNotif = {
+        //           status: 2,
+        //           date_time,
+        //           user: element._id.toString(),
+        //           type: "confirm_come",
+        //           navigate: true,
+        //           message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
+        //           situation: "upcoming",
+        //           categoryIcon: meetingDb.images[0].path,
+        //           meetingId: meetingDb._id.toString(),
+        //           link: evLink,
+        //         };
+        //         const nt = new Notification(dataNotif);
+        //         await nt.save();
+        //         if (element.notifMeeting) {
+        //           notifEvent.emit(
+        //             "send",
+        //             element._id.toString(),
+        //             JSON.stringify({
+        //               type: "confirm_come",
+        //               date_time,
+        //               navigate: true,
+        //               user: element._id.toString(),
+        //               meetingId: meetingDb._id.toString(),
+        //               situation: "upcoming",
+        //               categoryIcon: meetingDb.images[0].path,
+        //               message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
+        //               link: evLink,
+        //             })
+        //           );
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+
+        // schedule.scheduleJob(notificationTime.toDate(), () => {
+        //   sendMessage(result[1]._id.toString());
+        // });
+        // async function sendEventMessage(idMeetSpot) {
+        //   const meetingDb = await meetingModel
+        //     .findById(idMeetSpot)
+        //     .populate({
+        //       path: "participantSpot",
+        //       populate: { path: "user", select: "_id fcm_token notifMeeting" },
+        //     })
+        //     .populate("images")
+        //     .exec();
+        //   if (meetingDb) {
+        //     for (let i = 0; i < meetingDb.participantSpot.length; i++) {
+        //       const element = meetingDb.participantSpot[i].user;
+        //       if (element.fcm_token[0]) {
+        //         const date_time=moment
+        //         .tz(process.env.TZ)
+        //         .format("YYYY-MM-DD HH:mm")
+        //         const evLink = `alleven://myMeeting/${meetingDb._id}`;
+        //         const dataNotif = {
+        //           status: 2,
+        //           date_time,
+        //           user: element._id.toString(),
+        //           type: "participationSpot",
+        //           message: `Встреча ${meetingDb.purpose} началось.`,
+        //           categoryIcon: meetingDb.images[0].path,
+        //           meetingId: meetingDb._id,
+        //           link: evLink,
+        //         };
+        //         const nt = new Notification(dataNotif);
+        //         await nt.save();
+        //         console.log(`Встреча ${meetingDb.purpose} началось.`);
+        //         if (element.notifMeeting) {
+        //           notifEvent.emit(
+        //             "send",
+        //             element._id.toString(),
+        //             JSON.stringify({
+        //               type: "participationSpot",
+        //               meetingId: meetingDb._id,
+        //               date_time,
+        //               categoryIcon: meetingDb.images[0].path,
+        //               message: `Встреча ${meetingDb.purpose} началось.`,
+        //               link: evLink,
+        //             })
+        //           );
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+        // schedule.scheduleJob(eventTime.toDate(), () => {
+        //   sendEventMessage(result[1]._id.toString());
+        // });
 
         res.status(200).send(result[0]);
       } else {
