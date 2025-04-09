@@ -2911,6 +2911,8 @@ const companyController = {
         const todayDate= moment.tz(process.env.TZ).format("YYYY-MM-DD");
         const dealDateSpl= resultChanged1.hotDeals[i].date.split(" ")[0]
         if(dealDateSpl===todayDate){
+          console.log("today deal",resultChanged1.hotDeals[i]);
+          
           upcomingDeals.push(resultChanged1.hotDeals[i]);
         }
 
