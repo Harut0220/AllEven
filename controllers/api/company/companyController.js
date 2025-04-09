@@ -1942,6 +1942,7 @@ const companyController = {
             { new: true }
           )
             .populate("images")
+            .populate("category")
             .populate("phoneNumbers")
             .populate("services")
             .populate("likes")
@@ -2033,6 +2034,7 @@ const companyController = {
                 },
               ],
             })
+            .populate("category")
             .populate("hotDeals")
             .populate({
               path: "impression_images",

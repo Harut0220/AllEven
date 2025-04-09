@@ -236,17 +236,15 @@ const companyService = {
         .select("images")
         .populate("images");
       console.log(companyDbforImg, "companyDbforImg");
+      console.log(data.images, "data.images");
 
-      companyDbforImg.images.map(async (imgId) => {
-        console.log(imgId.url, __dirname, "imgId.url dirname");
-
-        const imageDel = await deleteImage(__dirname, imgId.url);
-        console.log(imageDel, "imageDel");
-      });
       await companyImage.deleteMany({ companyId: data._id });
       await companyModel.findByIdAndUpdate(data._id, { $set: { images: [] } });
 
       if (typeof data.images[0] === "string") {
+        companyDbforImg.images.map(async (imgId) => {
+          const imageDel = await deleteImage(__dirname, imgId.url);
+        });
         for (let i = 0; i < data.images.length; i++) {
           const image = new companyImage({
             url: data.images[i],
@@ -259,6 +257,8 @@ const companyService = {
             $push: { images: image._id },
           });
         }
+      } else {
+        delete data.images;
       }
 
       await companyPhones.deleteMany({ companyId: data._id });

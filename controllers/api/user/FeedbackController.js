@@ -30,7 +30,7 @@ class FeedbackController{
             
             let feedback = await this.FeedbackService.store(data);
             
-            notifEvent.emit('send','ADMIN',JSON.stringify({type:'Обратная связь',message:userDb.email,data:feedback}));
+            notifEvent.emit('send','ADMIN',JSON.stringify({type:'Обратная связь',message:userDb.phone_number,data:feedback}));
             // notifEvent.emit('send','ADMIN_FEEDBACK',JSON.stringify(feedback));
             return res.json({"status":"success","message":"message send success"})
         } catch (error) {
