@@ -80,6 +80,8 @@ class NotificationController {
         el.type === "confirm_come"
       ) {
         if (el.register) {
+          console.log(el,"el.register for date");
+          
           const existRegister = await servicesRegistrations.findById(
             el.register
           );
