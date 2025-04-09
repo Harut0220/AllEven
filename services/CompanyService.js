@@ -115,8 +115,6 @@ const companyService = {
       results.push(obj);
     }
 
- 
-
     const upcomPass = separateUpcomingAndPassedCompany(results);
 
     return {
@@ -224,11 +222,11 @@ const companyService = {
     });
     await hotDeal.save();
     console.log(companyId, "companyId hot deal");
-    
+
     const result = await companyModel.findById(companyId);
     result.hotDeals.push(hotDeal._id);
     await result.save();
-    
+
     return hotDeal;
   },
   companyEdit: async (data) => {
@@ -995,125 +993,233 @@ const companyService = {
       const longitude = data.longitude;
       const latitude = data.latitude;
       const companyName = data.name;
+
+      // Check for existing company
       const DB = await companyModel.findOne({
         longitude,
         latitude,
         companyName,
       });
-      const categoryIf = await companyCategory.findById(data.category);
-      async function addCompanyData(data) {
-        const session = await mongoose.startSession();
-        session.startTransaction();
 
+      const categoryIf = await companyCategory.findById(data.category);
+
+      async function addCompanyData(data) {
         try {
           const startTime = moment.tz(data.startHour, "HH:mm", process.env.TZ);
           const endTime = moment.tz(data.endHour, "HH:mm", process.env.TZ);
-          let company;
-          if (startTime < endTime) {
-            company = new companyModel({
-              category: mongoose.Types.ObjectId(data.category),
-              companyName: companyName,
-              web: data.web,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              address: data.address,
-              email: data.email,
-              startHour: data.startHour,
-              endHour: data.endHour,
-              days: data.days,
-              owner: user,
-              isNight: false,
-            });
-          } else {
-            company = new companyModel({
-              category: mongoose.Types.ObjectId(data.category),
-              companyName: companyName,
-              web: data.web,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              address: data.address,
-              email: data.email,
-              startHour: data.startHour,
-              endHour: data.endHour,
-              days: data.days,
-              owner: user,
-              isNight: true,
-            });
-          }
-          await company.save({ session });
 
-          const imagePromises = data.images.map(async (url) => {
-            const image = new companyImage({
-              url,
-              companyId: company._id,
-            });
-            return image.save({ session });
+          let company = new companyModel({
+            category: mongoose.Types.ObjectId(data.category),
+            companyName: companyName,
+            web: data.web,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            address: data.address,
+            email: data.email,
+            startHour: data.startHour,
+            endHour: data.endHour,
+            days: data.days,
+            owner: user,
+            isNight: startTime >= endTime,
           });
+
+          await company.save();
+
+          // Save images
+          const imageDocs = await Promise.all(
+            data.images.map(async (url) => {
+              const image = new companyImage({
+                url,
+                companyId: company._id,
+              });
+              return image.save();
+            })
+          );
+
+          // Save phone numbers
+          const phoneDocs = await Promise.all(
+            data.phoneNumbers.map(async (phoneData) => {
+              const phone = new companyPhones({
+                number: phoneData.number,
+                whatsApp: phoneData.whatsApp,
+                telegram: phoneData.telegram,
+                companyId: company._id,
+              });
+              return phone.save();
+            })
+          );
+
+          // Save services
+          const serviceDocs = await Promise.all(
+            data.services.map(async (serviceData) => {
+              const service = new CompanyServiceModel({
+                type: serviceData.type,
+                description: serviceData.description,
+                cost: serviceData.cost,
+                images: serviceData.images,
+                companyId: company._id,
+              });
+              return service.save();
+            })
+          );
+
+          // Assign references
+          company.images = imageDocs.map((img) => img._id);
+          company.phoneNumbers = phoneDocs.map((ph) => ph._id);
+          company.services = serviceDocs.map((svc) => svc._id);
+
+          await company.save();
+
+          // Update user
           await User.findByIdAndUpdate(user, {
             $set: { company: company._id },
           });
-          const images = await Promise.all(imagePromises);
-
-          const phonePromises = data.phoneNumbers.map(async (phoneData) => {
-            const phone = new companyPhones({
-              number: phoneData.number,
-              whatsApp: phoneData.whatsApp,
-              telegram: phoneData.telegram,
-              companyId: company._id,
-            });
-            return phone.save({ session });
-          });
-          const phoneNumbers = await Promise.all(phonePromises);
-
-          const servicePromises = data.services.map(async (serviceData) => {
-            const service = new CompanyServiceModel({
-              type: serviceData.type,
-              description: serviceData.description,
-              cost: serviceData.cost,
-              images: serviceData.images,
-              companyId: company._id,
-            });
-
-            return service.save({ session });
-          });
-          const services = await Promise.all(servicePromises);
-
-          company.images = images.map((image) => image._id);
-          company.phoneNumbers = phoneNumbers.map((phone) => phone._id);
-          company.services = services.map((service) => service._id);
-          // company.comments = comments.map((comment) => comment._id);
-          // company.likes = likes.map((like) => like._id);
-
-          await company.save({ session });
-
-          // Commit transaction
-          await session.commitTransaction();
-          session.endSession();
 
           console.log("Company and related data added successfully!");
-
           return company;
         } catch (error) {
           console.error("Error adding company data:", error);
-          if (session) {
-            await session.abortTransaction();
-            session.endSession();
-          }
           throw error;
         }
       }
 
       if (!DB && categoryIf) {
-        const resultBaza = await addCompanyData(data);
-
-        return { message: "company added", company: resultBaza };
+        const result = await addCompanyData(data);
+        return { message: "company added", company: result };
       }
 
       return { message: "company exist" };
     } catch (error) {
-      console.error(error);
+      console.error("Error in addCompany:", error);
+      throw error; // Ensure caller can handle it
     }
   },
+
+  // addCompany: async (data, user) => {
+  //   try {
+  //     data.user = user;
+  //     const longitude = data.longitude;
+  //     const latitude = data.latitude;
+  //     const companyName = data.name;
+  //     const DB = await companyModel.findOne({
+  //       longitude,
+  //       latitude,
+  //       companyName,
+  //     });
+  //     const categoryIf = await companyCategory.findById(data.category);
+  //     async function addCompanyData(data) {
+  //       const session = await mongoose.startSession();
+  //       session.startTransaction();
+
+  //       try {
+  //         const startTime = moment.tz(data.startHour, "HH:mm", process.env.TZ);
+  //         const endTime = moment.tz(data.endHour, "HH:mm", process.env.TZ);
+  //         let company;
+  //         if (startTime < endTime) {
+  //           company = new companyModel({
+  //             category: mongoose.Types.ObjectId(data.category),
+  //             companyName: companyName,
+  //             web: data.web,
+  //             latitude: data.latitude,
+  //             longitude: data.longitude,
+  //             address: data.address,
+  //             email: data.email,
+  //             startHour: data.startHour,
+  //             endHour: data.endHour,
+  //             days: data.days,
+  //             owner: user,
+  //             isNight: false,
+  //           });
+  //         } else {
+  //           company = new companyModel({
+  //             category: mongoose.Types.ObjectId(data.category),
+  //             companyName: companyName,
+  //             web: data.web,
+  //             latitude: data.latitude,
+  //             longitude: data.longitude,
+  //             address: data.address,
+  //             email: data.email,
+  //             startHour: data.startHour,
+  //             endHour: data.endHour,
+  //             days: data.days,
+  //             owner: user,
+  //             isNight: true,
+  //           });
+  //         }
+  //         await company.save({ session });
+
+  //         const imagePromises = data.images.map(async (url) => {
+  //           const image = new companyImage({
+  //             url,
+  //             companyId: company._id,
+  //           });
+  //           return image.save({ session });
+  //         });
+  //         await User.findByIdAndUpdate(user, {
+  //           $set: { company: company._id },
+  //         });
+  //         const images = await Promise.all(imagePromises);
+
+  //         const phonePromises = data.phoneNumbers.map(async (phoneData) => {
+  //           const phone = new companyPhones({
+  //             number: phoneData.number,
+  //             whatsApp: phoneData.whatsApp,
+  //             telegram: phoneData.telegram,
+  //             companyId: company._id,
+  //           });
+  //           return phone.save({ session });
+  //         });
+  //         const phoneNumbers = await Promise.all(phonePromises);
+
+  //         const servicePromises = data.services.map(async (serviceData) => {
+  //           const service = new CompanyServiceModel({
+  //             type: serviceData.type,
+  //             description: serviceData.description,
+  //             cost: serviceData.cost,
+  //             images: serviceData.images,
+  //             companyId: company._id,
+  //           });
+
+  //           return service.save({ session });
+  //         });
+  //         const services = await Promise.all(servicePromises);
+
+  //         company.images = images.map((image) => image._id);
+  //         company.phoneNumbers = phoneNumbers.map((phone) => phone._id);
+  //         company.services = services.map((service) => service._id);
+  //         // company.comments = comments.map((comment) => comment._id);
+  //         // company.likes = likes.map((like) => like._id);
+
+  //         await company.save({ session });
+
+  //         // Commit transaction
+  //         await session.commitTransaction();
+  //         session.endSession();
+
+  //         console.log("Company and related data added successfully!");
+
+  //         return company;
+  //       } catch (error) {
+  //         console.error("Error adding company data:", error);
+  //         if (session) {
+  //           await session.abortTransaction();
+  //           session.endSession();
+  //         }
+  //         throw error;
+  //       }
+  //     }
+
+  //     if (!DB && categoryIf) {
+  //       const resultBaza = await addCompanyData(data);
+
+  //       return { message: "company added", company: resultBaza };
+  //     }
+
+  //     return { message: "company exist" };
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // },
   addFavorites: async (user, companyId) => {
     try {
       const resFav = await companyFavorit.findOne({ user, companyId });

@@ -74,7 +74,11 @@ payRouter.get("/success/:id", async (req, res) => {
     navigate: true,
     link: evLink,
   });
+  console.log(existMessage, "existMessage");
+  
   if (!existMessage) {
+    console.log("create new notification regsiter one and two");
+    
     const nt = new Notification(dataNotif);
     await nt.save();
     notifEvent.emit(
@@ -186,7 +190,11 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     message: `Пользователь ${userDB.name} ${userDB.surname} записался(лась) на ваше горящее предложение в ${time}.`,
     link: evLink,
   });
+  console.log(existMessage, "existMessage");
+  
   if (!existMessage) {
+    console.log("create new notification deal regsiter one and two");
+
     const CompanyParticipants = await companyParticipants.findOne({
       user: dealRegistr.user._id,
       companyId: dealDb.companyId,

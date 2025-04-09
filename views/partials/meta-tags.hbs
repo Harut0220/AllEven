@@ -16,6 +16,6 @@
 
 
 <meta name="twitter:title" content="{{title}}">
-<meta name="twitter:description" content="{{category}}">
+<meta name="twitter:description" content="{{#if description}}{{description}}{{else}}{{serviceName}}{{/if}}">
 <meta name="twitter:image" content="https://chatapi.trigger.ltd{{#if imageHeader}}/{{imageHeader}}{{else}}/default-event-image.jpg?width=800&height=450{{/if}}">
 <meta name="twitter:card" content="summary_large_image">
