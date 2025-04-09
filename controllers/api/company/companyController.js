@@ -2907,9 +2907,15 @@ const companyController = {
         }
       }
       let upcomingDeals = [];
+      console.log(resultChanged1.hotDeals,"resultChanged1.hotDeals skzbic");
+      
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
         const todayDate= moment.tz(process.env.TZ).format("YYYY-MM-DD");
         const dealDateSpl= resultChanged1.hotDeals[i].date.split(" ")[0]
+        console.log(dealDateSpl===todayDate,"dealDateSpl===todayDate");
+        console.log("dealDateSpl",dealDateSpl);
+        console.log("todayDate",todayDate);
+        
         if(dealDateSpl===todayDate){
           console.log("today deal",resultChanged1.hotDeals[i]);
           
