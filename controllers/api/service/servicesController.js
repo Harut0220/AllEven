@@ -17,6 +17,7 @@ import axios from "axios";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
 import companyService from "../../../models/company/companyService.js";
+import { agenda } from "../../../index.js";
 const { ObjectId } = mongoose.Types;
 
 const servicesController = {
@@ -415,13 +416,14 @@ const servicesController = {
               select: "name surname avatar phone_number",
             })
             .exec();
-            if(dealRegistersDb){
-              let obj = { description: element.description,...dealRegistersDb.toObject()};
+          if (dealRegistersDb) {
+            let obj = {
+              description: element.description,
+              ...dealRegistersDb.toObject(),
+            };
 
-
-              dealRegisters.push(obj);
-            }
-
+            dealRegisters.push(obj);
+          }
         }
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
@@ -701,51 +703,51 @@ const servicesController = {
       }
 
       const currentTime = moment.tz(process.env.TZ).format();
-      async function sendMessage(serviceRegisterDbId, type) {
-        try {
-          const registerDb = await servicesRegistrations
-            .findById(serviceRegisterDbId)
-            .populate("serviceId")
-            .populate("user")
-            .exec();
+      // async function sendMessage(serviceRegisterDbId, type) {
+      //   try {
+      //     const registerDb = await servicesRegistrations
+      //       .findById(serviceRegisterDbId)
+      //       .populate("serviceId")
+      //       .populate("user")
+      //       .exec();
 
-          if (registerDb) {
-            const evLink = `alleven://companyDetail/${registerDb.serviceId._id}`;
-            const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
+      //     if (registerDb) {
+      //       const evLink = `alleven://companyDetail/${registerDb.serviceId._id}`;
+      //       const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
 
-            const dataNotif = {
-              status: 2,
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              user: registerDb.user._id.toString(),
-              type: "Регистрация на услугу",
-              message: message,
-              serviceId: registerDb.serviceId._id,
-              // categoryIcon: registerDb.serviceId.images[0],
-              link: evLink,
-            };
-            const nt = new Notification(dataNotif);
-            await nt.save();
-            if (registerDb.user.notifCompany) {
-              notifEvent.emit(
-                "send",
-                registerDb.user._id.toString(),
-                JSON.stringify({
-                  type: "Регистрация на услугу",
-                  serviceId: registerDb.serviceId._id,
-                  date_time: moment
-                    .tz(process.env.TZ)
-                    .format("YYYY-MM-DD HH:mm"),
-                  message: message,
-                  // categoryIcon: registerDb.serviceId.images[0],
-                  link: evLink,
-                })
-              );
-            }
-          }
-        } catch (error) {
-          console.error("Error in sendMessage:", error);
-        }
-      }
+      //       const dataNotif = {
+      //         status: 2,
+      //         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+      //         user: registerDb.user._id.toString(),
+      //         type: "Регистрация на услугу",
+      //         message: message,
+      //         serviceId: registerDb.serviceId._id,
+      //         // categoryIcon: registerDb.serviceId.images[0],
+      //         link: evLink,
+      //       };
+      //       const nt = new Notification(dataNotif);
+      //       await nt.save();
+      //       if (registerDb.user.notifCompany) {
+      //         notifEvent.emit(
+      //           "send",
+      //           registerDb.user._id.toString(),
+      //           JSON.stringify({
+      //             type: "Регистрация на услугу",
+      //             serviceId: registerDb.serviceId._id,
+      //             date_time: moment
+      //               .tz(process.env.TZ)
+      //               .format("YYYY-MM-DD HH:mm"),
+      //             message: message,
+      //             // categoryIcon: registerDb.serviceId.images[0],
+      //             link: evLink,
+      //           })
+      //         );
+      //       }
+      //     }
+      //   } catch (error) {
+      //     console.error("Error in sendMessage:", error);
+      //   }
+      // }
       // async function sendMessage(serviceRegisterDbId, type) {
 
       //   const registerDb = await servicesRegistrations
@@ -809,33 +811,157 @@ const servicesController = {
       //   }
       // }
 
-      schedule.scheduleJob(
-        `notification_${confirmedRegister._id}_hour`,
-        notificationTime.toDate(),
-        () => {
-          console.log("Notification Time hour before the event (schedule)");
-          try {
-            sendMessage(confirmedRegister._id.toString(), "hour");
-          } catch (error) {
-            console.error("Error sending notification (1 hour):", error);
-          }
-        }
-      );
+      // schedule.scheduleJob(
+      //   `notification_${confirmedRegister._id}_hour`,
+      //   notificationTime.toDate(),
+      //   () => {
+      //     console.log("Notification Time hour before the event (schedule)");
+      //     try {
+      //       sendMessage(confirmedRegister._id.toString(), "hour");
+      //     } catch (error) {
+      //       console.error("Error sending notification (1 hour):", error);
+      //     }
+      //   }
+      // );
 
-      schedule.scheduleJob(
-        `notification_${confirmedRegister._id}_five`,
-        registerTimeFive.toDate(),
-        () => {
+      // schedule.scheduleJob(
+      //   `notification_${confirmedRegister._id}_five`,
+      //   registerTimeFive.toDate(),
+      //   () => {
+      //     console.log(
+      //       "Notification Time 5 minutes before the event (schedule)"
+      //     );
+      //     try {
+      //       sendMessage(confirmedRegister._id.toString());
+      //     } catch (error) {
+      //       console.error("Error sending notification (5 minutes):", error);
+      //     }
+      //   }
+      // );
+      async function runAgenda(registerId, type) {
+        await agenda.start(); // <-- Important!
+        console.log("Agenda started!");
+        const dat = service.date + ":00";
+
+        const eventTime = moment.tz(dat, process.env.TZ);
+        const eventTimeMinusFive = moment
+          .tz(dat, process.env.TZ)
+          .subtract(5, "minutes");
+
+        const notificationTime = eventTime.clone().subtract(1, "hour");
+        if (type === "participants") {
           console.log(
-            "Notification Time 5 minutes before the event (schedule)"
+            "Job scheduled for notifTime:",
+            notificationTime.toDate()
           );
-          try {
-            sendMessage(confirmedRegister._id.toString());
-          } catch (error) {
-            console.error("Error sending notification (5 minutes):", error);
+
+          await agenda.schedule(
+            notificationTime.toDate(),
+            "send service notification",
+            {
+              registerId: registerId,
+              type: "participants",
+            }
+          );
+        }
+        if (type === "participantsSpot") {
+          console.log("Job scheduled for registerTime:", eventTime.toDate());
+
+          await agenda.schedule(
+            eventTimeMinusFive.toDate(),
+            "send service notification",
+            {
+              registerId: registerId,
+              type: "participantsSpot",
+            }
+          );
+        }
+      }
+
+      agenda.define("send service notification", async (job) => {
+        const { registerId, type } = job.attrs.data;
+
+        console.log(`Job triggered: ${registerId}, type: ${type}`);
+        const registerDb = await servicesRegistrations
+          .findById(registerId)
+          .populate("serviceId")
+          .populate("user")
+          .exec();
+        if (type === "participants") {
+          if (registerDb) {
+            const evLink = `alleven://singleCompany/${registerDb.serviceId._id}`;
+            const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
+
+            const dataNotif = {
+              status: 2,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              user: registerDb.user._id.toString(),
+              type: "Регистрация на услугу",
+              message: message,
+              serviceId: registerDb.serviceId._id,
+              link: evLink,
+            };
+            const nt = new Notification(dataNotif);
+            await nt.save();
+            if (registerDb.user.notifCompany) {
+              notifEvent.emit(
+                "send",
+                registerDb.user._id.toString(),
+                JSON.stringify({
+                  type: "Регистрация на услугу",
+                  serviceId: registerDb.serviceId._id,
+                  date_time: moment
+                    .tz(process.env.TZ)
+                    .format("YYYY-MM-DD HH:mm"),
+                  message: message,
+                  link: evLink,
+                })
+              );
+            }
           }
         }
-      );
+
+        if (type === "participantsSpot") {
+          if (registerDb) {
+            const evLink = `alleven://singleCompany/${registerDb.serviceId._id}`;
+            const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
+
+            const dataNotif = {
+              status: 2,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              user: registerDb.user._id.toString(),
+              type: "Регистрация на услугу",
+              message: message,
+              serviceId: registerDb.serviceId._id,
+              link: evLink,
+            };
+            const nt = new Notification(dataNotif);
+            await nt.save();
+            if (registerDb.user.notifCompany) {
+              notifEvent.emit(
+                "send",
+                registerDb.user._id.toString(),
+                JSON.stringify({
+                  type: "Регистрация на услугу",
+                  serviceId: registerDb.serviceId._id,
+                  date_time: moment
+                    .tz(process.env.TZ)
+                    .format("YYYY-MM-DD HH:mm"),
+                  message: message,
+                  link: evLink,
+                })
+              );
+            }
+          }
+        }
+      });
+
+      runAgenda(service._id.toString(), "participants")
+        .then(() => console.log("Agenda job scheduled successfully"))
+        .catch((error) => console.error("Error scheduling agenda job:", error));
+      runAgenda(service._id.toString(), "participantsSpot")
+        .then(() => console.log("Agenda job scheduled successfully"))
+        .catch((error) => console.error("Error scheduling agenda job:", error));
 
       res
         .status(200)

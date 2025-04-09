@@ -1068,6 +1068,9 @@ const meetingController = {
           const dat = meetingDb.date + ":00";
 
           const eventTime = moment.tz(dat, process.env.TZ);
+          const eventTimeMinusFive = moment
+            .tz(dat, process.env.TZ)
+            .subtract(5, "minutes");
 
           const notificationTime = eventTime.clone().subtract(1, "hour");
           if (type === "participants") {
@@ -1082,7 +1085,7 @@ const meetingController = {
           }
           if (type === "participantsSpot") {
             await agenda.schedule(
-              eventTime.toDate(),
+              eventTimeMinusFive.toDate(),
               "send meeting notification",
               {
                 eventId: meetingDb._id,

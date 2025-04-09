@@ -50,9 +50,14 @@ class NotificationController {
       );
 
       if (el.serviceId && el.type === "confirm_come") {
+        console.log(el.serviceId,el._id, "el.serviceId");
+        
+        
         const serviceDb = await companyService.findById(
           el.serviceId.toString()
         );
+        console.log(serviceDb,"serviceDb");
+
         el.serviceName = serviceDb.type;
 
         if (el.register) {

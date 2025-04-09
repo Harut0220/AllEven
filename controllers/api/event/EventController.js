@@ -780,6 +780,7 @@ class EventController {
       const dat = eventDb.started_time + ":00";
 
       const eventTime = moment.tz(dat, process.env.TZ);
+      const eventTimeMinusFive = moment.tz(dat, process.env.TZ).subtract(5, 'minutes');
 
       const notificationTime = eventTime.clone().subtract(1, "hour");
       if (type === "participants") {
@@ -793,7 +794,7 @@ class EventController {
         );
       }
       if (type === "participantsSpot") {
-        await agenda.schedule(eventTime.toDate(), "send event notification", {
+        await agenda.schedule(eventTimeMinusFive.toDate(), "send event notification", {
           eventId: event._id,
           type: "participantsSpot",
         });
