@@ -83,8 +83,10 @@ class NotificationController {
           console.log(el,"el.register for date");
           
           const existRegister = await servicesRegistrations.findById(
-            el.register
+            el.register.toString()
           );
+          console.log(existRegister,"existRegister");
+          
           const fixedTime = moment.tz(
             existRegister.date,
             "YYYY-MM-DD HH:mm",
