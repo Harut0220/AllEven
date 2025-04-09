@@ -223,13 +223,12 @@ const companyService = {
       user,
     });
     await hotDeal.save();
-
-    const result = await companyModel
-      .findByIdAndUpdate(companyId, { $push: { hotDeals: hotDeal._id } })
-      .exec();
-    // result.hotDeals.push(hotDeal._id);
-    // await result.save();
-
+    console.log(companyId, "companyId hot deal");
+    
+    const result = await companyModel.findById(companyId);
+    result.hotDeals.push(hotDeal._id);
+    await result.save();
+    
     return hotDeal;
   },
   companyEdit: async (data) => {

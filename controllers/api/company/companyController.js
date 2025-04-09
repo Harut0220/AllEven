@@ -2857,16 +2857,8 @@ const companyController = {
         resultChanged1.isRating = true;
       }
 
-      // const hours = moment.tz(process.env.TZ).format("HH:mm");
-      // const splitOpen = resultChanged1.startHour.split(":");
-      // const splitClose = resultChanged1.endHour.split(":");
       await resultChanged1.save();
-      // if (
-      //   Number(hours) >= Number(splitOpen[0]) &&
-      //   Number(hours) < Number(splitClose[0])
-      // ) {
-      //   resultChanged1.open = true;
-      // }
+
       const hours = moment.tz(process.env.TZ).format("HH:mm");
 
       function isCompanyOpen(startHour, closeHour, currentTime) {
@@ -2916,17 +2908,14 @@ const companyController = {
       }
       let upcomingDeals = [];
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
-        const dealTime = "2024-12-02 15:00";
-        const fixedTime = moment.tz(
-          resultChanged1.hotDeals[i].date,
-          "YYYY-MM-DD HH:mm",
-          process.env.TZ
-        );
-
-        const now = moment.tz(process.env.TZ);
-        if (fixedTime.isAfter(now)) {
+        const todayDate= moment.tz(process.env.TZ).format("YYYY-MM-DD");
+        const dealDateSpl= resultChanged1.hotDeals[i].date.split(" ")[0]
+        if(dealDateSpl===todayDate){
           upcomingDeals.push(resultChanged1.hotDeals[i]);
-        } else {
+        }
+
+
+        if (!fixedTime.isAfter(now)) {
           await companyHotDeals.findByIdAndUpdate(
             resultChanged1.hotDeals[i]._id,
             {
@@ -2962,6 +2951,8 @@ const companyController = {
         countAfter.push(serviceRegisterAfter.length);
         countToday.push(serviceRegisterToday.length);
       }
+      console.log(resultChanged1.hotDeals,"resultChanged1.hotDeals");
+      
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
         if (resultChanged1.hotDeals[i].registration) {
           console.log("hotDeals registration", resultChanged1.hotDeals[i]);
