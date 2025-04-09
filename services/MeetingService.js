@@ -2203,10 +2203,9 @@ const meetingService = {
     }
   },
   addMeeting: async (meeting, user, phone) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
     const imagePaths = meeting.images;
     try {
+      // Save the meeting
       const meetingDb = new meetingModel({
         purpose: meeting.purpose,
         description: meeting.description,
@@ -2219,40 +2218,89 @@ const meetingService = {
         phone,
         changedStatusDate: moment.tz(process.env.TZ).format(),
       });
-
-      await meetingDb.save({ session });
-
+  
+      await meetingDb.save();
+  
+      // Save the images
       const imageDocs = imagePaths.map((path) => ({
         meetingId: meetingDb._id,
         path,
       }));
-
-      const savedImages = await meetingImages.insertMany(imageDocs, {
-        session,
-      });
-
+  
+      const savedImages = await meetingImages.insertMany(imageDocs);
+  
+      // Update the meeting with image references
       meetingDb.images = savedImages.map((image) => image._id);
-      await meetingDb.save({ session });
-
-      await session.commitTransaction();
-      session.endSession();
-
+      await meetingDb.save();
+  
+      // Update the user
       const updatedUser = await User.findByIdAndUpdate(
         user,
         { $push: { meetings: meetingDb._id } },
         { new: true }
       );
+  
       return [
         { success: true, message: "Meeting and images saved successfully" },
         meetingDb,
       ];
     } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
       console.error(error);
       throw new Error("Failed to save meeting and images");
     }
   },
+  
+  // addMeeting: async (meeting, user, phone) => {
+  //   const session = await mongoose.startSession();
+  //   session.startTransaction();
+  //   const imagePaths = meeting.images;
+  //   try {
+  //     const meetingDb = new meetingModel({
+  //       purpose: meeting.purpose,
+  //       description: meeting.description,
+  //       ticket: meeting.ticket,
+  //       longitude: meeting.longitude,
+  //       latitude: meeting.latitude,
+  //       date: meeting.date,
+  //       address: meeting.address,
+  //       user,
+  //       phone,
+  //       changedStatusDate: moment.tz(process.env.TZ).format(),
+  //     });
+
+  //     await meetingDb.save({ session });
+
+  //     const imageDocs = imagePaths.map((path) => ({
+  //       meetingId: meetingDb._id,
+  //       path,
+  //     }));
+
+  //     const savedImages = await meetingImages.insertMany(imageDocs, {
+  //       session,
+  //     });
+
+  //     meetingDb.images = savedImages.map((image) => image._id);
+  //     await meetingDb.save({ session });
+
+  //     await session.commitTransaction();
+  //     session.endSession();
+
+  //     const updatedUser = await User.findByIdAndUpdate(
+  //       user,
+  //       { $push: { meetings: meetingDb._id } },
+  //       { new: true }
+  //     );
+  //     return [
+  //       { success: true, message: "Meeting and images saved successfully" },
+  //       meetingDb,
+  //     ];
+  //   } catch (error) {
+  //     await session.abortTransaction();
+  //     session.endSession();
+  //     console.error(error);
+  //     throw new Error("Failed to save meeting and images");
+  //   }
+  // },
   editMeeting: async (id, data) => {
     try {
       // const meetingDbforImg = await meetingModel.findById(id).select({ images: 1 }).populate("images");
