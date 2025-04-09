@@ -2919,6 +2919,7 @@ const companyController = {
           "YYYY-MM-DD HH:mm",
           process.env.TZ
         );
+        const now= moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
         if (!fixedTime.isAfter(now)) {
           await companyHotDeals.findByIdAndUpdate(
