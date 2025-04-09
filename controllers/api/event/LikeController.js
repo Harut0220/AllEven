@@ -69,7 +69,7 @@ class LikeController {
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: event.owner._id.toString(),
             type: "like",
-            message: `Пользователь ${user.name} поставил лайк услугу ${event.name}.`,
+            message: `Пользователь ${user.name} поставил(а) лайк на событие ${event.name}.`,
             eventId: event._id,
             link: evLink,
           };
@@ -83,7 +83,7 @@ class LikeController {
                 type: "like",
                 eventId: event._id,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `Пользователь ${user.name} поставил лайк услугу ${event.name}.`,
+                message: `Пользователь ${user.name} поставил(а) лайк на событие ${event.name}.`,
                 link: evLink,
               })
             );

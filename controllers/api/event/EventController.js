@@ -23,6 +23,7 @@ import EventComment from "../../../models/event/EventComment.js";
 import ImpressionsEvent from "../../../models/ImpressionsEvent.js";
 import calculateAverageRating from "../../../helper/ratingCalculate.js";
 import calculateDistance from "../../../helper/distanceCalculate.js";
+import { separateUpcomingAndPassedEvents } from "../../../helper/upcomingAndPassed.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -353,26 +354,9 @@ class EventController {
       for (let i = 0; i < resDb.length; i++) {
         resArray.push(resDb[i].eventId);
       }
-      function separateUpcomingAndPassed(events) {
-        const upcoming = [];
-        const passed = [];
 
-        events.forEach((event) => {
-          const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
-          if (event.started_time > dateNow) {
-
-            upcoming.push(event);
-          } else {
-
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-
-      const upcomPass = separateUpcomingAndPassed(resArray);
+      const upcomPass = separateUpcomingAndPassedEvents(resArray);
 
 
 
@@ -576,26 +560,8 @@ class EventController {
           await resDb[i].save();
         }
 
-        function separateUpcomingAndPassed(events) {
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
-            const dateNow = moment
-              .tz(process.env.TZ)
-              .format("YYYY-MM-DD HH:mm");
-
-            if (event.started_time > dateNow) {
-              upcoming.push(event);
-            } else {
-              passed.push(event);
-            }
-          });
-
-          return { upcoming, passed };
-        }
-
-        const separatedEvents = separateUpcomingAndPassed(resDb);
+        const separatedEvents = separateUpcomingAndPassedEvents(resDb);
         if (separatedEvents.passed.length > 0) {
           for (let i = 0; i < separatedEvents.passed.length; i++) {
             await Event.findByIdAndUpdate(separatedEvents.passed[i]._id, {
@@ -852,6 +818,7 @@ class EventController {
                   navigate: true,
                   message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
                   situation: "upcoming",
+                  categoryIcon: eventDb.category.avatar,
                   eventId: eventDb._id.toString(),
                   link: evLink,
                 };
@@ -868,6 +835,7 @@ class EventController {
                       user: element._id.toString(),
                       eventId: eventDb._id.toString(),
                       situation: "upcoming",
+                      categoryIcon: eventDb.category.avatar,
                       message: `Событие ${eventDb.name} начнется через час. Не пропустите.`,
                       link: evLink,
                     })
@@ -1298,22 +1266,8 @@ class EventController {
             path: "participantsSpot",
             populate: { path: "user", select: "name surname avatar" },
           });
-        function separateUpcomingAndPassed(events) {
-          const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
-            if (event.started_time > now) {
-              upcoming.push(event);
-            } else {
-              passed.push(event);
-            }
-          });
-
-          return { upcoming, passed };
-        }
-        const separatedEvents = separateUpcomingAndPassed(result);
+        const separatedEvents = separateUpcomingAndPassedEvents(result);
         if (separatedEvents.passed.length > 0) {
           for (let i = 0; i < separatedEvents.passed.length; i++) {
             await Event.findByIdAndUpdate(separatedEvents.passed[i]._id, {
@@ -1391,22 +1345,8 @@ class EventController {
             path: "participantsSpot",
             populate: { path: "user", select: "name surname avatar" },
           });
-        function separateUpcomingAndPassed(events) {
-          const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
-            if (event.started_time > now) {
-              upcoming.push(event);
-            } else {
-              passed.push(event);
-            }
-          });
-
-          return { upcoming, passed };
-        }
-        const separatedEvents = separateUpcomingAndPassed(result);
+        const separatedEvents = separateUpcomingAndPassedEvents(result);
         if (separatedEvents.passed.length > 0) {
           for (let i = 0; i < separatedEvents.passed.length; i++) {
             await Event.findByIdAndUpdate(separatedEvents.passed[i]._id, {
@@ -1664,7 +1604,7 @@ class EventController {
             path: "participantsSpot",
             populate: { path: "user", select: "name surname avatar" },
           });
-        function separateUpcomingAndPassed(events) {
+        function separateUpcomingAndPassedEvents(events) {
           const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
           const upcoming = [];
           const passed = [];
@@ -1680,7 +1620,7 @@ class EventController {
           return { upcoming, passed };
         }
 
-        const result = separateUpcomingAndPassed(events);
+        const result = separateUpcomingAndPassedEvents(events);
         if (result.passed.length > 0) {
           for (let i = 0; i < result.passed.length; i++) {
             await Event.findByIdAndUpdate(result.passed[i]._id, {
@@ -1766,24 +1706,9 @@ class EventController {
           })
           .exec();
 
-        function separateUpcomingAndPassed(events) {
-          const now = new Date();
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
-            const eventDate = new Date(event.started_time);
-            if (eventDate > now) {
-              upcoming.push(event);
-            } else {
-              passed.push(event);
-            }
-          });
 
-          return { upcoming, passed };
-        }
-
-        const result = separateUpcomingAndPassed(events);
+        const result = separateUpcomingAndPassedEvents(events);
         if (result.passed.length > 0) {
           for (let i = 0; i < result.passed.length; i++) {
             await Event.findByIdAndUpdate(result.passed[i]._id, {
@@ -1878,9 +1803,9 @@ class EventController {
           type: "Присоединение",
           navigate: true,
           situation: "upcoming",
-          message: `Пользователь ${userDb.name} присоединился к событию ${result.name}.`,
+          message: `Пользователь ${userDb.name} присоединился(лась) к событию ${result.name}.`,
           eventId: result._id.toString(),
-          // categoryIcon: result.images[0].name, //sarqel
+          categoryIcon: result.images[0].name, //sarqel
           link: evLink,
         };
         const nt = new Notification(dataNotif);
@@ -1895,8 +1820,8 @@ class EventController {
               type: "Присоединение",
               eventId: result._id.toString(),
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${userDb.name} присоединился к событию ${result.name}.`,
-              // categoryIcon: result.images[0].name, //sarqel
+              message: `Пользователь ${userDb.name} присоединился(лась) к событию ${result.name}.`,
+              categoryIcon: result.images[0].name, //sarqel
               situation: "upcoming",
               navigate: true,
               link: evLink,
@@ -1954,8 +1879,8 @@ class EventController {
           user: result.owner._id.toString(),
           type: "Присоединение",
           navigate: true,
-          message: `Пользователь ${user.name} пришел на ваше событие ${result.name}. `,
-          // categoryIcon: result.images[0].name,
+          message: `Пользователь ${user.name} пришел(а) на ваше событие ${result.name}. `,
+          categoryIcon: result.images[0].name,
           eventId: result._id,
           link: evLink,
         };
@@ -1970,8 +1895,8 @@ class EventController {
               eventId: result._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${user.name} пришел на ваше событие ${result.name}. `,
-              // categoryIcon: result.images[0].name, //sarqel
+              message: `Пользователь ${user.name} пришел(а) на ваше событие ${result.name}. `,
+              categoryIcon: result.images[0].name, //sarqel
               link: evLink,
             })
           );

@@ -53,8 +53,9 @@ class InPlaceController {
         user: event.owner._id.toString(),
         type: "message",
         navigate:true,
-        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${event.name}.`,
+        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше событие ${event.name}.`,
         eventId: event._id.toString(),
+        categoryIcon: event.images[0].name, //sarqel
         link: evLink,
         date_time,
       };
@@ -70,7 +71,8 @@ class InPlaceController {
             eventId,
             date_time,
             navigate:true,
-            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше событие ${event.name}`,
+            categoryIcon: event.images[0].name, //sarqel
+            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше событие ${event.name}`,
             link: evLink,
             date_time
           })

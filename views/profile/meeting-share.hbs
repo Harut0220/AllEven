@@ -156,7 +156,7 @@
     </div>
     <div class="download_div" style="padding: 60px;">
       <span class="header_text">
-        скачайте сейчас и получите доступ ко всем событиям
+        Cкачайте сейчас и получите доступ ко всем событиям.
       </span>
       <div class="download_icon_div">
         <a href="javascript:void(0);" onclick="openAppOrStore('{{getValue event "_id"}}')">
@@ -172,7 +172,7 @@
 <script>
       function openAppOrStore(id) {
       var packageName = "com.alleven.package"; // Replace with your actual package name
-      var appScheme = `alleven://singleEvent/${id}`; // Replace with your actual deep link
+      var appScheme = `alleven://singleMeeting/${id}`; // Replace with your actual deep link
 
       // Try opening the app
       window.location.href = appScheme;

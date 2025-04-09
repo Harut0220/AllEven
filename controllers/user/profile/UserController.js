@@ -42,7 +42,7 @@ import meetingImages from "../../../models/meeting/meetingImages.js";
 import servicesRegistrations from "../../../models/services/servicesRegistrations.js";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
-import moment from "moment-timezone"
+import moment from "moment-timezone";
 
 class UserController {
   constructor() {
@@ -52,9 +52,7 @@ class UserController {
   index = async (req, res) => {
     let view = "";
     let usersInfo = {};
-    console.log("req.user.roles.name", req.user.roles.name);
-    console.log("req.user", req.user);
-    
+
     if (req.user.roles.name == "MODERATOR") {
       const getUsers = async (roles, params = {}) => {
         let limit = params.limit ? +params.limit : 10;
@@ -89,14 +87,12 @@ class UserController {
         let users = User.find(findObj).sort({ createdAt: "desc" });
         let usersCount = await User.countDocuments({ roles: r });
         users = await users.populate("roles").limit(limit).skip(skip).lean();
-        console.log(users, usersCount, "users");
-        
+
         return { users, usersCount };
       };
 
       usersInfo.users = await getUsers(["USER", "USER"], req.query);
-      console.log(usersInfo.users, "usersInfo.users");
-      
+
       view = "profile/moderator/users";
       res.render(view, {
         layout: "profile",
@@ -166,10 +162,11 @@ class UserController {
       .populate("event_impression_image")
       .populate("event_comment")
       .lean();
-    const events = await Event.find({ owner: req.params.id })
+    const events = await Event.find({ owner: req.params.id.toString() })
       .populate("images")
       .populate("category")
       .populate({ path: "owner", select: "-password" })
+      .populate({path:"comments", populate: { path: "user", select: "-password" }})
       .lean();
     const meetings = await meetingModel
       .find({ owner: req.params.id })
@@ -222,6 +219,15 @@ class UserController {
         dataComp: company,
       });
     }
+    console.log(
+      // req.user,
+      // singleUser,
+      // singleUser.event_categories,
+      // events,
+      // meetings,
+      company,
+      "user single"
+    );
 
     res.render(view, {
       layout: "profile",

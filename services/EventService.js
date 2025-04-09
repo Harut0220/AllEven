@@ -35,6 +35,7 @@ import Report from "../models/Report.js";
 import ImpressionsEvent from "../models/ImpressionsEvent.js";
 import deleteImage from "../helper/imageDelete.js";
 import { __dirname } from "../index.js";
+import { separateUpcomingAndPassedEvents } from "../helper/upcomingAndPassed.js";
 // app.delete("/delete-file", async (req, res) => {
 //   const filePathReq = req.query.path;
 
@@ -57,24 +58,9 @@ class EventService {
   myEvents = async (user_id) => {
     const events = await Event.find({ owner: user_id });
 
-    function separateUpcomingAndPassed(events) {
-      const now = new Date();
-      const upcoming = [];
-      const passed = [];
 
-      events.forEach((event) => {
-        const eventDate = new Date(event.started_time);
-        if (eventDate > now) {
-          upcoming.push(event);
-        } else {
-          passed.push(event);
-        }
-      });
 
-      return { upcoming, passed };
-    }
-
-    const result = separateUpcomingAndPassed(events);
+    const result = separateUpcomingAndPassedEvents(events);
     return result;
   };
 

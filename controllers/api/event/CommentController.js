@@ -94,8 +94,8 @@ class CommentController {
     });
     const date = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
-    const evLink = `alleven://myEvent/${id}`;
     if (user.id !== eventDb.owner._id.toString()) {
+      const evLink = `alleven://myEvent/${eventDb._id}`;
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -174,7 +174,13 @@ class CommentController {
       const eventDb = await Event.findById(comment.event).populate("owner");
 
       if (comment.user._id.toString() !== eventDb.owner._id.toString()) {
-        const evLink = `alleven://myEvent/${eventDb._id}`;
+        let evLink;
+
+        if (comment.user._id.toString() === eventDb.owner._id.toString()) {
+          evLink = `alleven://myEvent/${eventDb._id}`;
+        } else {
+          evLink = `alleven://singleEvent/${eventDb._id}`;
+        }
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -237,8 +243,15 @@ class CommentController {
     }).populate("user");
 
     const eventDb = await Event.findById(comment.event).populate("owner");
-    if(comment.user._id.toString() !== eventDb.owner._id.toString()){
-      const evLink = `alleven://myEvent/${eventDb._id}`;
+
+    if (comment.user._id.toString() !== eventDb.owner._id.toString()) {
+      let evLink;
+
+      if (comment.user._id.toString() === eventDb.owner._id.toString()) {
+        evLink = `alleven://myEvent/${eventDb._id}`;
+      } else {
+        evLink = `alleven://singleEvent/${eventDb._id}`;
+      }
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -266,7 +279,6 @@ class CommentController {
         );
       }
     }
-
 
     return res.status(200).send({ message: "success", answer: commentAnsw });
   };
@@ -301,8 +313,17 @@ class CommentController {
       }).populate("user");
       const commentDb = await EventComment.findById(comment.commentId);
       const eventDb = await Event.findById(commentDb.event).populate("owner");
-      if(comment.user._id.toString() !== eventDb.owner._id.toString()){
-        const evLink = `alleven://myEvent/${eventDb._id}`;
+
+
+
+      if (comment.user._id.toString() !== user.id.toString()) {
+        let evLink;
+
+        if (comment.user._id.toString() === eventDb.owner._id.toString()) {
+          evLink = `alleven://myEvent/${eventDb._id}`;
+        } else {
+          evLink = `alleven://singleEvent/${eventDb._id}`;
+        }
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -330,7 +351,6 @@ class CommentController {
           );
         }
       }
-
 
       const countDb = await EventAnswerLikes.find({ answerId });
       return res.status(200).send({ message: "liked", count: countDb.length });

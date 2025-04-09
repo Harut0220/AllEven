@@ -28,6 +28,7 @@ import calculateAverageRating from "../helper/ratingCalculate.js";
 import calculateDistance from "../helper/distanceCalculate.js";
 import { __dirname } from "../index.js";
 import deleteImage from "../helper/imageDelete.js";
+import { separateUpcomingAndPassedMeetings } from "../helper/upcomingAndPassed.js";
 
 const meetingService = {
   myParticipant: async (user) => {
@@ -43,24 +44,9 @@ const meetingService = {
       for (let i = 0; i < meetings.length; i++) {
         resArray.push(meetings[i].meetingId);
       }
-      function separateUpcomingAndPassed(events) {
-        const upcoming = [];
-        const passed = [];
 
-        events.forEach((event) => {
-          const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
-          if (event.date > dateNow) {
-            upcoming.push(event);
-          } else {
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-
-      const upcomPass = separateUpcomingAndPassed(resArray);
+      const upcomPass = separateUpcomingAndPassedMeetings(resArray);
       const data = {};
       data.upcoming = upcomPass.upcoming;
       data.passed = upcomPass.passed;
@@ -73,7 +59,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -267,21 +253,8 @@ const meetingService = {
       });
       meetings[i].isFavorite = findFavorite ? true : false;
     }
-    function separateUpcomingAndPassed(events) {
-      const upcoming = [];
-      const passed = [];
 
-      events.forEach((event) => {
-        if (event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")) {
-          upcoming.push(event);
-        } else {
-          passed.push(event);
-        }
-      });
-
-      return { upcoming, passed };
-    }
-    const separatedEvents = separateUpcomingAndPassed(meetings);
+    const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
     const filter = separatedEvents.passed.filter((event) => event.status === 1);
     return {
       message: "success",
@@ -290,16 +263,12 @@ const meetingService = {
     };
   },
   meetings: async (authHeader, longitude, latitude) => {
-
-
     if (authHeader && longitude && latitude) {
       const token = authHeader.split(" ")[1];
       const userToken = jwt.decode(token);
       const user = userToken.id;
       const myLatitude = latitude;
       const myLongitude = longitude;
-
-
 
       const meetings = await meetingModel
         .find({ user: { $ne: user }, status: { $eq: 1 } })
@@ -324,31 +293,20 @@ const meetingService = {
         })
         .exec();
 
-      function separateUpcomingAndPassed(events) {
-        const now = new Date();
-        const upcoming = [];
-        const passed = [];
 
-        events.forEach((event) => {
-
-
-          if (
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-          ) {
-            upcoming.push(event);
-          } else {
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-      const separatedEvents = separateUpcomingAndPassed(meetings);
+      const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
       const filter = separatedEvents.passed.filter(
         (event) => event.status === 1
       );
       separatedEvents.upcoming.forEach(async (meeting) => {
-
+        meeting.kilometr = calculateDistance(
+          myLatitude,
+          myLongitude,
+          meeting.latitude,
+          meeting.longitude
+        );
+      });
+      separatedEvents.passed.forEach(async (meeting) => {
         meeting.kilometr = calculateDistance(
           myLatitude,
           myLongitude,
@@ -366,7 +324,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -413,7 +371,6 @@ const meetingService = {
       const myLatitude = latitude;
       const myLongitude = longitude;
 
-
       const meetings = await meetingModel
         .find({ status: 1 })
         .populate({ path: "user", select: "-password" })
@@ -436,26 +393,9 @@ const meetingService = {
           ],
         });
 
-      function separateUpcomingAndPassed(events) {
-        const upcoming = [];
-        const passed = [];
-
-        events.forEach((event) => {
 
 
-          if (
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-          ) {
-            upcoming.push(event);
-          } else {
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-
-      const separatedEvents = separateUpcomingAndPassed(meetings);
+      const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
 
       const filter = separatedEvents.passed.filter(
         (event) => event.status === 1
@@ -478,7 +418,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -491,7 +431,6 @@ const meetingService = {
     } else if (!authHeader && !longitude && !latitude) {
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
-
 
       const meetings = await meetingModel
         .find({ status: { $eq: 1 } })
@@ -516,24 +455,8 @@ const meetingService = {
         })
         .exec();
 
-      function separateUpcomingAndPassed(events) {
-        const upcoming = [];
-        const passed = [];
 
-        events.forEach((event) => {
-
-          if (
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-          ) {
-            upcoming.push(event);
-          } else {
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-      const separatedEvents = separateUpcomingAndPassed(meetings);
+      const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
       const filter = separatedEvents.passed.filter(
         (event) => event.status === 1
       );
@@ -555,7 +478,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -570,7 +493,6 @@ const meetingService = {
       const user = jwt.decode(token);
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
-
 
       const meetings = await meetingModel
         .find({ user: { $ne: user.id }, status: { $eq: 1 } })
@@ -595,25 +517,8 @@ const meetingService = {
         })
         .exec();
 
-
-      function separateUpcomingAndPassed(events) {
-        const upcoming = [];
-        const passed = [];
-
-        events.forEach((event) => {
-
-          if (
-            event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-          ) {
-            upcoming.push(event);
-          } else {
-            passed.push(event);
-          }
-        });
-
-        return { upcoming, passed };
-      }
-      const separatedEvents = separateUpcomingAndPassed(meetings);
+ 
+      const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
       const filter = separatedEvents.passed.filter(
         (event) => event.status === 1
       );
@@ -636,7 +541,7 @@ const meetingService = {
         const dateNow = new Date(timeMoscow);
 
         const timeDifference = eventTime - dateNow;
-        const differenceInMinutes = timeDifference / 60000; 
+        const differenceInMinutes = timeDifference / 60000;
 
         if (differenceInMinutes <= 60 && differenceInMinutes >= -180) {
           element.hour = true;
@@ -723,7 +628,13 @@ const meetingService = {
         .findById(commentDb.meetingId)
         .populate("user");
       if (commentAnswerDb.user._id.toString() !== user) {
-        const evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+        let evLink;
+
+        if (commentAnswerDb.user._id.toString() === updatedMeeting.user._id.toString()) {
+          evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+        } else {
+          evLink = `alleven://singleMeeting/${updatedMeeting._id}`;
+        }
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -900,7 +811,13 @@ const meetingService = {
       .populate("user")
       .exec();
     if (user !== commentDb.user._id.toString()) {
-      const evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+      let evLink;
+
+      if (commentDb.user._id.toString() === updatedMeeting.user._id.toString()) {
+        evLink = `alleven://myMeeting/${updatedMeeting._id}`;
+      } else {
+        evLink = `alleven://singleMeeting/${updatedMeeting._id}`;
+      }
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -967,8 +884,9 @@ const meetingService = {
         user: updatedMeeting.user._id.toString(),
         type: "Присоединение",
         navigate: true,
-        message: `Пользователь ${userDb.name} пришел на ваше встрече ${updatedMeeting.purpose}. `,
+        message: `Пользователь ${userDb.name} пришел(а) на ваше встрече ${updatedMeeting.purpose}. `,
         meetingId,
+        categoryIcon: updatedMeeting.images[0].path,
         link: evLink,
       };
       const nt = new Notification(dataNotif);
@@ -982,7 +900,8 @@ const meetingService = {
             meetingId,
             navigate: true,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `Пользователь ${userDb.name} пришел на ваше встрече ${updatedMeeting.purpose}. `,
+            categoryIcon: updatedMeeting.images[0].path,
+            message: `Пользователь ${userDb.name} пришел(а) на ваше встрече ${updatedMeeting.purpose}. `,
             link: evLink,
           })
         );
@@ -1003,7 +922,10 @@ const meetingService = {
       })
       .populate("likes")
       .populate("images")
-      .populate("participantSpot")
+      .populate({
+        path: "participantSpot",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
       .populate("view")
       .populate("favorites")
       .populate({
@@ -1022,8 +944,6 @@ const meetingService = {
       })
       .exec();
 
-
-
     const averageRating = calculateAverageRating(result.ratings);
     const resultChanged1 = await meetingModel
       .findOneAndUpdate(
@@ -1040,7 +960,10 @@ const meetingService = {
       })
       .populate("likes")
       .populate("images")
-      .populate("participantSpot")
+      .populate({
+        path: "participantSpot",
+        populate: { path: "user", select: "name surname avatar phone_number" },
+      })
       .populate("view")
       .populate("favorites")
       .populate({
@@ -1129,7 +1052,6 @@ const meetingService = {
           })
           .exec();
 
-
         let pastLikes;
         let pastComment;
         let view;
@@ -1195,32 +1117,12 @@ const meetingService = {
           await resDb[i].save();
         }
 
-        function separateUpcomingAndPassed(events) {
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
 
-            if (
-              event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-            ) {
-
-              upcoming.push(event);
-            } else {
-
-              passed.push(event);
-            }
-          });
-
-          return { upcoming, passed };
-        }
-
-        const separatedEvents = separateUpcomingAndPassed(resDb);
+        const separatedEvents = separateUpcomingAndPassedMeetings(resDb);
         const filter = separatedEvents.passed.filter(
           (event) => event.status === 1
         );
-
-
 
         const dateChange = await meetingModel.find({ user });
 
@@ -1245,7 +1147,11 @@ const meetingService = {
             meeting.longitude
           );
         });
-        filter.forEach((meeting) => {
+        filter.forEach(async(meeting) => {
+          await meetingModel.findByIdAndUpdate(meeting._id, {
+            $set: { situation: "passed" },
+          });
+          meeting.situation = "passed";
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1272,24 +1178,8 @@ const meetingService = {
           .populate("likes")
           .populate("images")
           .populate("participantSpot");
-        function separateUpcomingAndPassed(events) {
-          const upcoming = [];
-          const passed = [];
 
-          events.forEach((event) => {
-            if (
-              event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-            ) {
-              upcoming.push(event);
-            } else {
-              passed.push(event);
-            }
-          });
-
-          return { upcoming, passed };
-        }
-        const separatedEvents = separateUpcomingAndPassed(resDb);
-
+        const separatedEvents = separateUpcomingAndPassedMeetings(resDb);
 
         const myLatitude = 55.7558;
         const myLongitude = 37.6176;
@@ -1301,7 +1191,11 @@ const meetingService = {
             meeting.longitude
           );
         });
-        separatedEvents.passed.forEach((meeting) => {
+        separatedEvents.passed.forEach(async(meeting) => {
+          await meetingModel.findByIdAndUpdate(meeting._id, {
+            $set: { situation: "passed" },
+          });
+          meeting.situation = "passed";
           meeting.kilometr = calculateDistance(
             myLatitude,
             myLongitude,
@@ -1335,13 +1229,10 @@ const meetingService = {
         .populate("comments")
         .populate("likes");
 
-
-
       const myLatitude = latitude;
       const myLongitude = longitude;
 
       meetings.forEach(async (meeting) => {
-
         const isRating = await meetingRating.findOne({
           meetingId: meeting._id,
           user: user.id,
@@ -1410,7 +1301,6 @@ const meetingService = {
         .populate("likes")
         .populate("images");
 
-
       const myLatitude = latitude;
       const myLongitude = longitude;
 
@@ -1437,8 +1327,6 @@ const meetingService = {
         .populate("participants")
         .populate("comments")
         .populate("likes");
-
-
 
       const myLatitude = 55.7558;
       const myLongitude = 37.6173;
@@ -1532,6 +1420,7 @@ const meetingService = {
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: meetingDb.user._id.toString(),
           type: "like",
+          navigate: true,
           message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
           meetingId: meetingId,
           link: evLink,
@@ -1546,6 +1435,7 @@ const meetingService = {
             JSON.stringify({
               type: "like",
               meetingId: meetingId,
+              navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
               link: evLink,
@@ -1640,7 +1530,13 @@ const meetingService = {
         .findById(commentDb.meetingId)
         .populate("user");
       if (commentDb.user._id.toString() !== user) {
-        const evLink = `alleven://myMeeting/${meeting._id}`;
+        let evLink;
+
+        if (commentDb.user._id.toString() === meeting.user._id.toString()) {
+          evLink = `alleven://myMeeting/${meeting._id}`;
+        } else {
+          evLink = `alleven://singleMeeting/${meeting._id}`;
+        }
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -1695,7 +1591,7 @@ const meetingService = {
     );
 
     const evLink = `alleven://verifyMeeting`;
-    const msg = `К сожалению, ваше данные паспорта отклонено модератором, причина - ${data.status}`;
+    const msg = `К сожалению, верификация паспорта отклонена модератором,  по причине: ${data.status}`;
     const dataNotif = {
       status: 2,
       date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -1901,12 +1797,25 @@ const meetingService = {
               { path: "user", select: "_id name surname avatar" },
               {
                 path: "answer",
-                populate: { path: "user", select: "name surname avatar" }, 
+                populate: { path: "user", select: "name surname avatar" },
               },
             ],
           })
-          .populate("ratings");
-
+          .populate("ratings")
+          .populate({
+            path: "participants",
+            populate: {
+              path: "user",
+              select: "name surname avatar phone_number",
+            },
+          })
+          .populate({
+            path: "participantSpot",
+            populate: {
+              path: "user",
+              select: "name surname avatar phone_number",
+            },
+          });
 
         const averageRating = calculateAverageRating(resDb.ratings);
         const ifView = await MeetingViews.findOne({ meetingId: id, user });
@@ -1928,14 +1837,26 @@ const meetingService = {
               { new: true }
             )
             .populate({ path: "user", select: "-password" })
-            .populate("participants")
+            .populate({
+              path: "participants",
+              populate: {
+                path: "user",
+                select: "name surname avatar phone_number",
+              },
+            })
             .populate("likes")
             .populate({
               path: "impression_images",
               populate: { path: "user", select: "name surname avatar" },
             })
             .populate("images")
-            .populate("participantSpot")
+            .populate({
+              path: "participantSpot",
+              populate: {
+                path: "user",
+                select: "name surname avatar phone_number",
+              },
+            })
             .populate("view")
             .populate("favorites")
             .populate({
@@ -1963,14 +1884,26 @@ const meetingService = {
               { new: true }
             )
             .populate({ path: "user", select: "-password" })
-            .populate("participants")
+            .populate({
+              path: "participants",
+              populate: {
+                path: "user",
+                select: "name surname avatar phone_number",
+              },
+            })
             .populate({
               path: "impression_images",
               populate: { path: "user", select: "name surname avatar" },
             })
             .populate("likes")
             .populate("images")
-            .populate("participantSpot")
+            .populate({
+              path: "participantSpot",
+              populate: {
+                path: "user",
+                select: "name surname avatar phone_number",
+              },
+            })
             .populate("view")
             .populate("favorites")
             .populate({
@@ -2059,35 +1992,45 @@ const meetingService = {
           .populate({
             path: "comments",
             populate: [
-              { path: "user", select: "_id name surname avatar" }, 
+              { path: "user", select: "_id name surname avatar" },
               {
                 path: "answer",
-                populate: { path: "user", select: "name surname avatar" }, 
+                populate: { path: "user", select: "name surname avatar" },
               },
             ],
           })
           .populate("ratings");
-
 
         const averageRating = calculateAverageRating(resDb.ratings);
         resultChanged1 = await meetingModel
           .findOneAndUpdate(
             { _id: id },
             {
-              $set: { ratingCalculated: averageRating }, 
+              $set: { ratingCalculated: averageRating },
             },
-            { new: true } 
+            { new: true }
           )
           .populate({ path: "user", select: "-password" })
-          .populate("participants")
+          .populate({
+            path: "participants",
+            populate: {
+              path: "user",
+              select: "name surname avatar phone_number",
+            },
+          })
           .populate("likes")
           .populate("images")
           .populate({
             path: "impression_images",
             populate: { path: "user", select: "name surname avatar" },
           })
-          .populate("participantSpot")
-          .populate("view")
+          .populate({
+            path: "participantSpot",
+            populate: {
+              path: "user",
+              select: "name surname avatar phone_number",
+            },
+          })          .populate("view")
           .populate("favorites")
           .populate({
             path: "ratings",
@@ -2096,7 +2039,7 @@ const meetingService = {
           .populate({
             path: "comments",
             populate: [
-              { path: "user", select: "_id name surname avatar" }, 
+              { path: "user", select: "_id name surname avatar" },
               {
                 path: "answer",
                 populate: { path: "user", select: "name surname avatar" },
@@ -2314,9 +2257,9 @@ const meetingService = {
     try {
       // const meetingDbforImg = await meetingModel.findById(id).select({ images: 1 }).populate("images");
       // meetingDbforImg.images.map(async (imgId) => {
-       
+
       //  const imageDel=await deleteImage(__dirname, imgId.path);
-       
+
       // });
       // const d = data;
 
@@ -2331,44 +2274,44 @@ const meetingService = {
       // }
 
       // let event = await meetingModel.updateOne(d);
-      
+
       // return event;
-          const d = data;
-          if (typeof data.images[0] === "string") {
-        
-            const meetingDbforImg = await meetingModel.findById(id).select({ images: 1 }).populate("images");
-            meetingDbforImg.images.map(async (imgId) => {
-             
-             const imageDel=await deleteImage(__dirname, imgId.path);
-             
-            });
-            await meetingModel.findByIdAndUpdate(id, { $set: { images: [] } });
-            await meetingImages.deleteMany({ meetingId: id });
-            for (let i = 0; i < data.images.length; i++) {
-              const newImage = new meetingImages({ path: data.images[i] });
-              await newImage.save();
-      
-              const dbRes = await meetingModel.findByIdAndUpdate(id, {
-                $push: { images: newImage._id },
-              });
-            }
-            delete d.images;
-            await meetingModel.findByIdAndUpdate(id, { ...d });
-            
-            const meetingDb = await meetingModel.findById(id);
-      
-            return meetingDb;
-          } else {
-            delete d.images;
-      
-            const meetingDb = await meetingModel.findByIdAndUpdate(
-              id,
-              { ...d },
-              { new: true }
-            );
-      
-            return meetingDb;
-          }
+      const d = data;
+      if (typeof data.images[0] === "string") {
+        const meetingDbforImg = await meetingModel
+          .findById(id)
+          .select({ images: 1 })
+          .populate("images");
+        meetingDbforImg.images.map(async (imgId) => {
+          const imageDel = await deleteImage(__dirname, imgId.path);
+        });
+        await meetingModel.findByIdAndUpdate(id, { $set: { images: [] } });
+        await meetingImages.deleteMany({ meetingId: id });
+        for (let i = 0; i < data.images.length; i++) {
+          const newImage = new meetingImages({ path: data.images[i] });
+          await newImage.save();
+
+          const dbRes = await meetingModel.findByIdAndUpdate(id, {
+            $push: { images: newImage._id },
+          });
+        }
+        delete d.images;
+        await meetingModel.findByIdAndUpdate(id, { ...d });
+
+        const meetingDb = await meetingModel.findById(id);
+
+        return meetingDb;
+      } else {
+        delete d.images;
+
+        const meetingDb = await meetingModel.findByIdAndUpdate(
+          id,
+          { ...d },
+          { new: true }
+        );
+
+        return meetingDb;
+      }
     } catch (err) {
       console.error(err);
     }

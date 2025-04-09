@@ -18,6 +18,7 @@ import meetingCommentAnswer from "../../../models/meeting/meetingCommentAnswer.j
 import { link } from "fs";
 import meetingParticipant from "../../../models/meeting/meetingParticipant.js";
 import meetingDidNotComeUser from "../../../models/meeting/meetingDidNotComeUser.js";
+import { separateUpcomingAndPassedMeetings } from "../../../helper/upcomingAndPassed.js";
 
 const meetingController = {
   in_place: async (req, res) => {
@@ -80,8 +81,9 @@ const meetingController = {
         user: meeting.user._id.toString(),
         type: "message",
         navigate: true,
-        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше встречу ${meeting.purpose}.`,
+        message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше встречу ${meeting.purpose}.`,
         meetingId: meeting._id.toString(),
+        categoryIcon: meeting.images[0].path, 
         link: evLink,
         date_time,
       };
@@ -97,7 +99,8 @@ const meetingController = {
             meetingId: meeting._id.toString(),
             date_time,
             navigate: true,
-            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел на ваше встречу ${meeting.purpose}`,
+            categoryIcon: meeting.images[0].path, 
+            message: `К сожалению, пользователь ${userName} ${userSurname} не пришел(а) на ваше встречу ${meeting.purpose}`,
             link: evLink,
             date_time,
           })
@@ -888,9 +891,9 @@ const meetingController = {
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: userDb._id.toString(),
           meetingId: resDb._id,
-          navigate: false,
+          navigate: true,
           type: "confirm_passport",
-          link: `alleven://verifyDetail/${resDb._id}`,
+          link: `alleven://step1`,
           // categoryIcon: "/icon/Passport.png",
           message: `Ваш профиль успешно верифицирован. Теперь вы можете создавать встречи.`,
         };
@@ -902,9 +905,9 @@ const meetingController = {
             userDb._id.toString(),
             JSON.stringify({
               type: "confirm_passport",
-              navigate: false,
+              navigate: true,
               meetingId: resDb._id,
-              link: `alleven://verifyDetail/${resDb._id}`,
+              link: `alleven://step1`,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
               message: `Ваш профиль успешно верифицирован. Теперь вы можете создавать встречи.`,
               // categoryIcon: "/icon/Passport.png",
@@ -1034,7 +1037,7 @@ const meetingController = {
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: userDb._id.toString(),
           type: "Новая встреча",
-          message: `Ваше встреча ${meetingDb.purpose} находится на модерации`,
+          message: `Вашa встреча ${meetingDb.purpose}, находится на модерации`,
           categoryIcon: meetingDb.images[0].path,
           navigate: true,
           meetingId: meetingDb._id,
@@ -1052,7 +1055,7 @@ const meetingController = {
               meetingId: meetingDb._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Ваше встреча ${meetingDb.purpose} находится на модерации`,
+              message: `Вашa встреча ${meetingDb.purpose}, находится на модерации`,
               categoryIcon: meetingDb.images[0].path,
               link: evLink,
             })
@@ -1093,6 +1096,7 @@ const meetingController = {
                   navigate: true,
                   message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
                   situation: "upcoming",
+                  categoryIcon: meetingDb.images[0].path,
                   meetingId: meetingDb._id.toString(),
                   link: evLink,
                 };
@@ -1109,6 +1113,7 @@ const meetingController = {
                       user: element._id.toString(),
                       meetingId: meetingDb._id.toString(),
                       situation: "upcoming",
+                      categoryIcon: meetingDb.images[0].path,
                       message: `Встреча ${meetingDb.purpose} начнется через час. Не пропустите.`,
                       link: evLink,
                     })
@@ -1145,6 +1150,7 @@ const meetingController = {
                   user: element._id.toString(),
                   type: "participationSpot",
                   message: `Встреча ${meetingDb.purpose} началось.`,
+                  categoryIcon: meetingDb.images[0].path,
                   meetingId: meetingDb._id,
                   link: evLink,
                 };
@@ -1159,6 +1165,7 @@ const meetingController = {
                       type: "participationSpot",
                       meetingId: meetingDb._id,
                       date_time,
+                      categoryIcon: meetingDb.images[0].path,
                       message: `Встреча ${meetingDb.purpose} началось.`,
                       link: evLink,
                     })
@@ -1205,23 +1212,8 @@ const meetingController = {
       .find()
       .sort({ createdAt: "desc" })
       .populate("user");
-    function separateUpcomingAndPassed(meetings) {
-      const upcoming = [];
-      const passed = [];
 
-      meetings.forEach((meeting) => {
-        if (
-          meeting.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")
-        ) {
-          upcoming.push(meeting);
-        } else {
-          passed.push(meeting);
-        }
-      });
-
-      return { upcoming, passed };
-    }
-    const separatedEvents = separateUpcomingAndPassed(meetings);
+    const separatedEvents = separateUpcomingAndPassedMeetings(meetings);
 
     for (let i = 0; i < separatedEvents.passed.length; i++) {
       await meetingModel.findByIdAndUpdate(

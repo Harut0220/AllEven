@@ -17,6 +17,7 @@ import NotificationService from "../../../services/NotificationService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import Notification from "../../../models/Notification.js";
 import EventImpressionImages from "../../../models/event/EventImpressionImages.js";
+import { separateUpcomingAndPassedEvents } from "../../../helper/upcomingAndPassed.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -45,23 +46,8 @@ class EventController {
     }
     let eventCats = await EventCategory.find({status:1}).sort({createdAt: 'desc'}).populate(['owner','name'])
     let events = await this.EventService.get(params);
-    function separateUpcomingAndPassed(events) {
-      // const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-      const upcoming = [];
-      const passed = [];
 
-      events.forEach((event) => {
-        // const eventDate = new Date(event.date);
-        if (event.started_time > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")) {
-          upcoming.push(event);
-        } else {
-          passed.push(event);
-        }
-      });
-
-      return { upcoming, passed };
-    }
-    const separatedEvents = separateUpcomingAndPassed(events);
+    const separatedEvents = separateUpcomingAndPassedEvents(events);
     for (let i = 0; i < separatedEvents.passed.length; i++) {
       await Event.findByIdAndUpdate(separatedEvents.passed[i]._id,{$set:{situation:"passed"}})
     }
@@ -196,23 +182,8 @@ class EventController {
     }
     let eventCats = await EventCategory.find({status:1}).sort({createdAt: 'desc'}).populate(['owner','name'])
     let events = await this.EventService.get(params);
-    function separateUpcomingAndPassed(events) {
-      // const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-      const upcoming = [];
-      const passed = [];
 
-      events.forEach((event) => {
-        // const eventDate = new Date(event.date);
-        if (event.started_time > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")) {
-          upcoming.push(event);
-        } else {
-          passed.push(event);
-        }
-      });
-
-      return { upcoming, passed };
-    }
-    const separatedEvents = separateUpcomingAndPassed(events);
+    const separatedEvents = separateUpcomingAndPassedEvents(events);
     for (let i = 0; i < separatedEvents.passed.length; i++) {
       await Event.findByIdAndUpdate(separatedEvents.passed[i]._id,{$set:{situation:"passed"}})
     }

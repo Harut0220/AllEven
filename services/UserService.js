@@ -612,18 +612,81 @@ class UserService {
   //////////////////////////////////////////////////////////////////////
   //stexinna
 
+  // sendPushNotif = async (id, data) => {
+  //   const notifConut = await this.getCountNotif(id);
+  //   const d = JSON.parse(data);
+  //   const tokens = await this.getFcmTokens(id);
+  //   const user = await User.findById(id);
+  //   const token = user.fcm_token;
+  //   if (token.length) {
+  //     for (let i = 0; i < token.length; i++) {
+  //       const element = token[i];
+
+  //       console.log("Sending notification to:", element);
+
+  //       const message = {
+  //         notification: {
+  //           title: d.type,
+  //           body: d.message,
+  //         },
+  //         token: element,
+  //         data: {
+  //           link: d.link ? d.link : "",
+  //           categoryIcon: d.categoryIcon ? d.categoryIcon : "",
+  //         },
+  
+  //         apns: {
+  //           headers: {
+  //             "apns-priority": "10",
+  //             "apns-push-type": "alert",
+  //           },
+  //           payload: {
+  //             aps: {
+  //               alert: {
+  //                 title: d.type,
+  //                 body: d.message,
+  //               },
+  //               sound: "default",
+  //             },
+  //           },
+  //         },
+  //       };
+  
+  //       try {
+  //         const response = await admin.messaging().send(message);
+  //         console.log("Successfully sent message:", response);
+  //       } catch (error) {
+  //         console.error("Error sending message:", error);
+  
+  //         if (
+  //           error.errorInfo &&
+  //           error.errorInfo.code === "messaging/registration-token-not-registered"
+  //         ) {
+  //           console.log(`Removing invalid token for user `);
+  //           try {
+  //             console.log(`Token removed for user `);
+  //           } catch (error) {
+  //             console.error(`Error updating database for user:`);
+  //           }
+  //         }
+  //       }
+        
+  //     }
+  //   }
+  // };
+
   sendPushNotif = async (id, data) => {
-    const notifConut = await this.getCountNotif(id);
+    const notifCount = await this.getCountNotif(id);
     const d = JSON.parse(data);
-    const tokens = await this.getFcmTokens(id);
     const user = await User.findById(id);
-    const token = user.fcm_token;
-    if (token.length) {
-      for (let i = 0; i < token.length; i++) {
-        const element = token[i];
-
+    const tokens = user.fcm_token || [];
+  
+    if (tokens.length) {
+      for (let i = 0; i < tokens.length; i++) {
+        const element = tokens[i];
+  
         console.log("Sending notification to:", element);
-
+  
         const message = {
           notification: {
             title: d.type,
@@ -631,10 +694,9 @@ class UserService {
           },
           token: element,
           data: {
-            link: d.link ? d.link : "",
-            categoryIcon: d.categoryIcon ? d.categoryIcon : "",
+            link: d.link || "",
+            categoryIcon: d.categoryIcon || "",
           },
-  
           apns: {
             headers: {
               "apns-priority": "10",
@@ -662,18 +724,23 @@ class UserService {
             error.errorInfo &&
             error.errorInfo.code === "messaging/registration-token-not-registered"
           ) {
-            console.log(`Removing invalid token for user `);
+            console.log(`Removing invalid token for user ${id}`);
+  
             try {
-              console.log(`Token removed for user `);
-            } catch (error) {
-              console.error(`Error updating database for user:`);
+              // Remove the invalid token from the array
+              await User.findByIdAndUpdate(id, {
+                $pull: { fcm_token: element },
+              });
+              console.log(`Token ${element} removed from user ${id}`);
+            } catch (updateError) {
+              console.error(`Error updating database for user ${id}:`, updateError);
             }
           }
         }
-        
       }
     }
   };
+  
 
   getNotificatationListsAndLean = async () => {
     return await this.NotificatationListService.getAndLean();

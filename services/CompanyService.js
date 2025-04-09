@@ -33,6 +33,7 @@ import calculateAverageRating from "../helper/ratingCalculate.js";
 import calculateDistance from "../helper/distanceCalculate.js";
 import deleteImage from "../helper/imageDelete.js";
 import { __dirname } from "../index.js";
+import { separateUpcomingAndPassedCompany } from "../helper/upcomingAndPassed.js";
 
 const companyService = {
   myparticipant: async (id, latitude, longitude) => {
@@ -114,24 +115,9 @@ const companyService = {
       results.push(obj);
     }
 
-    function separateUpcomingAndPassed(events) {
-      const upcoming = [];
-      const passed = [];
+ 
 
-      events.forEach((event) => {
-        const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-
-        if (event.date > dateNow) {
-          upcoming.push(event);
-        } else {
-          passed.push(event);
-        }
-      });
-
-      return { upcoming, passed };
-    }
-
-    const upcomPass = separateUpcomingAndPassed(results);
+    const upcomPass = separateUpcomingAndPassedCompany(results);
 
     return {
       message: "success",
@@ -269,10 +255,10 @@ const companyService = {
             url: data.images[i],
             companyId: data._id,
           });
-          console.log(image,"imagedb new");
-          
+          console.log(image, "imagedb new");
+
           await image.save();
-           await companyModel.findByIdAndUpdate(data._id, {
+          await companyModel.findByIdAndUpdate(data._id, {
             $push: { images: image._id },
           });
         }
@@ -640,7 +626,15 @@ const companyService = {
           .findById(commentAnswerDb.companyId)
           .populate("owner");
         if (commentAnswerDb.user._id.toString() !== user) {
-          const evLink = `alleven://myCompany/${companyDb._id}`;
+          let evLink;
+          if (
+            companyDb.owner._id.toString() ===
+            commentAnswerDb.user._id.toString()
+          ) {
+            evLink = `alleven://myCompany/${companyDb._id}`;
+          } else {
+            evLink = `alleven://singleCompany/${companyDb._id}`;
+          }
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -693,7 +687,12 @@ const companyService = {
         .findById(comment.companyId)
         .populate("owner");
       if (comment.user._id.toString() !== user.toString()) {
-        const evLink = `alleven://myCompany/${companyDb._id}`;
+        let evLink;
+        if (companyDb.owner._id.toString() === comment.user._id.toString()) {
+          evLink = `alleven://myCompany/${companyDb._id}`;
+        } else {
+          evLink = `alleven://singleCompany/${companyDb._id}`;
+        }
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
@@ -750,8 +749,16 @@ const companyService = {
         const companyDb = await companyModel
           .findById(commentDb.companyId)
           .populate("owner");
+
         if (commentDb.user._id.toString() !== user.toString()) {
-          const evLink = `alleven://myCompany/${companyDb._id}`;
+          let evLink;
+          if (
+            companyDb.owner._id.toString() === commentDb.user._id.toString()
+          ) {
+            evLink = `alleven://myCompany/${companyDb._id}`;
+          } else {
+            evLink = `alleven://singleCompany/${companyDb._id}`;
+          }
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),

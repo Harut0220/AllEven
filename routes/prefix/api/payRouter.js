@@ -165,7 +165,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
 
  
   const userDB = await User.findById(dealRegistr.user);
-  const evLink = `alleven://singleCompany/${dealDb.companyId}`;
+  const evLink = `alleven://myCompany/${dealDb.companyId}`;
   const time = dealDb.date.split(" ")[1];
   const dataNotif = {
     status: 2,
@@ -174,7 +174,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     user: companyDb.owner._id.toString(),
     type: "Присоединение",
     navigate: true,
-    message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
+    message: `Пользователь ${userDB.name} ${userDB.surname} записался(лась) на ваше горящее предложение в ${time}.`,
     link: evLink,
   };
   const existMessage = await Notification.findOne({
@@ -183,7 +183,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     user: companyDb.owner._id.toString(),
     type: "Присоединение",
     navigate: true,
-    message: `Пользователь ${userDB.name} ${userDB.surname} записался на ваше горящее предложение в ${time}.`,
+    message: `Пользователь ${userDB.name} ${userDB.surname} записался(лась) на ваше горящее предложение в ${time}.`,
     link: evLink,
   });
   if (!existMessage) {

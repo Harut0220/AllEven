@@ -98,8 +98,6 @@ function appendIncomMessage(data){
 }
 
 function saveNotification(id, user = null){
-  console.log("feedbackjs");
-  console.log(id,user,"id,user");
   
   
   let message = document.getElementById('inpSend')

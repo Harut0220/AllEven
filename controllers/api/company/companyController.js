@@ -1848,7 +1848,7 @@ const companyController = {
             user: company.owner._id.toString(),
             type: "like",
             navigate: true,
-            message: `Пользователь ${userDb.name} поставил лайк событию ${companyDb.companyName}.`,
+            message: `Пользователь ${userDb.name} поставил(а) лайк компании ${companyDb.companyName}.`,
             companyId: companyDb._id,
             // categoryIcon: event.category.avatar,
             link: evLink,
@@ -1864,7 +1864,7 @@ const companyController = {
                 companyId: companyDb._id,
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `Пользователь ${userDb.name} поставил лайк событию ${companyDb.companyName}.`,
+                message: `Пользователь ${userDb.name} поставил(а) лайк компании ${companyDb.companyName}.`,
                 // categoryIcon: event.category.avatar,
                 link: evLink,
               })
@@ -2964,9 +2964,14 @@ const companyController = {
       }
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
         if (resultChanged1.hotDeals[i].registration) {
+          console.log("hotDeals registration", resultChanged1.hotDeals[i]);
+          
           countToday.push(1);
+          console.log(countToday,"countToday deal +1");
+          
         }
       }
+      console.log(countToday,"countToday resalt");
 
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
