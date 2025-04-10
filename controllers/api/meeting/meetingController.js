@@ -1018,7 +1018,8 @@ const meetingController = {
       const authHeader = req.headers.authorization;
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
-
+      console.log(meeting,"meeting store data");
+      
       const userDb = await User.findById(user.id);
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {

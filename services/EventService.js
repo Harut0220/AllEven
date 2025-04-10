@@ -238,7 +238,8 @@ class EventService {
 
   store = async (data, user) => {
     const d = data.body;
-
+    console.log(data.body,"data body store event");
+    
     d.owner = user;
 
     if (d.images && d.images.length) {
