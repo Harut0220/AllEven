@@ -2191,6 +2191,33 @@ const meetingService = {
 
         await db.save();
 
+
+      
+        const dataNotif = {
+          status: 2,
+          date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+          user: user,
+          type: "message",
+          navigate: false,
+          message: `Ваши документы для верификации находятся на рассмотрении.`,
+          link: "evLink",
+        };
+        const nt = new Notification(dataNotif);
+        await nt.save();
+        // if (companyDb.owner.notifCompany) {
+          notifEvent.emit(
+            "send",
+            user,
+            JSON.stringify({
+              type: "message",
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              navigate: false,
+              message: `Ваши документы для верификации находятся на рассмотрении.`,
+              link: "evLink",
+            })
+          );
+        // }
+
         const updatedUser = await User.findByIdAndUpdate(
           user,
           { $set: { statusMeeting: "inProgress" } },

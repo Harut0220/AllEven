@@ -277,7 +277,6 @@ app.get("/test/register", async (req, res) => {
         type: "confirm_come",
         serviceId: service._id,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        navigate: false,
         registerId: registerDb._id,
         serviceId: service._id,
         message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
