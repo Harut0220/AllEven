@@ -19,7 +19,7 @@ export const separateUpcomingAndPassedEvents = (events) => {
   const passed = [];
 
   events.forEach((event) => {
-    if (event.date > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")) {
+    if (event.started_time > moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm")) {
       upcoming.push(event);
     } else {
       passed.push(event);
