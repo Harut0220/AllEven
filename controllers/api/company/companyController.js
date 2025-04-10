@@ -837,7 +837,6 @@ const companyController = {
       }
     } else {
       const companyImpression = new ImpressionsCompany({
-        rating,
         comments: [],
         images: path,
         name: userDb.name,

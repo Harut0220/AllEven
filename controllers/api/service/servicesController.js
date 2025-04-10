@@ -900,8 +900,8 @@ const servicesController = {
           .exec();
         if (type === "participants") {
           if (registerDb) {
-            const evLink = `alleven://singleCompany/${registerDb.serviceId._id}`;
-            const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
+            const evLink = `alleven://singleCompany/${registerDb.serviceId.companyId}`;
+            const message = `Напоминание! Вы записаны на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
 
             const dataNotif = {
               status: 2,
@@ -909,7 +909,9 @@ const servicesController = {
               user: registerDb.user._id.toString(),
               type: "Регистрация на услугу",
               message: message,
+              navigate: true,
               serviceId: registerDb.serviceId._id,
+              companyId: registerDb.serviceId.companyId,
               link: evLink,
             };
             const nt = new Notification(dataNotif);
@@ -924,6 +926,8 @@ const servicesController = {
                   date_time: moment
                     .tz(process.env.TZ)
                     .format("YYYY-MM-DD HH:mm"),
+                  navigate: true,
+                  companyId: registerDb.serviceId.companyId,
                   message: message,
                   link: evLink,
                 })
@@ -934,8 +938,8 @@ const servicesController = {
 
         if (type === "participantsSpot") {
           if (registerDb) {
-            const evLink = `alleven://singleCompany/${registerDb.serviceId._id}`;
-            const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
+            const evLink = `alleven://singleCompany/${registerDb.serviceId.companyId}`;
+            const message = `Напоминание! Вы записаны на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
 
             const dataNotif = {
               status: 2,
@@ -943,7 +947,9 @@ const servicesController = {
               user: registerDb.user._id.toString(),
               type: "Регистрация на услугу",
               message: message,
+              navigate: true,
               serviceId: registerDb.serviceId._id,
+              companyId: registerDb.serviceId.companyId,
               link: evLink,
             };
             const nt = new Notification(dataNotif);
@@ -955,6 +961,8 @@ const servicesController = {
                 JSON.stringify({
                   type: "Регистрация на услугу",
                   serviceId: registerDb.serviceId._id,
+                  companyId: registerDb.serviceId.companyId,
+                  navigate: true,
                   date_time: moment
                     .tz(process.env.TZ)
                     .format("YYYY-MM-DD HH:mm"),
