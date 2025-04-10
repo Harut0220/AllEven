@@ -1250,13 +1250,13 @@ const companyController = {
       }
 
       const evLink = `alleven://myCompany/${company._id}`;
-
+      //stugel rejecti vaxt urish texta nor hayti jamanak urish texta
       notifEvent.emit(
         "send",
         "ADMIN",
         JSON.stringify({
           type: "Онлайн оплата",
-          message: "event",
+          message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
           data: company,
         })
       );
@@ -1904,10 +1904,13 @@ const companyController = {
     try {
       const authHeader = req.headers.authorization;
       const id = req.params.id;
+      console.log(req.params.id,"req.params.id");
+      
       const { longitude, latitude } = req.query;
 
       const compUpdate = await Company.findById(id);
-
+      console.log(compUpdate,"compUpdate");
+      
       compUpdate.isLike = false;
       compUpdate.isRating = false;
       compUpdate.isFavorite = false;
