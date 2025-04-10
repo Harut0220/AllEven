@@ -374,7 +374,7 @@ const companyService = {
     await paysStore.deleteMany({ serviceId: id });
     await companyParticipants.deleteMany({ serviceId: id });
     const serviceDb = await CompanyServiceModel.findById(id);
-
+    await Notification.deleteMany({ serviceId: serviceDb._id });
     await companyModel.findByIdAndUpdate(serviceDb.companyId.toString(), {
       $pull: { services: id },
     });
@@ -453,6 +453,7 @@ const companyService = {
         for (let z = 0; z < services.length; z++) {
           await Notification.deleteMany({ serviceId: services[z]._id });
           await Report.deleteMany({ service: services[z]._id });
+          await paysStore.deleteMany({ serviceId: services[z]._id });
         }
         for (let j = 0; j < services.length; j++) {
           await servicesRegistrations.deleteMany({

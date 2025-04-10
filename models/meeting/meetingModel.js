@@ -38,6 +38,7 @@ const Meeting = new Schema(
     },
     situation:{
       type:String,
+      required: true,
       default:"upcoming"},
     joinStatus: { type: Number, default: 1 },
     isFavorite: { type: Boolean, default: false },

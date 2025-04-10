@@ -1567,6 +1567,9 @@ const companyController = {
         companyId: req.params.id,
       });
       for (let i = 0; i < services.length; i++) {
+        await Notification.deleteMany({
+          serviceId: services[i]._id,
+        });
         const serviceRegistr = await servicesRegistrations.deleteMany({
           serviceId: services[i]._id,
         });
@@ -2909,18 +2912,18 @@ const companyController = {
         }
       }
       let upcomingDeals = [];
-      console.log(resultChanged1.hotDeals,"resultChanged1.hotDeals skzbic");
-      
+      console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
+
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
-        const todayDate= moment.tz(process.env.TZ).format("YYYY-MM-DD");
-        const dealDateSpl= resultChanged1.hotDeals[i].date.split(" ")[0]
-        console.log(dealDateSpl===todayDate,"dealDateSpl===todayDate");
-        console.log("dealDateSpl",dealDateSpl);
-        console.log("todayDate",todayDate);
-        
-        if(dealDateSpl===todayDate){
-          console.log("today deal",resultChanged1.hotDeals[i]);
-          
+        const todayDate = moment.tz(process.env.TZ).format("YYYY-MM-DD");
+        const dealDateSpl = resultChanged1.hotDeals[i].date.split(" ")[0];
+        console.log(dealDateSpl === todayDate, "dealDateSpl===todayDate");
+        console.log("dealDateSpl", dealDateSpl);
+        console.log("todayDate", todayDate);
+
+        if (dealDateSpl === todayDate) {
+          console.log("today deal", resultChanged1.hotDeals[i]);
+
           upcomingDeals.push(resultChanged1.hotDeals[i]);
         }
 
@@ -2929,7 +2932,7 @@ const companyController = {
           "YYYY-MM-DD HH:mm",
           process.env.TZ
         );
-        const now= moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
+        const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
         if (!fixedTime.isAfter(now)) {
           await companyHotDeals.findByIdAndUpdate(
@@ -2967,18 +2970,17 @@ const companyController = {
         countAfter.push(serviceRegisterAfter.length);
         countToday.push(serviceRegisterToday.length);
       }
-      console.log(resultChanged1.hotDeals,"resultChanged1.hotDeals");
-      
+      console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals");
+
       for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
         if (resultChanged1.hotDeals[i].registration) {
           console.log("hotDeals registration", resultChanged1.hotDeals[i]);
-          
+
           countToday.push(1);
-          console.log(countToday,"countToday deal +1");
-          
+          console.log(countToday, "countToday deal +1");
         }
       }
-      console.log(countToday,"countToday resalt");
+      console.log(countToday, "countToday resalt");
 
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);

@@ -651,6 +651,17 @@ const servicesController = {
           .populate("owner")
           .populate("images")
           .exec();
+
+        const notif = await Notification.findOne({
+          user: user.id,
+          serviceId: service.serviceId._id,
+          registerId: id,
+        });
+
+        if (notif) {
+          notif.confirmed = true;
+          await notif.save();
+        }
         const evLink = `alleven://singleCompany/${companyDb._id}`;
 
         const dataNotif = {

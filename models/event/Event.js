@@ -124,6 +124,7 @@ const Event = new Schema(
     situation: {
       type: String,
       // enum: ["passing", "upcoming", "passed"],
+      required: true,
       default: "upcoming",
     },
     latitude:{type: Number, required: true},
