@@ -224,6 +224,8 @@ class EventController {
     const token = authHeader.split(" ")[1];
     const user = jwt.decode(token);
     const { event_id, files } = req.body;
+    const userDb = await User.findById(user.id);
+
 
     const serviceFunction = async () => {
       const companyImpressionImagesDb = await eventImpressionImages
@@ -279,7 +281,7 @@ class EventController {
         user: eventDb.owner._id.toString(),
         type: "impression",
         navigate: true,
-        message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
+        message: `Пользователь ${userDb.name} ${userDb.surname} поделился(лась) впечатлением о событии ${eventDb.name}.`,
         eventId: event_id,
         link: evLink,
       };
@@ -294,14 +296,13 @@ class EventController {
             navigate: true,
             eventId: event_id,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `Пользователь ${user.name} поделился впечатлением о событии ${eventDb.name}.`,
+            message: `Пользователь ${userDb.name} ${userDb.surname} поделился(лась) впечатлением о событии ${eventDb.name}.`,
             link: evLink,
           })
         );
       }
     }
 
-    const userDb = await User.findById(user.id);
 
     const ifImpressions = await ImpressionsEvent.findOne({
       event: event_id,

@@ -1201,7 +1201,7 @@ class EventService {
             user: element._id.toString(),
             type: "create_new",
             navigate: true,
-            message: `Разместите информацию о вашем будущем встречи.`,
+            message: `Разместите информацию о вашей будущей встречe.`,
             link,
           });
           if (element.notifMeeting) {
@@ -1212,7 +1212,7 @@ class EventService {
                 type: "create_new",
                 date_time: dateNow,
                 navigate: true,
-                message: `Разместите информацию о вашем будущем встречи.`,
+                message: `Разместите информацию о вашей будущей встречe.`,
                 link,
               })
             );
@@ -1220,43 +1220,43 @@ class EventService {
         }
       }
 
-      if (element.last_meeting_date) {
-        const lastDate = moment.tz(
-          element.last_meeting_date,
-          "YYYY-MM-DD HH:mm:ss",
-          process.env.TZ
-        );
-        const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
-        const difference = dateNow.diff(lastDate);
-        const differenceInHours = Math.round(
-          moment.duration(difference).asHours()
-        );
-        if (differenceInHours === 48) {
-          const evLink = `alleven://create`;
-          const dataNotif = {
-            status: 2,
-            date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            user: element._id.toString(),
-            type: "create_new",
-            navigate: true,
-            message: `Разместите информацию о вашем будущем событии.`,
-            link: evLink,
-          };
-          const nt = new Notification(dataNotif);
-          await nt.save();
-          notifEvent.emit(
-            "send",
-            element._id.toString(),
-            JSON.stringify({
-              type: "create_new",
-              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              navigate: true,
-              message: `Разместите информацию о вашем будущем событии.`,
-              link: evLink,
-            })
-          );
-        }
-      }
+      // if (element.last_meeting_date) {
+      //   const lastDate = moment.tz(
+      //     element.last_meeting_date,
+      //     "YYYY-MM-DD HH:mm:ss",
+      //     process.env.TZ
+      //   );
+      //   const dateNow = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
+      //   const difference = dateNow.diff(lastDate);
+      //   const differenceInHours = Math.round(
+      //     moment.duration(difference).asHours()
+      //   );
+      //   if (differenceInHours === 48) {
+      //     const evLink = `alleven://create`;
+      //     const dataNotif = {
+      //       status: 2,
+      //       date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+      //       user: element._id.toString(),
+      //       type: "create_new",
+      //       navigate: true,
+      //       message: `Разместите информацию о вашем будущем событии.`,
+      //       link: evLink,
+      //     };
+      //     const nt = new Notification(dataNotif);
+      //     await nt.save();
+      //     notifEvent.emit(
+      //       "send",
+      //       element._id.toString(),
+      //       JSON.stringify({
+      //         type: "create_new",
+      //         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+      //         navigate: true,
+      //         message: `Разместите информацию о вашем будущем событии.`,
+      //         link: evLink,
+      //       })
+      //     );
+      //   }
+      // }
     }
 
     return 1;

@@ -22,6 +22,7 @@ class FavoriteController {
     const token = authHeader.split(" ")[1];
 
     const user = jwt.decode(token);
+    const userDb = await User.findById(user.id).select("name surname");
     const { id } = req.body;
 
     if (id) {
@@ -67,13 +68,14 @@ class FavoriteController {
 
         if(user.id !== event.owner._id.toString()){
           const evLink = `alleven://myEvent/${id}`;
+          const message=`${userDb.name} ${userDb.surname} добавил(a) в избранное ваше событие.`
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: event.owner._id.toString(),
             type: "Присоединение",
             navigate: true,
-            message: `У вас новое сообщение`,
+            message,
             eventId: id,
             link: evLink,
           };
@@ -89,7 +91,7 @@ class FavoriteController {
                 type: "Присоединение",
                 eventId: id,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение`,
+                message,
                 navigate: true,
                 link: evLink,
               })

@@ -13,6 +13,8 @@ class DocumentController{
 
     index = async (req,res) => {
         let documents =  await this.DocumentService.getAll();
+        console.log(documents,"documents");
+        
         res.render('profile/document/index',{ layout: 'profile', title: "Documents", user:req.user,documents})
     }
 
@@ -47,6 +49,8 @@ class DocumentController{
 
     update = async (req,res) => {
         const {context, role} = req.body
+        console.log(context, role,"role");
+        
         let data = {role};
         if(data.role == 'all'){
             data.role = ['USER','USER']

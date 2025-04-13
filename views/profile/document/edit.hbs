@@ -20,17 +20,17 @@
               <hr class="hr_withMarginTop">
                <div id="documantation_innerCont1_div1">
                 <div class="boxForLoadingDiv">
-                  <input type="radio" class="pointer" name="role" value="document" checked>
+                  <input type="radio" class="pointer" name="role" value="USER" checked>
                   для всех
                 </div>
                 {{!-- <div class="boxForLoadingDiv">
                   <input type="radio" class="pointer" name="role" value="USER" {{#if (incl document.owners 'USER' 'name')}} checked {{/if}}>
                   для посетителей
                 </div> --}}
-                <div class="boxForLoadingDiv">
+                {{!-- <div class="boxForLoadingDiv">
                   <input type="radio" class="pointer" name="role" value="USER" {{#if (incl document.owners 'USER' 'name')}} checked {{/if}}>
                   для организаторов
-                </div>
+                </div> --}}
               </div>
               <div id="docText">
                      <textarea id="my-expressjs-tinymce-app" name="context"></textarea>
@@ -42,7 +42,7 @@
                 <hr>
                 {{#if documents}}
                   {{#each documents}}
-                    {{#if (incl this.owners 'document' 'name')}}
+                    {{#if (incl this.owners 'USER' 'name')}}
                       <div class="docCont2_box">
                          <a href="/admin/profile/document/edit/{{_id}}">
                           <img src="/images/pics/docBoxImg.svg" class="docCont2_boxImg pointer">
@@ -53,7 +53,7 @@
                   {{/each}}
                 {{/if}}
               </div>
-              <div class="documantation_innerCont2_div1">
+              {{!-- <div class="documantation_innerCont2_div1">
                 <h6 class="document_h6">Документы для организаторов</h6>
                 <hr>
                 {{#if documents}}
@@ -68,7 +68,7 @@
                     {{/if}}
                   {{/each}}
                 {{/if}}
-              </div>
+              </div> --}}
             </div>
           </div>
         </div>

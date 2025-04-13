@@ -15,8 +15,6 @@ const h = {
 
     return array
       .map((item) => {
-
-
         return options.fn({
           id: item._id,
           paths: item.path, // Array of image paths
@@ -30,23 +28,23 @@ const h = {
   },
   eventImpressionImages: (array, options) => {
     if (!Array.isArray(array)) {
-        return "";
+      return "";
     }
 
     return array
-        .map((item, index) => {
-            return options.fn({
-                id: item._id,
-                paths: item.path, // Array of image paths
-                user_name: item.user?.name || "Unknown",
-                user_surname: item.user?.surname || "",
-                user_avatar: item.user?.avatar || "default-avatar.png",
-                event_id: item.event,
-                event_index: index // Adding index
-            });
-        })
-        .join("");
-},
+      .map((item, index) => {
+        return options.fn({
+          id: item._id,
+          paths: item.path, // Array of image paths
+          user_name: item.user?.name || "Unknown",
+          user_surname: item.user?.surname || "",
+          user_avatar: item.user?.avatar || "default-avatar.png",
+          event_id: item.event,
+          event_index: index, // Adding index
+        });
+      })
+      .join("");
+  },
   //   ImpressionImages: (array, options) => {
   //     if (!Array.isArray(array)) {
   //         return '';
@@ -62,17 +60,19 @@ const h = {
   // },
   ImpressionImages: (array, options) => {
     if (!Array.isArray(array)) {
-        return '';
+      return "";
     }
 
     return array
-        .map((item, index) => options.fn({ 
-            path: item, 
-            first: index === 0, 
-            index: index 
-        }))
-        .join('');
-},
+      .map((item, index) =>
+        options.fn({
+          path: item,
+          first: index === 0,
+          index: index,
+        })
+      )
+      .join("");
+  },
 
   ImpressionImagesMeet: (array, options) => {
     if (!Array.isArray(array)) {
@@ -121,7 +121,6 @@ const h = {
         const event = item[eventKey];
         const company = item[companyKey];
         const meeting = item[meetingKey];
-
 
         return options.fn({
           index: itemIndex + 1,
@@ -183,6 +182,7 @@ const h = {
         const avatar = item[avatarKey];
         const map_avatar = item[map_avatarKey];
         const status = item[statusKey];
+        const dataCat = { id, name, description, avatar, map_avatar, status };
         return options.fn({
           id,
           name,
@@ -190,6 +190,7 @@ const h = {
           avatar,
           map_avatar,
           status,
+          dataCat
         });
       })
       .join("");
@@ -512,18 +513,17 @@ const h = {
     if (!Array.isArray(array)) {
       return "";
     }
-  
+
     return array
       .map((item, index) => {
         const value = item[valueKey];
         const url = item[textKey];
         const first = index === 0; // First item in the array
-  
+
         return options.fn({ value, url, index, first });
       })
       .join("");
   },
-  
 
   //     optionsFromArrays:(array, valueKey, textKey, options)=> {
   //   if (!Array.isArray(array)) {
@@ -567,7 +567,7 @@ const h = {
     if (!Array.isArray(array)) {
       return "";
     }
-  
+
     // Generate <option> elements
     return array
       .map((item, index) => {

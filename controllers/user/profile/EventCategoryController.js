@@ -13,8 +13,14 @@ class EventCategoryController{
 
     edit = async (req,res) => {
         const {name,description,status} = req.body;
+        console.log(req.files,"req.files");
+
+        
         let avatar = req.files ? req.files.avatar : null;
         let map_avatar = req.files ? req.files.map_avatar : null;
+        console.log(avatar,"avatar");
+        console.log(map_avatar,"map_avatar");
+        
         let data = {name,description,status};
         if(avatar){
             data.avatar = avatar

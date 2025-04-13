@@ -7,7 +7,55 @@
 {{! ========================= }}
 <link rel="stylesheet" href="/styles/organizer.css" />
 <link rel="stylesheet" href="/styles/visitor.css" />
-<div id="clients_1Div">
+<style>
+  #catalogContainer1{
+    overflow-y: auto;
+    height: 250px;
+  }
+  #allEvMainDiv{
+    max-height: 796px;
+  }
+  #clients_1Div{
+    margin-bottom: 100px;
+  }
+  .user_image{
+    border-radius: 50px;
+  }
+  .imgItem{
+    border-radius: 10px;
+  }
+  .imgItemMeet{
+        border-radius: 10px;
+
+  }
+  .imgItemComp{
+        border-radius: 10px;
+
+  }
+  .allEvImgMeet{
+        border-radius: 10px;
+
+  }
+  .allEvImg{
+        border-radius: 10px;
+
+  }
+  .allEvImgMeet{
+        border-radius: 10px;
+
+  }
+  #pics1{
+    margin-right: -4px;
+  }
+  .allEvBoxContDiv {
+    height: 350px;
+  }
+  .allEvBox{
+    margin: 2px;
+  }
+
+</style>
+<div id="clients_1Div" style="margin-bottom: 100px;">
   <div class="clientsMainBody">
     <div class="clientsHead">
       <div class="clientsHeadFirstPart">
@@ -29,13 +77,13 @@
         <div class="allEvBoxCont ChangedAllEvBoxCont">
           <div id="personImgDiv">
             {{#if singleUser.avatar}}
-              <img src="/{{singleUser.avatar}}" />
+              <img class="user_image" src="/{{singleUser.avatar}}" />
             {{else}}
               <img src="/images/profile/null_avatar.png" />
             {{/if}}
             <div>
               <p>{{singleUser.name}} {{singleUser.surname}}</p>
-              <p>Организатор</p>
+              {{!-- <p>Организатор</p> --}}
             </div>
           </div>
           <p class="p2">{{singleUser.phone_number}}</p>
@@ -230,19 +278,19 @@
         <div class="allEvBoxCont ChangedAllEvBoxCont">
           <div id="personImgDiv">
             {{#if singleUser.avatar}}
-              <img src="/{{singleUser.avatar}}" />
+              <img class="user_image" src="/{{singleUser.avatar}}" />
             {{else}}
               <img src="/images/profile/null_avatar.png" />
             {{/if}}
             <div>
               <p>{{singleUser.name}} {{singleUser.surname}}</p>
-              <p>Организатор</p>
+              {{!-- <p>Организатор</p> --}}
             </div>
           </div>
           <p class="p2">{{singleUser.phone_number}}</p>
           <p class="p2">{{singleUser.email}}</p>
           <div id="slideImagesBox">
-            <p class="p3">Организованные события</p>
+            <p class="p3">Организованные услуги</p>
             {{! <div id="slideImages"> }}
             {{! <i class="bi bi-chevron-left"></i> }}
             {{!-- <div id="sliderDiv">
@@ -270,7 +318,7 @@
                       <div class="swiper-slide square">
                         <img
                           src="/{{images.0.url}}"
-                          class="imgItem"
+                          class="imgItemComp"
                           value="{{@index}}"
                         />
                       </div>
@@ -283,11 +331,11 @@
             {{! <i class="bi bi-chevron-right"></i> }}
           </div>
           {{! </div> }}
-          <div id="addedCatalog">
+          {{!-- <div id="addedCatalog">
             <p class="p3">Добавленные категории</p>
             <div id="forView">
-              {{! <p class="p4">Категории на рассмотрении</p> }}
-              {{!-- <div id="catalogContainer1">
+               <p class="p4">Категории на рассмотрении</p> 
+               <div id="catalogContainer1">
                 {{#if singleUser.event_categories}}
                   {{#each singleUser.event_categories}}
                     <div class="catalogBox">
@@ -296,12 +344,12 @@
                         <p class="p3">{{name}}</p>
                         <p class="p5">{{description}}</p>
                       </div>
-                      {{! <div class="iconsGroup">
+                      <div class="iconsGroup">
                           <img src="/images/pics/Vector1(1).svg" />
                           <img src="/images/pics/delete 1.svg" />
-                        </div> }}
+                        </div>
                     </div>
-                    {{! <div class="catalogBox">
+                     <div class="catalogBox">
                         <img src="/images/pics/boxImg.svg" />
                         <div>
                           <p class="p3">Рестораны/кафе</p>
@@ -314,12 +362,12 @@
                           <img src="/images/pics/Vector1(1).svg" />
                           <img src="/images/pics/delete 1.svg" />
                         </div>
-                      </div> }}
+                      </div> 
                   {{/each}}
                 {{/if}}
-              </div> --}}
+              </div> 
             </div>
-            {{! <div id="acceptedCatalog">
+             <div id="acceptedCatalog">
                     <p class="p4">Одобренные категории</p>
                     <div id="catalogContainer1">
                       <div class="catalogBox">
@@ -335,13 +383,13 @@
                         </div>
                       </div>
                     </div>
-                  </div> }}
-          </div>
+                  </div> 
+          </div> --}}
         </div>
       </div>
       <div class="allEvBox">
         <div id="allEvBox_header">
-          <h4>События</h4>
+          <h4>Услуги</h4>
         </div>
         <hr />
         <div id="comp_view">
@@ -429,21 +477,21 @@
         </div>
         <hr />
         <div class="allEvBoxCont ChangedAllEvBoxCont">
-          <div id="personImgDiv">
+            <div id="personImgDiv">
             {{#if singleUser.avatar}}
-              <img src="/storage/{{singleUser.avatar}}" />
+              <img class="user_image" src="/{{singleUser.avatar}}" />
             {{else}}
               <img src="/images/profile/null_avatar.png" />
             {{/if}}
             <div>
               <p>{{singleUser.name}} {{singleUser.surname}}</p>
-              <p>Организатор</p>
+              {{!-- <p>Организатор</p> --}}
             </div>
           </div>
           <p class="p2">{{singleUser.phone_number}}</p>
           <p class="p2">{{singleUser.email}}</p>
           <div id="slideImagesBox">
-            <p class="p3">Организованные события</p>
+            <p class="p3">Организованные встречи</p>
             {{! <div id="slideImages"> }}
             {{! <i class="bi bi-chevron-left"></i> }}
             {{!-- <div id="sliderDiv">
@@ -463,15 +511,15 @@
               <div class="swiper-button-prev swiper-button-prev3"></div>
               <div class="swiper mySwiper3">
                 <div class="swiper-wrapper squares">
-                  <div class="swiper-slide square">
+                  {{!-- <div class="swiper-slide square">
                     <img src="../Pictures/img.svg" alt="undefined" />
-                  </div>
-                  {{#if singleUser.events}}
-                    {{#each singleUser.events}}
+                  </div> --}}
+                  {{#if meetings}}
+                    {{#each meetings}}
                       <div class="swiper-slide square">
                         <img
-                          src="/storage/{{images.0.name}}"
-                          class="imgItem"
+                          src="/{{images.0.path}}"
+                          class="imgItemMeet"
                           value="{{@index}}"
                         />
                       </div>
@@ -484,7 +532,7 @@
             {{! <i class="bi bi-chevron-right"></i> }}
           </div>
           {{! </div> }}
-          <div id="addedCatalog">
+          {{!-- <div id="addedCatalog">
             <p class="p3">Добавленные категории</p>
             <div id="forView">
               {{! <p class="p4">Категории на рассмотрении</p> }}
@@ -537,12 +585,12 @@
                       </div>
                     </div>
                   </div> }}
-          </div>
+          </div> --}}
         </div>
       </div>
       <div class="allEvBox">
         <div id="allEvBox_header">
-          <h4>События</h4>
+          <h4>Встречи</h4>
         </div>
         <hr />
         <div id="meet_view">

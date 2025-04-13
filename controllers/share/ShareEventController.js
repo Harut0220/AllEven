@@ -7,21 +7,7 @@ class ShareEventController {
     this.EventService = new EventService();
   }
 
-  index = async (req, res) => {
-    const eventId = req.params.id;
-    const event = await this.EventService.findAndLean(eventId);
-    const images = event.images;
-    const imageHeader = event.images[0].name;
-    const baseUrl = req.protocol + "://" + req.get("host");
-    res.render("profile/event-share", {
-      title: event.name,
-      event,
-      images,
-      imageHeader: event.images[0].name,
-      imageHeader,
-      baseUrl,
-    });
-  };
+
 
   meetIndex = async (req, res) => {
     const meetingId = req.params.id;
@@ -29,12 +15,28 @@ class ShareEventController {
     const event = await meetingModel.findById(meetingId).populate("images").populate({path:"user",select:"phone_number"});
     const date=event.date.split(" ")[0]
     const time=event.date.split(" ")[1]
+
+
+    const countLength=54
+    let resultName;
+    if(event.purpose.length>countLength){
+      resultName = x.slice(0, countLength)+"...";
+    }else if(event.purpose.length===countLength||event.purpose.length<countLength){
+      resultName=event.purpose
+    }
+    let resultDescription;
+    if(event.description.length>countLength){
+      resultDescription = x.slice(0, countLength)+"...";
+    }else if(event.description.length===countLength||event.description.length<countLength){
+      resultDescription=event.description
+    }
+    
     res.render("profile/meeting-share", {
-      title: event.purpose,
+      title: resultName,
       event,
       date,
       time,
-      description:event.description,
+      description:resultDescription,
       images:event.images,
       phone_number:event.user.phone_number,
       imageHeader: event.images[0].path,
@@ -77,8 +79,22 @@ class ShareEventController {
     })
     const serviceName=arr.join(" , ")
 
+    const countLength=54
+    let resultName;
+    if(event.companyName.length>countLength){
+      resultName = event.companyName.slice(0, countLength)+"...";
+    }else if(event.companyName.length===countLength||event.companyName.length<countLength){
+      resultName=event.companyName
+    }
+    let resultDescription;
+    if(serviceName.length>countLength){
+      resultDescription = serviceName.slice(0, countLength)+"...";
+    }else if(serviceName.length===countLength||serviceName.length<countLength){
+      resultDescription=serviceName
+    }
+
     res.render("profile/company-share", {
-      title: event.companyName,
+      title: resultName,
       event,
       imageHeader:event.images[0].url,
       image: event.images[0],
@@ -87,28 +103,7 @@ class ShareEventController {
       category: event.category.name,
       phone: event.phoneNumbers[0],
       services:event.services,
-      serviceName
-    });
-  };
-
-  serviceIndex = async (req, res) => {
-    const serviceId = req.params.id;
-    const event = await CompanyServiceModel.findById(serviceId).populate(
-      "images"
-    );
-    const images = [];
-    for (let i = 0; i < event.images.length; i++) {
-      const obj = {
-        url: event.images[i],
-      };
-      images.push(obj);
-    }
-
-    res.render("share/service", {
-      title: event.type,
-      event,
-      image: event.images[0],
-      images,
+      serviceName:resultDescription
     });
   };
 
@@ -118,13 +113,27 @@ class ShareEventController {
     const event = await this.EventService.findAndLean(eventId);
 
     const images = event.images;
-    
+    const countLength=54
+    let resultName;
+    if(event.name.length>countLength){
+      resultName = event.name.slice(0, countLength)+"...";
+    }else if(event.name.length===countLength||event.name.length<countLength){
+      resultName=event.name
+    }
+    let resultDescription;
+    if(event.description.length>countLength){
+      resultDescription = event.description.slice(0, countLength)+"...";
+    }else if(event.description.length===countLength||event.description.length<countLength){
+      resultDescription=event.description
+    }
+
+
     const imageHeader = event.images[0].name;
     const baseUrl = req.protocol + "://" + req.get("host");
     const date=event.started_time.split(" ")[0]
     const time=event.started_time.split(" ")[1]
     res.render("profile/event-share", {
-      title: event.name,
+      title: resultName,
       event,
       date,
       time,
@@ -133,7 +142,7 @@ class ShareEventController {
       imageHeader: event.images[0].name,
       imageHeader,
       baseUrl,
-      description:event.description,
+      description:resultDescription,
       category: event.category.name,
       meta: {
         title: event.name,

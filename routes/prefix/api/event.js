@@ -99,7 +99,7 @@ eventRoutes.post("/socketTest", EventController.socket);
 
 eventRoutes.get(
   "/categories",
-  authenticateJWTWithoutCheck,
+  authenticateJWT,
   EventCategoryController.index
 );
 eventRoutes.post(

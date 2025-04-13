@@ -95,6 +95,7 @@ class CommentController {
     const date = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
     if (user.id !== eventDb.owner._id.toString()) {
+      const message = `${userDb.name} ${userDb.surname} добавил комментарий.`;
       const evLink = `alleven://myEvent/${eventDb._id}`;
       const dataNotif = {
         status: 2,
@@ -102,7 +103,7 @@ class CommentController {
         user: eventDb.owner._id.toString(),
         type: "Присоединение",
         navigate: true,
-        message: `У вас новое сообщение.`,
+        message,
         eventId: id,
         link: evLink,
       };
@@ -116,7 +117,7 @@ class CommentController {
             type: "Присоединение",
             eventId: id,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `У вас новое сообщение.`,
+            message,
             navigate: true,
             link: evLink,
           })
@@ -154,6 +155,7 @@ class CommentController {
     const authHeader = req.headers.authorization;
     const token = authHeader.split(" ")[1];
     const user = jwt.decode(token);
+    const userDb = await User.findById(user.id);
     let { id } = req.body;
     const isLike = await EventCommentLikes.findOne({
       user: user.id,
@@ -181,13 +183,14 @@ class CommentController {
         } else {
           evLink = `alleven://singleEvent/${eventDb._id}`;
         }
+              const message = `${userDb.name} ${userDb.surname} поставил(a) новый лайк на ваш комментарий.`
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: comment.user._id.toString(),
           type: "Присоединение",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           eventId: eventDb._id,
           link: evLink,
         };
@@ -201,7 +204,7 @@ class CommentController {
               type: "Присоединение",
               eventId: eventDb._id,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение.`,
+              message,
               navigate: true,
               link: evLink,
             })
@@ -228,6 +231,7 @@ class CommentController {
     const user = jwt.decode(token);
     let { id, text } = req.body;
 
+    const userDb = await User.findById(user.id);
     const commentAnswer = new EventCommentAnswer({
       commentId: id,
       user: user.id,
@@ -252,13 +256,15 @@ class CommentController {
       } else {
         evLink = `alleven://singleEvent/${eventDb._id}`;
       }
+      const message = `Вам ответили на комментарии ${userDb.name} ${userDb.surname} к событию ${eventDb.name}.`;
+
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: comment.user._id.toString(),
-        type: "Присоединение",
+        type: "message",
         navigate: true,
-        message: `У вас новое сообщение.`,
+        message,
         eventId: eventDb._id,
         link: evLink,
       };
@@ -269,10 +275,10 @@ class CommentController {
           "send",
           comment.user._id.toString(),
           JSON.stringify({
-            type: "Присоединение",
+            type: "message",
             eventId: eventDb._id,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `У вас новое сообщение .`,
+            message,
             navigate: true,
             link: evLink,
           })

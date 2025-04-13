@@ -736,13 +736,15 @@ const meetingService = {
       const ratings = updatedMeeting.ratings;
       if (companyDb.user._id.toString() !== user) {
         const evLink = `alleven://myMeeting/${companyDb._id}`;
+        const message = `${userDb.name} ${userDb.surname} поставил(a) новую оценку.`
+
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: companyDb.user._id.toString(),
           type: "message",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           meetingId: companyDb._id,
           link: evLink,
         };
@@ -757,7 +759,7 @@ const meetingService = {
               meetingId: companyDb._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение.`,
+              message,
               link: evLink,
             })
           );
@@ -787,6 +789,7 @@ const meetingService = {
     return { message: "Комментарий удален" };
   },
   commentAnswer: async (user, commentId, text) => {
+    const userDb = await User.findById(user);
     const date = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
     const commentAnswerDb = new meetingCommentAnswer({
       user,
@@ -818,13 +821,15 @@ const meetingService = {
       } else {
         evLink = `alleven://singleMeeting/${updatedMeeting._id}`;
       }
+
+      const message =`Вам ответили на комментарии ${userDb.name} ${userDb.surname} к встрече ${updatedMeeting.purpose}.`
       const dataNotif = {
         status: 2,
         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
         user: commentDb.user._id.toString(),
         type: "message",
         navigate: true,
-        message: `У вас новое сообщение.`,
+        message,
         meetingId: updatedMeeting._id,
         link: evLink,
       };
@@ -839,7 +844,7 @@ const meetingService = {
             meetingId: updatedMeeting._id,
             navigate: true,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `У вас новое сообщение. `,
+            message,
             link: evLink,
           })
         );
@@ -966,6 +971,10 @@ const meetingService = {
       })
       .populate("view")
       .populate("favorites")
+      .populate({
+        path: "impression_images",
+        populate: { path: "user", select: "name surname avatar" },
+      })
       .populate({
         path: "ratings",
         populate: { path: "user", select: "name surname avatar" },
@@ -1421,7 +1430,7 @@ const meetingService = {
           user: meetingDb.user._id.toString(),
           type: "like",
           navigate: true,
-          message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
+          message: `Пользователь ${userDb.name} поставил(a) лайк встрече ${meetingDb.purpose}.`,
           meetingId: meetingId,
           link: evLink,
         };
@@ -1437,7 +1446,7 @@ const meetingService = {
               meetingId: meetingId,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${userDb.name} поставил лайк встрече ${meetingDb.purpose}.`,
+              message: `Пользователь ${userDb.name} поставил(a) лайк встрече ${meetingDb.purpose}.`,
               link: evLink,
             })
           );
@@ -1511,6 +1520,7 @@ const meetingService = {
     }
   },
   commentLike: async (user, commentId) => {
+    const userDb = await User.findById(user).select("name surname");
     const ifLike = await meetingCommentLikes.find({ user, commentId });
     if (!ifLike.length) {
       const likeDb = new meetingCommentLikes({
@@ -1537,13 +1547,15 @@ const meetingService = {
         } else {
           evLink = `alleven://singleMeeting/${meeting._id}`;
         }
+        const message = `${userDb.name} ${userDb.surname} поставил(a) новый лайк на ваш комментарий.`
+
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: commentDb.user._id.toString(),
           type: "message",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           meetingId: meeting._id,
           link: evLink,
         };
@@ -1558,7 +1570,7 @@ const meetingService = {
               meetingId: meeting._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение.`,
+              message,
               link: evLink,
             })
           );
@@ -1651,6 +1663,7 @@ const meetingService = {
         .populate("user")
         .exec();
       if (companyDb.user._id.toString() !== user) {
+        const message=`${userDb.name} ${userDb.surname} добавил комментарий.`
         const evLink = `alleven://myMeeting/${meeting._id}`;
         const dataNotif = {
           status: 2,
@@ -1658,7 +1671,7 @@ const meetingService = {
           user: meeting.user._id.toString(),
           type: "message",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           meetingId: meeting._id,
           link: evLink,
         };
@@ -1673,7 +1686,7 @@ const meetingService = {
               meetingId: meeting._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение.`,
+              message,
               link: evLink,
             })
           );
@@ -1709,6 +1722,7 @@ const meetingService = {
   },
   favorit: async (user, meetingId) => {
     try {
+      const userDb = await User.findById(user).select("name surname");
       const meetFavorit = await meetingFavorit.findOne({ user, meetingId });
       if (meetFavorit) {
         await User.findByIdAndUpdate(user, {
@@ -1745,13 +1759,15 @@ const meetingService = {
           .populate("user");
         if (meeting.user._id.toString() !== user) {
           const evLink = `alleven://myMeeting/${meeting._id}`;
+          const message=`${userDb.name} ${userDb.surname} добавил(a) в избранное ваше встречу.`
+
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: meeting.user._id.toString(),
             type: "message",
             navigate: true,
-            message: `У вас новое сообщение.`,
+            message,
             meetingId: meeting._id,
             link: evLink,
           };
@@ -1766,7 +1782,7 @@ const meetingService = {
                 meetingId: meeting._id,
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение.`,
+                message,
                 link: evLink,
               })
             );

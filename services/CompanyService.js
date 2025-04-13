@@ -307,6 +307,7 @@ const companyService = {
     }
   },
   impressionImagesStore: async (companyId, path, user) => {
+    const userDb= await User.findById(user).select("name surname");
     const companyImpressionImagesDb = await companyImpressionImages
       .findOne({ companyId, user: user })
       .populate({ path: "user", select: "name surname avatar" });
@@ -319,7 +320,7 @@ const companyService = {
         user: companyDb.owner._id.toString(),
         type: "like",
         navigate: true,
-        message: `У вас новое сообщение.`,
+        message: `${userDb.name} ${userDb.surname} поделился(лась) впечатлением.`,
         companyId: companyDb._id,
         link: evLink,
       };
@@ -334,7 +335,7 @@ const companyService = {
             eventId: companyDb._id,
             navigate: true,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-            message: `У вас новое сообщение.`,
+            message: `${userDb.name} ${userDb.surname} поделился(лась) впечатлением.`,
             link: evLink,
           })
         );
@@ -670,6 +671,7 @@ const companyService = {
   },
   commentAnswer: async (commentId, user, text) => {
     try {
+      const userDb= await User.findById(user).select("name surname");
       const comment = await CompanyComment.findById(commentId).populate("user");
       const commentAnswer = new companyCommentAnswer({
         commentId,
@@ -691,13 +693,15 @@ const companyService = {
         } else {
           evLink = `alleven://singleCompany/${companyDb._id}`;
         }
+
+        const message =`Вам ответили на комментарии ${userDb.name} ${userDb.surname} в организации ${companyDb.companyName}.`
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: comment.user._id.toString(),
           type: "like",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           companyId: companyDb._id,
           link: evLink,
         };
@@ -712,7 +716,7 @@ const companyService = {
               eventId: companyDb._id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение.`,
+              message,
               link: evLink,
             })
           );
@@ -727,6 +731,7 @@ const companyService = {
   },
   commentLike: async (commentId, user) => {
     try {
+      const userDb= await User.findById(user).select("name surname avatar");
       const isLike = await companyCommentLike.findOne({ user, commentId });
       if (isLike) {
         await companyComment.findByIdAndUpdate(commentId, {
@@ -757,13 +762,15 @@ const companyService = {
           } else {
             evLink = `alleven://singleCompany/${companyDb._id}`;
           }
+          const message = `${userDb.name} ${userDb.surname} поставил(a) новый лайк на ваш комментарий.`
+
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: commentDb.user._id.toString(),
             type: "like",
             navigate: true,
-            message: `У вас новое сообщение.`,
+            message,
             companyId: companyDb._id,
             link: evLink,
           };
@@ -778,7 +785,7 @@ const companyService = {
                 eventId: companyDb._id,
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение.`,
+                message,
                 link: evLink,
               })
             );
@@ -794,16 +801,14 @@ const companyService = {
   },
   rating: async (eventId, user, rating) => {
     try {
+      const userDb = await User.findById(user).select("name surname avatar");
       const ifRating = await companyRating.findOne({
         companyId: eventId,
         user,
       });
 
       if (ifRating) {
-        // await companyRating.findByIdAndDelete(ifRating._id)
-        // await companyModel.findByIdAndUpdate(eventId, {
-        //   $pull: { rating: ifRating._id },
-        // });
+
         return {
           success: false,
           message: "вы уже оценили",
@@ -837,13 +842,14 @@ const companyService = {
           .populate("owner");
         if (newGet.owner._id.toString() !== user.toString()) {
           const evLink = `alleven://myCompany/${newGet._id}`;
+          const message = `${userDb.name} ${userDb.surname} поставил(a) новую оценку.`
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: newGet.owner._id.toString(),
             type: "message",
             navigate: true,
-            message: `У вас новое сообщение.`,
+            message,
             companyId: newGet._id,
             link: evLink,
           };
@@ -858,7 +864,7 @@ const companyService = {
                 eventId: newGet._id,
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение.`,
+                message,
                 link: evLink,
               })
             );
@@ -1224,6 +1230,7 @@ const companyService = {
   addFavorites: async (user, companyId) => {
     try {
       const resFav = await companyFavorit.findOne({ user, companyId });
+      const userDb = await User.findById(user).select("name surname");
       if (!resFav) {
         const newFav = new companyFavorit({
           user,
@@ -1245,13 +1252,15 @@ const companyService = {
 
         if (company.owner._id.toString() !== user.toString()) {
           const evLink = `alleven://myCompany/${company._id}`;
+          const message=`${userDb.name} ${userDb.surname} добавил(a) в избранное ваше услугу.`
+
           const dataNotif = {
             status: 2,
             date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
             user: company.owner._id.toString(),
             type: "like",
             navigate: true,
-            message: `У вас новое сообщение.`,
+            message,
             companyId: company._id,
             link: evLink,
           };
@@ -1266,7 +1275,7 @@ const companyService = {
                 eventId: company._id,
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение.`,
+                message,
                 link: evLink,
               })
             );

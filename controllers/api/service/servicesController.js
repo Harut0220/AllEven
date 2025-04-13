@@ -714,155 +714,28 @@ const servicesController = {
       }
 
       const currentTime = moment.tz(process.env.TZ).format();
-      // async function sendMessage(serviceRegisterDbId, type) {
-      //   try {
-      //     const registerDb = await servicesRegistrations
-      //       .findById(serviceRegisterDbId)
-      //       .populate("serviceId")
-      //       .populate("user")
-      //       .exec();
 
-      //     if (registerDb) {
-      //       const evLink = `alleven://companyDetail/${registerDb.serviceId._id}`;
-      //       const message = `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${time}`;
-
-      //       const dataNotif = {
-      //         status: 2,
-      //         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      //         user: registerDb.user._id.toString(),
-      //         type: "Регистрация на услугу",
-      //         message: message,
-      //         serviceId: registerDb.serviceId._id,
-      //         // categoryIcon: registerDb.serviceId.images[0],
-      //         link: evLink,
-      //       };
-      //       const nt = new Notification(dataNotif);
-      //       await nt.save();
-      //       if (registerDb.user.notifCompany) {
-      //         notifEvent.emit(
-      //           "send",
-      //           registerDb.user._id.toString(),
-      //           JSON.stringify({
-      //             type: "Регистрация на услугу",
-      //             serviceId: registerDb.serviceId._id,
-      //             date_time: moment
-      //               .tz(process.env.TZ)
-      //               .format("YYYY-MM-DD HH:mm"),
-      //             message: message,
-      //             // categoryIcon: registerDb.serviceId.images[0],
-      //             link: evLink,
-      //           })
-      //         );
-      //       }
-      //     }
-      //   } catch (error) {
-      //     console.error("Error in sendMessage:", error);
-      //   }
-      // }
-      // async function sendMessage(serviceRegisterDbId, type) {
-
-      //   const registerDb = await servicesRegistrations
-      //     .findById(serviceRegisterDbId)
-      //     .populate("serviceId")
-      //     .populate("user")
-      //     .exec();
-
-      //   if (registerDb) {
-      //     const evLink = `alleven://companyDetail/${registerDb.serviceId._id}`;
-
-      //     if (type) {
-
-      //       const dataNotif = {
-      //         status: 2,
-      //         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      //         user: registerDb.user._id.toString(),
-      //         type: "Регистрация на услугу",
-      //         message: `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${registerDb.date}`,
-      //         service: registerDb.serviceId._id,
-      //         link: evLink,
-      //       };
-      //       const nt = new Notification(dataNotif);
-      //       await nt.save();
-      //       notifEvent.emit(
-      //         "send",
-      //         registerDb.user._id.toString(),
-      //         JSON.stringify({
-      //           type: "Регистрация на услугу",
-      //           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      //           message: `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${registerDb.date}`,
-      //           link: evLink,
-      //         })
-      //       );
-
-      //     } else {
-
-      //       const dataNotif = {
-      //         status: 2,
-      //         date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      //         user: registerDb.user._id.toString(),
-      //         type: "Регистрация на услугу",
-      //         message: `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${registerDb.date}.`,
-      //         service: registerDb.serviceId._id,
-      //         link: evLink,
-      //       };
-      //       const nt = new Notification(dataNotif);
-      //       await nt.save();
-      //       notifEvent.emit(
-      //         "send",
-      //         registerDb.user._id.toString(),
-      //         JSON.stringify({
-      //           type: "Регистрация на услугу",
-      //           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-      //           message: `Вы записались на услугу ${registerDb.serviceId.type} сегодня в ${registerDb.date}.`,
-      //           link: evLink,
-      //         })
-      //       );
-
-      //     }
-      //   }
-      // }
-
-      // schedule.scheduleJob(
-      //   `notification_${confirmedRegister._id}_hour`,
-      //   notificationTime.toDate(),
-      //   () => {
-      //     console.log("Notification Time hour before the event (schedule)");
-      //     try {
-      //       sendMessage(confirmedRegister._id.toString(), "hour");
-      //     } catch (error) {
-      //       console.error("Error sending notification (1 hour):", error);
-      //     }
-      //   }
-      // );
-
-      // schedule.scheduleJob(
-      //   `notification_${confirmedRegister._id}_five`,
-      //   registerTimeFive.toDate(),
-      //   () => {
-      //     console.log(
-      //       "Notification Time 5 minutes before the event (schedule)"
-      //     );
-      //     try {
-      //       sendMessage(confirmedRegister._id.toString());
-      //     } catch (error) {
-      //       console.error("Error sending notification (5 minutes):", error);
-      //     }
-      //   }
-      // );
       async function runAgenda(registerId, type) {
         await agenda.start(); // <-- Important!
         console.log("Agenda started!");
-        const dat = service.date + ":00";
+        const updatedRegisterForNotif = await servicesRegistrations.findById(
+          id
+        );
+        const dat = updatedRegisterForNotif.date + ":00";
 
         const eventTime = moment.tz(dat, process.env.TZ);
+
         const eventTimeMinusFive = moment
-          .tz(dat, process.env.TZ)
+          .tz(eventTime, process.env.TZ)
           .subtract(5, "minutes");
+        console.log(eventTimeMinusFive, "Event time minus 5 minutes");
 
         const notificationTime = eventTime.clone().subtract(1, "hour");
+        console.log(notificationTime, "Notification time hour before event");
+
         if (type === "participants") {
           console.log(
-            "Job scheduled for notifTime:",
+            "Job scheduled for notifTime hour:",
             notificationTime.toDate()
           );
 
@@ -1161,10 +1034,12 @@ const servicesController = {
   deleteRegistr: async (req, res) => {
     try {
       const { id } = req.body;
+      await Notification.deleteMany({register:id})
       const result = await servicesRegistrations.findByIdAndDelete(id);
       res.status(200).send({ message: "запись удалена." });
     } catch (error) {
       console.error(error);
+      res.status(500).send({message:"Server Error"})
     }
   },
 };

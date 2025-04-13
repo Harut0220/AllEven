@@ -6,7 +6,6 @@ import Notification from "../../../models/Notification.js";
 import moment from "moment-timezone";
 import User from "../../../models/User.js";
 import companyModel from "../../../models/company/companyModel.js";
-// import companyHotDealRegistrations from "../../../models/company/companyHotDealRegistration.js";
 import companyHotDealRegistration from "../../../models/company/companyHotDealRegistration.js";
 import companyHotDeals from "../../../models/company/companyHotDeals.js";
 import commission from "../../../models/commission.js";

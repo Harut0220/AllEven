@@ -1,5 +1,7 @@
 function openEditModal(data) {
-  data = parseData(data);
+  let dataRes = JSON.parse(data);
+    console.log(dataRes, "data");
+    
   let act = document.getElementById("editContainerForm2");
   let mod = document.getElementById("editContainer2");
   let nameInp = document.getElementById("editCategoryName");
@@ -8,18 +10,23 @@ function openEditModal(data) {
   let s = selectInp.getElementsByTagName("option");
   let img = document.getElementById("display-img2");
   let i = document.getElementById("editContainer2Id");
-  i.value = data._id;
+  i.value = dataRes.id;
+  console.log(i.value, "i.value");
+  console.log(dataRes.id, "data.id");
+  
   // img.src = `/storage/${data.avatar}`;
-  act.action = `/admin/profile/event-category/edit/${data._id}`;
-  nameInp.value = data.name;
-  textAr.innerHTML = data.description;
-  if (data.status) {
+  act.action = `/admin/profile/event-category/edit/${dataRes.id}`;
+  nameInp.value = dataRes.name;
+  console.log(nameInp.value, "nameInp.value");
+  
+  textAr.innerHTML = dataRes.description;
+  if (dataRes.status) {
     s[0].selected = true;
   } else {
     s[1].selected = true;
   }
 
-  if (!data.avatar && !data.map_avatar) {
+  if (!dataRes.avatar && !dataRes.map_avatar) {
     s[0].disabled = true;
     s[1].disabled = true;
   }

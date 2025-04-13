@@ -35,7 +35,7 @@ class RatingController {
 
       const averageRating = calculateAverageRating(result.ratings);
 
-      const userDb = await User.findById(user.id);
+      const userDb = await User.findById(user.id).select("name surname");
       const eventDb = await Event.findById(id)
         .populate("images")
         .populate("category")
@@ -74,13 +74,14 @@ class RatingController {
 
       if (userEventDb._id.toString() !== user.id) {
         const evLink = `alleven://myEvent/${id}`;
+        const message = `${userDb.name} ${userDb.surname} поставил(a) новую оценку.`
         const dataNotif = {
           status: 2,
           date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
           user: userEventDb._id.toString(),
           type: "Присоединение",
           navigate: true,
-          message: `У вас новое сообщение.`,
+          message,
           eventId: id,
           link: evLink,
         };
@@ -94,7 +95,7 @@ class RatingController {
               type: "Присоединение",
               eventId: id,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `У вас новое сообщение .`,
+              message,
               navigate: true,
               link: evLink,
             })

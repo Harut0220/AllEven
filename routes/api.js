@@ -32,25 +32,13 @@ import { reportRoutes } from "./report.js";
 
 const apiRoutes = Router();
 
-apiRoutes.use(reportRoutes)
+apiRoutes.use(reportRoutes);
 
 apiRoutes.get("/", (req, res) => {
   res.json({ name: "tesName" });
 });
 
-apiRoutes.get("/user/destroy/:token", async (req, res) => {
-  const token = req.params.token;
-  if (!token) {
-    res.status(400).send({ success: false, message: "Tokenis required" });
-  }
 
-  if (
-    token ===
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MTc5Mjc0Yzk3NzExYjQwNzY3ZWZhYiIsIm5hbWUiOiJMYXJpc2EiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyfQ.8Josz0WgUJcADhG020a39bpkBX9rpYPrwSgAPKkmEpw"
-  ) {
-    res.status(200).send({ success: true, message: "User Larisa has been deleted" });
-  }
-});
 
 apiRoutes.post("/", (req, res) => {
   res.json(req.body);
@@ -96,15 +84,15 @@ apiRoutes.get(
   NotificationController.opportunity
 );
 
-apiRoutes.use("/event", eventRoutes);//notif+
+apiRoutes.use("/event", eventRoutes); //notif+
 
 apiRoutes.use("/company", companyRouter);
 
 apiRoutes.use("/service", serviceRouter);
 
-apiRoutes.use("/meeting", meetingRouter);//notif+
+apiRoutes.use("/meeting", meetingRouter); //notif+
 
-apiRoutes.use("/pay",payRouter)
+apiRoutes.use("/pay", payRouter);
 
 apiRoutes
   .route("/document")
@@ -131,7 +119,11 @@ apiRoutes.delete(
   NotificationController.destroyOne
 );
 
-apiRoutes.delete("/notifications/destroy", authenticateJWT, NotificationController.destroy);
+apiRoutes.delete(
+  "/notifications/destroy",
+  authenticateJWT,
+  NotificationController.destroy
+);
 
 apiRoutes
   .route("/upload_single_file")

@@ -247,8 +247,12 @@ function generateDivComp(data) {
              <span> ${data.likes ? data.likes.length : 0}</span>
           </div>
           <div>
+            <img src="/images/pics/Vector 80.svg" />
+            ${data.favorites ? data.favorites.length : 0}
+          </div>
+          <div>
             <img src="/images/pics/Vector (20).svg" />
-            ${data.view ? data.view : 0}
+            ${data.views ? data.views : 0}
           </div>
         </div>
       </div>

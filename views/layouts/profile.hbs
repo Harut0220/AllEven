@@ -39,7 +39,7 @@
              width="18px"
               height="17px"
               src="/images/staticimg/Notification.svg"
-              onclick="notifList('notifModal','flex')"
+              {{!-- onclick="notifList('notifModal','flex')" --}}
             />
             <div  style="position: absolute;width:10px;height:10px;border-radius:50%;font-size:10px;left: 9px;top:-2px;background:#fee798 " id="notificationCount">
               <span style="margin:3px 3px" id="notificationCountSpan"></span>
@@ -99,7 +99,7 @@
             </div>
           </div>
 
-          <p>{{user.name}} {{user.surname}}</p>
+          <p style="margin-right: 10px;">{{user.name}} {{user.surname}}</p>
           {{!-- {{test}} --}}
           {{! <img src="/images/staticimg/Rectangle%2082.svg" /> }}
           <div class="container" onclick="toggleMenu()">
@@ -222,7 +222,7 @@
               />
               {{! <input placeholder="Статус"> }}
             </div>
-            <div id="filterBox2">
+            <div id="filterBox2" >
               <p>По дате регистрации</p>
               <input type="date" name="date_from" value="{{q.date_from}}" />
               <input type="date" name="date_to" value="{{q.date_to}}" />
@@ -262,6 +262,9 @@
       for(let i=0;i<pages_link.length-1;i++){
       if(pages_link[i].getAttribute("class")=="pages_link activeLink"){
       menuIconImg[i].src=imgsActive[i] } }
+
+
+
     </script>
   </body>
 </html>

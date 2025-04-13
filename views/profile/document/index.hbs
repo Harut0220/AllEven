@@ -34,10 +34,10 @@
               </div>
             </div>
             <div class="boxForLoadingDiv">
-              <input type="radio" class="pointer" name="role" value="document" />
+              <input type="radio" class="pointer" name="role" value="USER"  checked/>
               для всех
             </div>
-            <div class="boxForLoadingDiv">
+            {{!-- <div class="boxForLoadingDiv">
               <input
                 type="radio"
                 class="pointer"
@@ -45,7 +45,7 @@
                 value="USER"
               />
               для организаторов
-            </div>
+            </div> --}}
             {{!-- <div class="boxForLoadingDiv">
               <input type="radio" class="pointer" name="role" value="USER" />
               Всем
@@ -56,25 +56,6 @@
         <div id="documantation_innerCont2">
           <div class="documantation_innerCont2_div1">
             <h6 class="document_h6">Документы для всех</h6>
-            <hr />
-            {{#if documents}}
-              {{#each documents}}
-                {{#if (incl this.owners "document" "name")}}
-                  <div class="docCont2_box">
-                    <a href="/admin/profile/document/edit/{{_id}}">
-                      <img
-                        src="/images/pics/docBoxImg.svg"
-                        class="docCont2_boxImg pointer"
-                      />
-                    </a>
-                    <p class="docCont2_boxP">{{pathName path}}</p>
-                  </div>
-                {{/if}}
-              {{/each}}
-            {{/if}}
-          </div>
-          <div class="documantation_innerCont2_div1">
-            <h6 class="document_h6">Документы для организаторов</h6>
             <hr />
             {{#if documents}}
               {{#each documents}}
@@ -92,6 +73,25 @@
               {{/each}}
             {{/if}}
           </div>
+          {{!-- <div class="documantation_innerCont2_div1">
+            <h6 class="document_h6">Документы для организаторов</h6>
+            <hr />
+            {{#if documents}}
+              {{#each documents}}
+                {{#if (incl this.owners "USER" "name")}}
+                  <div class="docCont2_box">
+                    <a href="/admin/profile/document/edit/{{_id}}">
+                      <img
+                        src="/images/pics/docBoxImg.svg"
+                        class="docCont2_boxImg pointer"
+                      />
+                    </a>
+                    <p class="docCont2_boxP">{{pathName path}}</p>
+                  </div>
+                {{/if}}
+              {{/each}}
+            {{/if}}
+          </div> --}}
         </div>
       </div>
     </form>

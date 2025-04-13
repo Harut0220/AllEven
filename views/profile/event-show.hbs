@@ -21,6 +21,7 @@
   width: 50%;
   padding: 10px;
 }
+
 #imageModal{
   position: fixed !important;
   top: 0;
@@ -56,6 +57,12 @@ width: 100%;
     position: absolute;
     right: 5px;
     top: -10px;
+}
+
+.removeButton{
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 
 
@@ -95,8 +102,11 @@ width: 100%;
                   <div id="pics1-show">
                       {{#if event.images}}
                         {{#each event.images}}
-                          <div class="changeEvDiv-show" style="background-image: url('/{{name}}')" onclick="openImageModal('{{name}}')">
+                          {{!-- <div class="changeEvDiv-show" style="background-image: url('/{{name}}')" onclick="openImageModal('{{name}}')">
                               <img src="/images/pics/GroupX.svg"  class="removeButton" onclick="removeimage(this)" attr_id="{{_id}}">
+                          </div> --}}
+                          <div class="changeEvDiv-show" style="padding:2px;cursor:pointer;background-image: url('/{{name}}')" onclick="openImageModal('{{name}}')">
+                              <svg onclick="removeimage(this)" attr_id="{{_id}}" class="removeButton" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" fill="white"/></svg>
                           </div>
                         {{/each}}
                       {{/if}}
@@ -242,7 +252,7 @@ width: 100%;
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script src="/js/helper.js"></script>
-      <div id="imageModal" style="display: none;">
+            <div id="imageModal" style="display: none;">
            <div class="imgaeModal_block">
                 <button id="closeModal" onclick="closeFunc()" >
                 x
@@ -252,29 +262,88 @@ width: 100%;
               </div>
            </div>
       </div>
-<script>
-    const imgModal=document.getElementById('modalImage')
+      <script src="/js/axios.js"></script>
 
-  function openImageModal(path){
-    imgModal.src=`/${path}`
-    const imageModal=document.getElementById('imageModal')
-    imageModal.style.display='flex'
-    imageModal.style.position='absolute'
-    imageModal.style.margin='0 auto'
+<script>
+  function buttonFunc() {
+    const modal=document.querySelector('.modal');
+  modal.style.display = 'flex';
+ 
+    setTimeout(() => {
+      const form = document.getElementById('eventForm'); 
+      form.submit(); 
+    }, 1000); 
   }
 
-  function closeFunc(e){
+   
+        //const geoCordLatit = "{{ event.latitude }}";
+        //const geoCordLotit = "{{ event.longitude}}";
+        //const geoPath = `https://api.geoapify.com/v1/geocode/reverse?lat=${geoCordLatit}&lon=${geoCordLotit}&apiKey=5d33a1ddd9db4ee8862f3de928c21e89`;
+         //axios.get(geoPath).then((d)=>{
+         // const al = document.getElementById('addressLine');
+        //  al.innerHTML = d.data.features[0].properties.address_line2
+       // })
+
+      function removeimage(el){
+        let id = el.getAttribute('attr_id');
+        console.log(id,"id image")
+        el.parentNode.remove()
+         axios.delete(`/admin/profile/event/image/${id}`).then((d)=>{
+          
+        })
+      }
+     const imgModal=document.getElementById('modalImage')
+       function openImageModal(path){
+    imgModal.src=`/${path}`
+
+  }
+
+
+    function closeFunc(e){
           const imageModal=document.getElementById('imageModal')
         imageModal.style.display='none'
   }
 
 
 
+    document.querySelectorAll('.user_image').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+         document.querySelectorAll('.user_avatar').forEach(el => {
+      el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+     })
+
+
+
+      document.querySelectorAll('.changeEvDiv-show').forEach(el=>{
+        el.addEventListener('click', (e)=>{
+       if(e.target.localName!=="path"){
+         const imageModal=document.getElementById('imageModal')
+         imageModal.style.display='flex'
+         imageModal.style.position='absolute'
+         imageModal.style.margin='0 auto'
+       }
+     }) 
+      })
 
 </script>
 
 
-<div class="modal fade" id="largeModal" tabindex="-1" aria-labelledby="largeModalLabel" aria-hidden="true">
+{{!-- <div class="modal fade" id="largeModal" tabindex="-1" aria-labelledby="largeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg my_modal"> 
         <div class="modal-content modal-content-header">
             <div class="modal-header">
@@ -307,7 +376,7 @@ width: 100%;
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 
 
 

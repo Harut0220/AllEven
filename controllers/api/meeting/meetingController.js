@@ -291,6 +291,7 @@ const meetingController = {
       const authHeader = req.headers.authorization;
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
+      const userDb = await User.findById(user.id);
       const { meeting_id, files } = req.body;
       const serviceFunction = async () => {
         const meetingImpressionImageDb = await meetingImpressionImage
@@ -340,7 +341,7 @@ const meetingController = {
           user: meetingDb.user._id.toString(),
           type: "impression",
           navigate: true,
-          message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.purpose}.`,
+          message: `Пользователь ${userDb.name} ${userDb.surname} поделился(лась) впечатлением о встрече ${meetingDb.purpose}.`,
           meetingId: meeting_id,
           link: evLink,
         };
@@ -355,7 +356,7 @@ const meetingController = {
               meetingId: meeting_id,
               navigate: true,
               date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-              message: `Пользователь ${user.name} поделился впечатлением о встрече ${meetingDb.purpose}.`,
+              message: `Пользователь ${userDb.name} ${userDb.surname} поделился(лась) впечатлением о встрече ${meetingDb.purpose}.`,
               link: evLink,
             })
           );
@@ -367,7 +368,6 @@ const meetingController = {
         user: user.id,
       });
       const date = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
-      const userDb = await User.findById(user.id);
       const companyDb = await meetingModel
         .findById(meeting_id)
         .populate("images");
@@ -1396,6 +1396,8 @@ const meetingController = {
       );
     });
     meetingsRes.reverse();
+    console.log(meetingsRes, "meetingsRes");
+    
     res.render("profile/meeting", {
       layout: "profile",
       title: "Meeting",

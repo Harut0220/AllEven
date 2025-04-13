@@ -83,8 +83,8 @@ class ProfileController {
       .populate({ path: "company", select: "_id services companyName" });
     if (u) {
       u.unread_notifications = await this.UserService.getCountNotif(user.id);
-      (u,"u   user profil");
-      
+      u, "u   user profil";
+
       return res.status(200).send({ success: true, data: u });
     } else {
       return res
@@ -129,9 +129,22 @@ class ProfileController {
     const eventsDb = await Event.find({ owner: user1.id });
     const companiesDb = await companyModel.findOne({ owner: user1.id });
     const meetingsDb = await meetingModel.find({ user: user1.id });
+    await Notification.deleteMany({ user: user1.id });
+    for await (const element of eventsDb) {
+      await Notification.deleteMany({ eventId: element._id });
+    }
+    await Notification.deleteMany({ companyId: companiesDb._id });
+    for await (const element of meetingsDb) {
+      await Notification.deleteMany({ meetingId: element._id });
+    }
 
+    for await (const element of eventsDb){
+      await Notification.deleteMany({eventId:element._id})
+    }
+    
+    await Notification.deleteMany({companyId:companiesDb._id})
     setTimeout(async () => {
-      await Report.deleteMany({})
+      await Report.deleteMany({});
       const CompanyParticipantsDb = await companyParticipants.find({
         user: user1.id,
       });
@@ -419,6 +432,14 @@ class ProfileController {
           }
 
           await companyCommentAnswer.deleteMany({ commentId: comment._id });
+        }
+
+        const servicesDbByNotif = await CompanyServiceModel.find({
+          companyId: companiesDb._id,
+        });
+
+        for await (const element of servicesDbByNotif) {
+          await Notification.deleteMany({ serviceId: element._id });
         }
 
         await companyComment.deleteMany({ companyId: companiesDb._id });

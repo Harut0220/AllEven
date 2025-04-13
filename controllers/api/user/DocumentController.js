@@ -92,11 +92,11 @@ class DocumentController {
       const user = jwt.decode(token);
       const userDb=await User.findById(user.id)
       const dbRole1 = await Role.find({ name: "USER" });
-      const dbRole2 = await Role.find({ name: "document" });
+      // const dbRole2 = await Role.find({ name: "document" });
 
       const result1 = await Document.find({ owners: dbRole1 });
-      const result2 = await Document.find({ owners: dbRole2 });
-      const result = [...result1, ...result2];
+      // const result2 = await Document.find({ owners: dbRole2 });
+      const result = [...result1];
       let nameArray = [];
       for (let i = 0; i < result.length; i++) {
         let obj = {};
@@ -130,7 +130,7 @@ class DocumentController {
   getDocumentsGlobal = async (req, res) => {
     try {
       const result = await Document.find();
-      const dbRole = await Role.find({ name: "document" });
+      // const dbRole = await Role.find({ name: "USER" });
       let nameArray = [];
       for (let i = 0; i < result.length; i++) {
         let obj = {};
@@ -142,10 +142,10 @@ class DocumentController {
         obj.id = result[i]._id;
         nameArray.push(obj);
       }
-      const resultDocuments = nameArray.filter((el) => {
-        return el.owner[0].toString() === dbRole[0]._id.toString();
-      });
-      res.status(200).send(resultDocuments);
+      // const resultDocuments = nameArray.filter((el) => {
+      //   return el.owner[0].toString() === dbRole[0]._id.toString();
+      // });
+      res.status(200).send(nameArray);
     } catch (error) {
       console.error(error);
     }

@@ -1507,7 +1507,7 @@ const companyController = {
   deleteCompany: async (req, res) => {
     try {
       const company = await Company.findById(req.params.id);
-
+      await Notification.deleteMany({companyId:company._id})
       if (!company) {
         throw new Error("Company not found");
       }
@@ -1525,22 +1525,14 @@ const companyController = {
           commentId: comment._id,
         });
 
-        // For each answer, delete related likes
         for (const answer of answers) {
           await companyCommentAnswerLike.deleteMany({ answerId: answer._id });
         }
 
-        // Delete all answers related to the comment
         await companyCommentAnswer.deleteMany({ commentId: comment._id });
       }
 
-      // Delete all related services registers
-      // const services=await companyServiceDb.find({ companyId: req.params.id });
-      // for (let i = 0; i < services.length; i++) {
-      //   const serviceRegistr = await servicesRegistrations.findOneAndRemove({
-      //     serviceId: services[i]._id,
-      //   });
-      // }
+
       await ImpressionsCompany.deleteMany({ company: req.params.id });
       await companyParticipants.deleteMany({ companyId: req.params.id });
       await companyComment.deleteMany({ companyId: req.params.id });
@@ -1755,6 +1747,7 @@ const companyController = {
         });
         const dateTime = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         if (companyDb.owner._id.toString() !== userDb._id.toString()) {
+          const message = `${userDb.name} ${userDb.surname} добавил комментарий.`
           const evLink = `alleven://myCompany/${companyDb._id}`;
           const dataNotif = {
             status: 2,
@@ -1762,7 +1755,7 @@ const companyController = {
             user: companyDb.owner._id.toString(),
             type: "message",
             navigate: true,
-            message: `У вас новое сообщение.`,
+            message,
             companyId: companyDb._id,
             link: evLink,
           };
@@ -1777,7 +1770,7 @@ const companyController = {
                 navigate: true,
                 eventId: companyDb._id,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-                message: `У вас новое сообщение.`,
+                message,
                 link: evLink,
               })
             );
