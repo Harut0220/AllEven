@@ -20,13 +20,13 @@ class ShareEventController {
     const countLength=54
     let resultName;
     if(event.purpose.length>countLength){
-      resultName = x.slice(0, countLength)+"...";
+      resultName = event.purpose.slice(0, countLength)+"...";
     }else if(event.purpose.length===countLength||event.purpose.length<countLength){
       resultName=event.purpose
     }
     let resultDescription;
     if(event.description.length>countLength){
-      resultDescription = x.slice(0, countLength)+"...";
+      resultDescription = event.description.slice(0, countLength)+"...";
     }else if(event.description.length===countLength||event.description.length<countLength){
       resultDescription=event.description
     }
