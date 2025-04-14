@@ -1,2 +1,2 @@
 //Notification socket
-ws://chatapi.trigger.ltd/notification/user_id // user_id - auth user id
+ws://alleven.ru/notification/user_id // user_id - auth user id
