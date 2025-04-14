@@ -2441,7 +2441,7 @@ const companyController = {
         }
       }
       let upcomingDeals = [];
-      console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
+      // console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
       const hotDealsDb=await companyHotDeals.find({companyId:resultChanged1._id})
       // for await(let i = 0; i < resultChanged1.hotDeals.length; i++) {
       for await (const hotDeal of hotDealsDb){
@@ -2452,7 +2452,7 @@ const companyController = {
         console.log("todayDate", todayDate);
 
         if (dealDateSpl === todayDate) {
-          console.log("today deal",hotDeal);
+          // console.log("today deal",hotDeal);
 
           upcomingDeals.push(hotDeal);
         }
@@ -2502,18 +2502,18 @@ const companyController = {
       console.log(hotDealsDb, "resultChanged1.hotDeals");
 
       // for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
-      for await(const hotDeal of hotDealsDb){
-        if (hotDeal.registration) {
-          console.log("hotDeals registration", hotDeal);
+      // for await(const hotDeal of hotDealsDb){
+      //   // if (hotDeal.registration) {
+      //     console.log("hotDeals registration", hotDeal);
           
-          countToday.push(1);
-          console.log(countToday, "countToday deal +1");
-        }
-      }
-      console.log(countToday, "countToday resalt");
+      //     countToday.push(1);
+      //     console.log(countToday, "countToday deal +1");
+      //   // }
+      // }
 
-      resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
+      resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0)+hotDealsDb.length;
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
+      console.log(resultChanged1.todayRegisters, "resultChanged1.todayRegisters");
 
       function removeDuplicatesByUser(data) {
         const uniqueEntries = {};

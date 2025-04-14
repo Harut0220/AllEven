@@ -62,7 +62,7 @@ const servicesController = {
         serviceId: updatedDoc.serviceId._id,
         register: id,
         navigate: true,
-        companyId:serviceDb.companyId._id,
+        companyId: serviceDb.companyId._id,
         // categoryIcon: service.serviceId.images[0],
         link: evLink,
       };
@@ -399,33 +399,39 @@ const servicesController = {
         // Get start and end of day in the specified timezone
         const startOfDay = nowInTz.clone().startOf("day").toDate();
         const endOfDay = nowInTz.clone().endOf("day").toDate();
-        const hotDealsDb = await companyHotDeals.find({
-          companyId,
-          createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          },
-        });
+        const hotDealsDb = await companyHotDeals
+          .find({
+            companyId,
+            createdAt: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+          })
+          .populate({
+            path: "registration",
+            populate: { path: "user", select: "name surname avatar" },
+          });
         let dealRegisters = [];
-        for (let i = 0; i < hotDealsDb.length; i++) {
-          const element = hotDealsDb[i];
+        // for (let i = 0; i < hotDealsDb.length; i++) {
+        //   const element = hotDealsDb[i];
 
-          const dealRegistersDb = await companyHotDealRegistration
-            .findOne({ dealId: element._id, pay: true })
-            .populate({
-              path: "user",
-              select: "name surname avatar phone_number",
-            })
-            .exec();
-          if (dealRegistersDb) {
-            let obj = {
-              description: element.description,
-              ...dealRegistersDb.toObject(),
-            };
+        //   // const dealRegistersDb = await companyHotDealRegistration
+        //   //   .findOne({ dealId: element._id, })
+        //   //   .populate({
+        //   //     path: "user",
+        //   //     select: "name surname avatar phone_number",
+        //   //   })
+        //   //   .exec();
+        //   if (dealRegistersDb) {
+        //     let obj = {
+        //       description: element.description,
+        //       ...dealRegistersDb.toObject(),
+        //     };
 
-            dealRegisters.push(obj);
-          }
-        }
+        //     dealRegisters.push(obj);
+        //   }
+        // }
+        dealRegisters = hotDealsDb;
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
           const resArray = [];
@@ -499,7 +505,7 @@ const servicesController = {
           type: "confirm_come",
           message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}.Причин-${text}`,
           serviceId: service.serviceId._id,
-          companyId:serviceDb.companyId,
+          companyId: serviceDb.companyId,
           register: id,
           navigate: false,
           // categoryIcon: service.serviceId.images[0],
@@ -1036,12 +1042,12 @@ const servicesController = {
   deleteRegistr: async (req, res) => {
     try {
       const { id } = req.body;
-      await Notification.deleteMany({register:id})
+      await Notification.deleteMany({ register: id });
       const result = await servicesRegistrations.findByIdAndDelete(id);
       res.status(200).send({ message: "запись удалена." });
     } catch (error) {
       console.error(error);
-      res.status(500).send({message:"Server Error"})
+      res.status(500).send({ message: "Server Error" });
     }
   },
 };
