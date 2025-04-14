@@ -7,7 +7,7 @@ const companyHotDeals = new Schema(
     description: { type: String, required: true },
     cost: { type: Number, required: true },
     date: { type: String, required: true },
-    registration: { type: Schema.Types.ObjectId, ref: "company_hot_deals_registrations" },
+    registration: { type: Schema.Types.ObjectId, ref: "company_hot_deals_registrations",default:null },
     situation:{type:String,default:"upcoming"},
     free:{type:Boolean,default:true},
     user:{type:Schema.Types.ObjectId,ref:"User"},
