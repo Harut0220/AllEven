@@ -2453,8 +2453,9 @@ const companyController = {
 
         if (dealDateSpl === todayDate) {
           // console.log("today deal",hotDeal);
-
-          upcomingDeals.push(hotDeal);
+          if(hotDeal.registration){
+            upcomingDeals.push(hotDeal);
+          }
         }
 
         const fixedTime = moment.tz(
@@ -2501,20 +2502,19 @@ const companyController = {
       }
       console.log(hotDealsDb, "resultChanged1.hotDeals");
 
-      // for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
       // for await(const hotDeal of hotDealsDb){
-      //   // if (hotDeal.registration) {
+      //   if (hotDeal.registration) {
       //     console.log("hotDeals registration", hotDeal);
           
       //     countToday.push(1);
       //     console.log(countToday, "countToday deal +1");
-      //   // }
+      //   }
       // }
 
-      resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0)+hotDealsDb.length;
+      resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0)+upcomingDeals.length;
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
       console.log(resultChanged1.todayRegisters, "resultChanged1.todayRegisters");
-
+      resultChanged1.hotDeals=upcomingDeals
       function removeDuplicatesByUser(data) {
         const uniqueEntries = {};
 

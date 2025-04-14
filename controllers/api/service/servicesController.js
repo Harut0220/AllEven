@@ -412,25 +412,25 @@ const servicesController = {
             populate: { path: "user", select: "name surname avatar" },
           });
         let dealRegisters = [];
-        // for (let i = 0; i < hotDealsDb.length; i++) {
-        //   const element = hotDealsDb[i];
+        for (let i = 0; i < hotDealsDb.length; i++) {
+          const element = hotDealsDb[i];
 
-        //   // const dealRegistersDb = await companyHotDealRegistration
-        //   //   .findOne({ dealId: element._id, })
-        //   //   .populate({
-        //   //     path: "user",
-        //   //     select: "name surname avatar phone_number",
-        //   //   })
-        //   //   .exec();
-        //   if (dealRegistersDb) {
-        //     let obj = {
-        //       description: element.description,
-        //       ...dealRegistersDb.toObject(),
-        //     };
+          const dealRegistersDb = await companyHotDealRegistration
+            .findOne({ dealId: element._id, })
+            .populate({
+              path: "user",
+              select: "name surname avatar phone_number",
+            })
+            .exec();
+          if (dealRegistersDb) {
+            let obj = {
+              description: element.description,
+              ...dealRegistersDb.toObject(),
+            };
 
-        //     dealRegisters.push(obj);
-        //   }
-        // }
+            dealRegisters.push(obj);
+          }
+        }
         dealRegisters = hotDealsDb;
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
