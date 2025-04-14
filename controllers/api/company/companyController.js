@@ -596,7 +596,8 @@ const companyController = {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
-
+      console.log(companyId, description, cost, date,"companyId,description, cost, date");
+      
       const result = await companyService.addHotDeals(
         companyId,
         description,
@@ -2441,22 +2442,23 @@ const companyController = {
       }
       let upcomingDeals = [];
       console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
-
-      for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
+      const hotDealsDb=await companyHotDeals.find({companyId:resultChanged1._id})
+      // for await(let i = 0; i < resultChanged1.hotDeals.length; i++) {
+      for await (const hotDeal of hotDealsDb){
         const todayDate = moment.tz(process.env.TZ).format("YYYY-MM-DD");
-        const dealDateSpl = resultChanged1.hotDeals[i].date.split(" ")[0];
+        const dealDateSpl =hotDeal.date.split(" ")[0];
         console.log(dealDateSpl === todayDate, "dealDateSpl===todayDate");
         console.log("dealDateSpl", dealDateSpl);
         console.log("todayDate", todayDate);
 
         if (dealDateSpl === todayDate) {
-          console.log("today deal", resultChanged1.hotDeals[i]);
+          console.log("today deal",hotDeal);
 
-          upcomingDeals.push(resultChanged1.hotDeals[i]);
+          upcomingDeals.push(hotDeal);
         }
 
         const fixedTime = moment.tz(
-          resultChanged1.hotDeals[i].date,
+          hotDeal.date,
           "YYYY-MM-DD HH:mm",
           process.env.TZ
         );
@@ -2464,7 +2466,7 @@ const companyController = {
 
         if (!fixedTime.isAfter(now)) {
           await companyHotDeals.findByIdAndUpdate(
-            resultChanged1.hotDeals[i]._id,
+            hotDeal._id,
             {
               $set: {
                 situation: "passed",
@@ -2473,7 +2475,6 @@ const companyController = {
           );
         }
       }
-      resultChanged1.hotDeals = upcomingDeals;
       const today = moment.tz(process.env.TZ).format("YYYY-MM-DD");
       const tomorrow = moment
         .tz(process.env.TZ)
@@ -2498,12 +2499,13 @@ const companyController = {
         countAfter.push(serviceRegisterAfter.length);
         countToday.push(serviceRegisterToday.length);
       }
-      console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals");
+      console.log(hotDealsDb, "resultChanged1.hotDeals");
 
-      for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
-        if (resultChanged1.hotDeals[i].registration) {
-          console.log("hotDeals registration", resultChanged1.hotDeals[i]);
-
+      // for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
+      for await(const hotDeal of hotDealsDb){
+        if (hotDeal.registration) {
+          console.log("hotDeals registration", hotDeal);
+          
           countToday.push(1);
           console.log(countToday, "countToday deal +1");
         }
