@@ -330,7 +330,6 @@ const servicesController = {
 
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
-      // const user = { id: "656ecb2e923c5a66768f4cd3" };
       const company = await companyModel
         .findById(companyId)
         .populate("hotDeals");
@@ -431,7 +430,7 @@ const servicesController = {
             dealRegisters.push(obj);
           }
         }
-        dealRegisters = hotDealsDb;
+        // dealRegisters = hotDealsDb;
         if (resToday.length) {
           resToday.sort((a, b) => b.dateSlice - a.dateSlice);
           const resArray = [];
