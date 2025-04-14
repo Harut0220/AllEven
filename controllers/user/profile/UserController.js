@@ -273,21 +273,27 @@ class UserController {
     const eventsDb = await Event.find({ owner: user1.id });
     const companiesDbForNotif = await companyModel
       .findOne({ owner: user1.id })
-      .populate("services");
+      .populate("services")
+      .populate("hotDeals");
     const meetingsDb = await meetingModel.find({ user: user1.id });
     await Notification.deleteMany({ companyId: companiesDbForNotif._id });
-    for (let i = 0; i < companiesDbForNotif.services.length; i++) {
+    for await (const service of companiesDbForNotif.services) {
       await Notification.deleteMany({
-        serviceId: companiesDbForNotif.services[i]._id,
+        serviceId: service._id,
       });
     }
-    await Notification.deleteMany({user:user1.id})
 
-    for await(const event of eventsDb){
-      await Notification.deleteMany({eventId:event._id})
+    for await(const hotDeal of companiesDbForNotif.hotDeals){
+      await Notification.deleteMany({dealId:hotDeal._id})
     }
-    for await(const meeting of meetingsDb){
-      await Notification.deleteMany({meetingId:meeting._id})
+
+    await Notification.deleteMany({ user: user1.id });
+
+    for await (const event of eventsDb) {
+      await Notification.deleteMany({ eventId: event._id });
+    }
+    for await (const meeting of meetingsDb) {
+      await Notification.deleteMany({ meetingId: meeting._id });
     }
     setTimeout(async () => {
       const companiesDb = await companyModel.find({ owner: user1.id });
@@ -457,7 +463,6 @@ class UserController {
         await EventCategory.deleteMany({ owner: user1.id });
       }
 
-      //user datas other company
       const CompanyAnswerLikeDb = await companyCommentAnswerLike.find({
         user: user1.id,
       });
@@ -524,11 +529,6 @@ class UserController {
 
       await companyComment.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < CompanyFavoriteDb.length; i++) {
-      //   await companyModel.findByIdAndUpdate(CompanyFavoriteDb[i].companyId, {
-      //     $pull: { favorites: CompanyFavoriteDb[i]._id },
-      //   });
-      // }
       for await (const favorite of CompanyFavoriteDb) {
         await companyModel.findByIdAndUpdate(favorite.companyId, {
           $pull: { favorites: favorite._id },
@@ -537,11 +537,6 @@ class UserController {
 
       await companyFavorit.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < CompanyLikeDb.length; i++) {
-      //   await companyModel.findByIdAndUpdate(CompanyLikeDb[i].companyId, {
-      //     $pull: { likes: CompanyLikeDb[i]._id },
-      //   });
-      // }
       for await (const like of CompanyLikeDb) {
         await companyModel.findByIdAndUpdate(like.companyId, {
           $pull: { likes: like._id },
@@ -550,11 +545,6 @@ class UserController {
 
       await companyLikes.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < CompanyRatingDb.length; i++) {
-      //   await companyModel.findByIdAndUpdate(CompanyRatingDb[i].companyId, {
-      //     $pull: { ratings: CompanyRatingDb[i]._id },
-      //   });
-      // }
       for await (const rating of CompanyRatingDb) {
         await companyModel.findByIdAndUpdate(rating.companyId, {
           $pull: { ratings: rating._id },
@@ -563,11 +553,6 @@ class UserController {
 
       await companyRating.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < CompanyViewsDb.length; z++) {
-      //   await companyModel.findByIdAndUpdate(CompanyViewsDb[z].companyId, {
-      //     $pull: { view: CompanyViewsDb[z]._id },
-      //   });
-      // }
       for await (const view of CompanyViewsDb) {
         await companyModel.findByIdAndUpdate(view.companyId, {
           $pull: { view: view._id },
@@ -576,14 +561,6 @@ class UserController {
 
       await companyView.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < CompanyIpressionImageDb.length; z++) {
-      //   await companyModel.findByIdAndUpdate(
-      //     CompanyIpressionImageDb[z].companyId,
-      //     {
-      //       $pull: { impression_images: CompanyIpressionImageDb[z]._id },
-      //     }
-      //   );
-      // }
       for await (const impressionImage of CompanyIpressionImageDb) {
         await companyModel.findByIdAndUpdate(impressionImage.companyId, {
           $pull: { impression_images: impressionImage._id },
@@ -592,11 +569,6 @@ class UserController {
 
       await companyImpressionImages.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < registerDb.length; z++) {
-      //   await companyService.findByIdAndUpdate(registerDb[z].serviceId, {
-      //     $pull: { serviceRegister: registerDb[z]._id },
-      //   });
-      // }
       for await (const register of registerDb) {
         await companyService.findByIdAndUpdate(register.serviceId, {
           $pull: { serviceRegister: register._id },
@@ -614,14 +586,14 @@ class UserController {
             companyId: companiesDb._id,
           });
 
-          for (const comment of comments) {
+          for await (const comment of comments) {
             await companyCommentLike.deleteMany({ commentId: comment._id });
 
             const answers = await companyCommentAnswer.find({
               commentId: comment._id,
             });
 
-            for (const answer of answers) {
+            for await (const answer of answers) {
               await companyCommentAnswerLike.deleteMany({
                 answerId: answer._id,
               });
@@ -677,14 +649,7 @@ class UserController {
         user: user1.id,
       });
 
-      // for (let i = 0; i < MeetingIpressionImageDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(
-      //     MeetingIpressionImageDb[i].meeting,
-      //     {
-      //       $pull: { impression_images: MeetingIpressionImageDb[i]._id },
-      //     }
-      //   );
-      // }
+
       for await (const impressionImage of MeetingIpressionImageDb) {
         await meetingModel.findByIdAndUpdate(impressionImage.meeting, {
           $pull: { impression_images: impressionImage._id },
@@ -693,11 +658,7 @@ class UserController {
 
       await meetingImpressionImage.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingViewsDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(MeetingViewsDb[i].meetingId, {
-      //     $pull: { views: MeetingViewsDb[i]._id },
-      //   });
-      // }
+
       for await (const view of MeetingViewsDb) {
         await meetingModel.findByIdAndUpdate(view.meetingId, {
           $pull: { views: view._id },
@@ -706,14 +667,7 @@ class UserController {
 
       await meetingView.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingParticipantsSpotDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(
-      //     MeetingParticipantsSpotDb[i].meetingId,
-      //     {
-      //       $pull: { participantsSpot: MeetingParticipantsSpotDb[i]._id },
-      //     }
-      //   );
-      // }
+
       for await (const spot of MeetingParticipantsSpotDb) {
         await meetingModel.findByIdAndUpdate(spot.meetingId, {
           $pull: { participantsSpot: spot._id },
@@ -722,14 +676,7 @@ class UserController {
 
       await meetingParticipantSpot.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingParticipantsDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(
-      //     MeetingParticipantsDb[i].meetingId,
-      //     {
-      //       $pull: { participants: MeetingParticipantsDb[i]._id },
-      //     }
-      //   );
-      // }
+
       for await (const participant of MeetingParticipantsDb) {
         await meetingModel.findByIdAndUpdate(participant.meetingId, {
           $pull: { participants: participant._id },
@@ -738,11 +685,7 @@ class UserController {
 
       await meetingParticipant.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingRatingDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(MeetingRatingDb[i].meetingId, {
-      //     $pull: { ratings: MeetingRatingDb[i]._id },
-      //   });
-      // }
+ 
       for await (const rating of MeetingRatingDb) {
         await meetingModel.findByIdAndUpdate(rating.meetingId, {
           $pull: { ratings: rating._id },
@@ -751,11 +694,7 @@ class UserController {
 
       await meetingRating.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingLikeDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(MeetingLikeDb[i].meetingId, {
-      //     $pull: { likes: MeetingLikeDb[i]._id },
-      //   });
-      // }
+
       for await (const like of MeetingLikeDb) {
         await meetingModel.findByIdAndUpdate(like.meetingId, {
           $pull: { likes: like._id },
@@ -764,11 +703,7 @@ class UserController {
 
       await meetingLikes.deleteMany({ user: user1.id });
 
-      // for (let i = 0; i < MeetingFavoriteDb.length; i++) {
-      //   await meetingModel.findByIdAndUpdate(MeetingFavoriteDb[i].meetingId, {
-      //     $pull: { favorites: MeetingFavoriteDb[i]._id },
-      //   });
-      // }
+
       for await (const favorite of MeetingFavoriteDb) {
         await meetingModel.findByIdAndUpdate(favorite.meetingId, {
           $pull: { favorites: favorite._id },
@@ -777,14 +712,7 @@ class UserController {
 
       await meetingFavorit.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < MeetingAnswerLikeDb.length; z++) {
-      //   await meetingCommentAnswer.findByIdAndUpdate(
-      //     MeetingAnswerLikeDb[z].answerId,
-      //     {
-      //       $pull: { likes: MeetingAnswerLikeDb[z]._id },
-      //     }
-      //   );
-      // }
+
       for await (const answerLike of MeetingAnswerLikeDb) {
         await meetingCommentAnswer.findByIdAndUpdate(answerLike.answerId, {
           $pull: { likes: answerLike._id },
@@ -793,11 +721,7 @@ class UserController {
 
       await meetingCommentAnswerLike.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < MeetingAnswerDb.length; z++) {
-      //   await meetingComment.findByIdAndUpdate(MeetingAnswerDb[z].commentId, {
-      //     $pull: { answer: MeetingAnswerDb[z]._id },
-      //   });
-      // }
+
       for await (const answer of MeetingAnswerDb) {
         await meetingComment.findByIdAndUpdate(answer.commentId, {
           $pull: { answer: answer._id },
@@ -806,14 +730,7 @@ class UserController {
 
       await meetingCommentAnswer.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < MeetingCommentLike.length; z++) {
-      //   await meetingComment.findByIdAndUpdate(
-      //     MeetingCommentLike[z].commentId,
-      //     {
-      //       $pull: { likes: MeetingCommentLike[z]._id },
-      //     }
-      //   );
-      // }
+
       for await (const like of MeetingCommentLike) {
         await meetingComment.findByIdAndUpdate(like.commentId, {
           $pull: { likes: like._id },
@@ -822,11 +739,7 @@ class UserController {
 
       await meetingCommentLikes.deleteMany({ user: user1.id });
 
-      // for (let z = 0; z < MeetingMyComment.length; z++) {
-      //   await meetingModel.findByIdAndUpdate(MeetingMyComment[z].meetingId, {
-      //     $pull: { comments: MeetingMyComment[z]._id },
-      //   });
-      // }
+
       for await (const comment of MeetingMyComment) {
         await meetingModel.findByIdAndUpdate(comment.meetingId, {
           $pull: { comments: comment._id },
@@ -834,53 +747,7 @@ class UserController {
       }
 
       await meetingComment.deleteMany({ user: user1.id });
-      //user datas meeting
-      // if (meetingsDb.length) {
-      //   for (let i = 0; i < meetingsDb.length; i++) {
-      //     const meeting = await meetingModel.findById(meetingsDb[i]._id);
 
-      //     if (!meeting) {
-      //       throw new Error("Meeting not found");
-      //     }
-
-      //     const comments = await meetingComment.find({
-      //       meetingId: meetingsDb[i]._id,
-      //     });
-
-      //     for (const comment of comments) {
-      //       await meetingCommentLikes.deleteMany({ commentId: comment._id });
-
-      //       const answers = await meetingCommentAnswer.find({
-      //         commentId: comment._id,
-      //       });
-
-      //       for (const answer of answers) {
-      //         await meetingCommentAnswerLike.deleteMany({
-      //           answerId: answer._id,
-      //         });
-      //       }
-
-      //       await meetingCommentAnswer.deleteMany({ commentId: comment._id });
-      //     }
-
-      //     await meetingComment.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingImages.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingLikes.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingFavorit.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingParticipantSpot.deleteMany({
-      //       meetingId: meetingsDb[i]._id,
-      //     });
-      //     await meetingView.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingRating.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingParticipant.deleteMany({ meetingId: meetingsDb[i]._id });
-      //     await meetingImpressionImage.deleteMany({
-      //       meetingId: meetingsDb[i]._id,
-      //     });
-      //     await meetingVerify.deleteMany({ user: user1.id });
-      //     await meeting.remove();
-      //     console.log("Meetings and all related data deleted successfully");
-      //   }
-      // }
       if (meetingsDb.length) {
         for await (const meeting of meetingsDb) {
           const meetingDoc = await meetingModel.findById(meeting._id);

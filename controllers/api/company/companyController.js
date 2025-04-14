@@ -25,7 +25,6 @@ import companyCommentAnswer from "../../../models/company/companyCommentAnswer.j
 import companyHotDeals from "../../../models/company/companyHotDeals.js";
 import companyPhones from "../../../models/company/companyPhones.js";
 import ImpressionsCompany from "../../../models/ImpressionsCompany.js";
-// import companyPays from "../../../models/company/companyPays.js";
 import commission from "../../../models/commission.js";
 import paysStore from "../../../models/paysStore.js";
 import CompanyServiceModel from "../../../models/company/companyService.js";
@@ -34,6 +33,7 @@ import Report from "../../../models/Report.js";
 import companyParticipants from "../../../models/company/companyParticipants.js";
 import calculateAverageRating from "../../../helper/ratingCalculate.js";
 import calculateDistance from "../../../helper/distanceCalculate.js";
+import isCompanyOpen from "../../../helper/isCompanyOpen.js";
 
 const companyController = {
   deleteServiceImage: async (req, res) => {
@@ -94,33 +94,6 @@ const companyController = {
   },
   pays: async (req, res) => {
     try {
-      //   const event = await companyModel
-      //   .findById(req.params.id)
-      //   .populate("images")
-      //   .populate("services")
-      //   .populate("phoneNumbers")
-      //   .populate("category")
-      //   .populate({ path: "owner", select: "-password" })
-      //   .populate("likes")
-      //   .populate("comments");
-      // // const user=await User.findById(event.owner)
-      // const comments = await companyComment
-      //   .find({ companyId: event._id, user: event.owner })
-      //   .populate({ path: "user", select: "-password" });
-
-      // res.render("profile/company-show", {
-      //   layout: "profile",
-      //   title: "Company Show",
-      //   user: req.user,
-      //   event,
-      //   eventCat: event.category,
-      //   // eventCats,
-      //   services: event.services,
-      //   images: event.images,
-      //   phone_numbers: event.phoneNumbers,
-      //   userOwner: event.owner,
-      //   comments: comments,
-      // });
       const { id } = req.params;
       const events = await paysStore.find({ companyId: id, status: 1 });
       const deals = await companyHotDealRegistration
@@ -169,7 +142,6 @@ const companyController = {
           user: user.id,
           companyId: like.companyId._id,
         });
-        // const comments=await companyComment.find({user:user.id,companyId:like.companyId._id})
         const ifFavorit = await companyFavorit.findOne({
           user: user.id,
           companyId: like.companyId._id,
@@ -201,11 +173,7 @@ const companyController = {
         } else {
           obj.rating = null;
         }
-        // if(comments.length){
-        //   obj.comments=comments
-        // }else{
-        //   obj.comments=null
-        // }
+
         obj._id = like.companyId._id;
 
         obj.url = like.companyId.images[0].url;
@@ -223,7 +191,7 @@ const companyController = {
           count = count + registers.length;
           const latestRegistration = await servicesRegistrations
             .findOne({ user: user.id, serviceId: service })
-            .sort({ createdAt: -1 }); // Sort by createdAt in descending order
+            .sort({ createdAt: -1 });
           if (latestRegistration) {
             regLatests.push(latestRegistration);
           }
@@ -297,7 +265,7 @@ const companyController = {
           count = count + registers.length;
           const latestRegistration = await servicesRegistrations
             .findOne({ user: user.id, serviceId: service })
-            .sort({ createdAt: -1 }); // Sort by createdAt in descending order
+            .sort({ createdAt: -1 });
           if (latestRegistration) {
             regLatests.push(latestRegistration);
           }
@@ -395,7 +363,7 @@ const companyController = {
           count = count + registers.length;
           const latestRegistration = await servicesRegistrations
             .findOne({ user: user.id, serviceId: service })
-            .sort({ createdAt: -1 }); // Sort by createdAt in descending order
+            .sort({ createdAt: -1 });
           if (latestRegistration) {
             regLatests.push(latestRegistration);
           }
@@ -407,7 +375,6 @@ const companyController = {
           regLatests.sort((a, b) => new Date(b.date) - new Date(a.date));
           obj.date = regLatests[0].date;
         }
-        // obj.participants=impression.companyId.participants.length
 
         impressionResult.push(obj);
       }
@@ -468,7 +435,7 @@ const companyController = {
             select:
               "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
             populate: {
-              path: "images category", // The field within `companyId` to populate
+              path: "images category",
             },
           });
 
@@ -482,39 +449,7 @@ const companyController = {
         });
         result.sort((a, b) => a.kilometr - b.kilometr);
         for (let z = 0; z < result.length; z++) {
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].companyId.startHour.split(":");
-          // const splitClose = result[z].companyId.endHour.split(":");
-
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].companyId.startHour,
@@ -529,11 +464,8 @@ const companyController = {
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
           populate: {
-            path: "images category", // The field within `companyId` to populate
+            path: "images category",
           },
-          // populate: {
-          //   path: "category",
-          // }
         });
 
         result.forEach((company) => {
@@ -546,39 +478,7 @@ const companyController = {
         });
         result.sort((a, b) => a.kilometr - b.kilometr);
         for (let z = 0; z < result.length; z++) {
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].companyId.startHour.split(":");
-          // const splitClose = result[z].companyId.endHour.split(":");
-
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].companyId.open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].companyId.startHour,
@@ -597,11 +497,8 @@ const companyController = {
             select:
               "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
             populate: {
-              path: "images category", // The field within `companyId` to populate
+              path: "images category",
             },
-            // populate: {
-            //   path: "category",
-            // }
           });
 
         const myLatitude = 55.7558;
@@ -616,39 +513,7 @@ const companyController = {
         });
         result.sort((a, b) => a.kilometr - b.kilometr);
         for (let z = 0; z < result.length; z++) {
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].companyId.startHour.split(":");
-          // const splitClose = result[z].companyId.endHour.split(":");
-
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].companyId.startHour,
@@ -663,11 +528,8 @@ const companyController = {
           select:
             "companyName ratingCalculated address images kilometr latitude longitude open startHour endHour category",
           populate: {
-            path: "images category", // The field within `companyId` to populate
+            path: "images category",
           },
-          // populate: {
-          //   path: "category",
-          // }
         });
 
         const myLatitude = 55.7558;
@@ -682,39 +544,7 @@ const companyController = {
         });
         result.sort((a, b) => a.kilometr - b.kilometr);
         for (let z = 0; z < result.length; z++) {
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].companyId.startHour.split(":");
-          // const splitClose = result[z].companyId.endHour.split(":");
-
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].companyId.startHour,
@@ -737,11 +567,6 @@ const companyController = {
       res.status(500).send({ message: "Server error" });
     }
   },
-  // dealsRegisters: async (req, res) => {
-  //   const { id } = req.params;
-  //   const result = await companyService.dealsRegisters(id);
-  //   res.status(200).send({message:"success",data:result});
-  // },
   serviceUpdate: async (req, res) => {
     try {
       const { id, data } = req.body;
@@ -768,7 +593,6 @@ const companyController = {
   addHotDeals: async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      // if(authHeader){
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
@@ -781,9 +605,6 @@ const companyController = {
         user.id
       );
       res.status(200).send(result);
-      // }else{
-      //   res.status(400).send({message:"Authorization error"});
-      // }
     } catch (error) {
       console.error(error);
       res.status(500).send({ message: "Server error" });
@@ -885,7 +706,6 @@ const companyController = {
       .populate({ path: "owner", select: "-password" })
       .populate("likes")
       .populate("comments");
-    // const user=await User.findById(event.owner)
     const comments = await companyComment
       .find({ companyId: event._id, user: event.owner })
       .populate({ path: "user", select: "-password" });
@@ -896,20 +716,12 @@ const companyController = {
       user: req.user,
       event,
       eventCat: event.category,
-      // eventCats,
       services: event.services,
       images: event.images,
       phone_numbers: event.phoneNumbers,
       userOwner: event.owner,
       comments: comments,
     });
-    // res.render("profile/company-show", {
-    //   layout: "profile",
-    //   title: "Company View",
-    //   user: req.user,
-    //   event,
-    //   q: req.query,
-    // });
   },
   singleCompany: async (req, res) => {
     let template = "profile/company-single";
@@ -930,7 +742,6 @@ const companyController = {
     let eventCat = await companyCategory.findById(event.category);
     const user = await User.findById(event.owner);
     const favorite = await companyFavorit.find({ companyId: req.params.id });
-    // let eventCats= await companyCategory.find()
     if (event.status && event.status != 0 && event.status != 1) {
       template += "-rejected";
     }
@@ -942,7 +753,6 @@ const companyController = {
       userOwner: user,
       event,
       eventCat,
-      // eventCats,
       services: event.services,
       images: event.images,
       phone_numbers: event.phoneNumbers,
@@ -1203,12 +1013,6 @@ const companyController = {
           .populate("category");
       }
 
-      // if (date_from) {
-      //   params.started_time = {
-      //     $gte: new Date(date_from).toISOString(),
-      //   };
-      // }
-
       const eventCats = await companyCategory.find();
       events.reverse();
 
@@ -1249,7 +1053,6 @@ const companyController = {
       }
 
       const evLink = `alleven://myCompany/${company._id}`;
-      //stugel rejecti vaxt urish texta nor hayti jamanak urish texta
       notifEvent.emit(
         "send",
         "ADMIN",
@@ -1458,7 +1261,7 @@ const companyController = {
             message: `${dbCompany.companyName} и услуги добавлены в приложение.`,
             companyId: dbCompany._id,
             navigate: true,
-            categoryIcon: dbCompany.category.avatar, //sarqel
+            categoryIcon: dbCompany.category.avatar,
             link: evLink,
           })
         );
@@ -1507,20 +1310,20 @@ const companyController = {
   deleteCompany: async (req, res) => {
     try {
       const company = await Company.findById(req.params.id);
-      await Notification.deleteMany({companyId:company._id})
+      const hotDeals = await companyHotDeals.find({ companyId: company._id });
+      for await (const hotDeal of hotDeals) {
+        await Notification.deleteMany({ dealId: hotDeal._id });
+      }
+      await Notification.deleteMany({ companyId: company._id });
       if (!company) {
         throw new Error("Company not found");
       }
 
-      // Find all related comments
       const comments = await companyComment.find({ companyId: req.params.id });
 
-      // For each comment, delete related answers and likes
       for (const comment of comments) {
-        // Delete all likes related to the comment
         await companyCommentLike.deleteMany({ commentId: comment._id });
 
-        // Find all answers related to the comment
         const answers = await companyCommentAnswer.find({
           commentId: comment._id,
         });
@@ -1531,7 +1334,6 @@ const companyController = {
 
         await companyCommentAnswer.deleteMany({ commentId: comment._id });
       }
-
 
       await ImpressionsCompany.deleteMany({ company: req.params.id });
       await companyParticipants.deleteMany({ companyId: req.params.id });
@@ -1609,9 +1411,6 @@ const companyController = {
         resultArr.push(resultComp);
       }
       for (let z = 0; z < resultArr.length; z++) {
-        // const hours = moment.tz(process.env.TZ).format("HH:mm");
-        // const splitOpen = resultArr[z].startHour.split(":");
-        // const splitClose = resultArr[z].endHour.split(":");
         const isLiked = await companyLikes.findOne({
           user: user.id,
           companyId: resultArr[z]._id,
@@ -1635,35 +1434,7 @@ const companyController = {
           resultArr[z].isRating = true;
         }
 
-        // if (
-        //   Number(hours) >= Number(splitOpen[0]) &&
-        //   Number(hours) < Number(splitClose[0])
-        // ) {
-        //   resultArr[z].open = true;
-        // }
         const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-        function isCompanyOpen(startHour, closeHour, currentTime) {
-          const parseTime = (time) => {
-            const [hour, minute] = time.split(":").map(Number);
-            return { hour, minute };
-          };
-
-          const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-          const start = parseTime(startHour);
-          const close = parseTime(closeHour);
-          const current = parseTime(currentTime);
-
-          const startMinutes = toMinutes(start);
-          const closeMinutes =
-            toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-          const currentMinutes = toMinutes(current);
-
-          return (
-            currentMinutes >= startMinutes && currentMinutes < closeMinutes
-          );
-        }
 
         const openBool = isCompanyOpen(
           resultArr[z].startHour,
@@ -1747,7 +1518,7 @@ const companyController = {
         });
         const dateTime = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
         if (companyDb.owner._id.toString() !== userDb._id.toString()) {
-          const message = `${userDb.name} ${userDb.surname} добавил комментарий.`
+          const message = `${userDb.name} ${userDb.surname} добавил комментарий.`;
           const evLink = `alleven://myCompany/${companyDb._id}`;
           const dataNotif = {
             status: 2,
@@ -1845,7 +1616,6 @@ const companyController = {
             navigate: true,
             message: `Пользователь ${userDb.name} поставил(а) лайк компании ${companyDb.companyName}.`,
             companyId: companyDb._id,
-            // categoryIcon: event.category.avatar,
             link: evLink,
           };
           const nt = new Notification(dataNotif);
@@ -1860,7 +1630,6 @@ const companyController = {
                 navigate: true,
                 date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
                 message: `Пользователь ${userDb.name} поставил(а) лайк компании ${companyDb.companyName}.`,
-                // categoryIcon: event.category.avatar,
                 link: evLink,
               })
             );
@@ -1872,7 +1641,6 @@ const companyController = {
           company,
           likes: companyDb.likes,
         });
-        // }
       } else {
         await companyLikes.findByIdAndDelete(findLike._id);
         const company = await Company.findByIdAndUpdate(
@@ -1896,13 +1664,13 @@ const companyController = {
     try {
       const authHeader = req.headers.authorization;
       const id = req.params.id;
-      console.log(req.params.id,"req.params.id");
-      
+      console.log(req.params.id, "req.params.id");
+
       const { longitude, latitude } = req.query;
 
       const compUpdate = await Company.findById(id);
-      console.log(compUpdate,"compUpdate");
-      
+      console.log(compUpdate, "compUpdate");
+
       compUpdate.isLike = false;
       compUpdate.isRating = false;
       compUpdate.isFavorite = false;
@@ -1950,12 +1718,12 @@ const companyController = {
               populate: [
                 {
                   path: "user",
-                  select: "avatar name surname", // Select only the avatar and name fields from user
+                  select: "avatar name surname",
                 },
                 {
                   path: "answer",
                   select: "isLike text date likes",
-                  populate: { path: "user", select: "avatar name surname" }, // Select only the content and likes fields from answer
+                  populate: { path: "user", select: "avatar name surname" },
                 },
               ],
             })
@@ -1990,7 +1758,6 @@ const companyController = {
               process.env.TZ
             );
 
-            // Check if the fixed time is after now
             const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
             if (
               fixedTime.isAfter(now) &&
@@ -2023,12 +1790,12 @@ const companyController = {
               populate: [
                 {
                   path: "user",
-                  select: "avatar name surname", // Select only the avatar and name fields from user
+                  select: "avatar name surname",
                 },
                 {
                   path: "answer",
                   select: "isLike text date likes",
-                  populate: { path: "user", select: "avatar name surname" }, // Select only the content and likes fields from answer
+                  populate: { path: "user", select: "avatar name surname" },
                 },
               ],
             })
@@ -2122,28 +1889,6 @@ const companyController = {
         }
         const hours = moment.tz(process.env.TZ).format("HH:mm");
 
-        function isCompanyOpen(startHour, closeHour, currentTime) {
-          const parseTime = (time) => {
-            const [hour, minute] = time.split(":").map(Number);
-            return { hour, minute };
-          };
-
-          const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-          const start = parseTime(startHour);
-          const close = parseTime(closeHour);
-          const current = parseTime(currentTime);
-
-          const startMinutes = toMinutes(start);
-          const closeMinutes =
-            toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-          const currentMinutes = toMinutes(current);
-
-          return (
-            currentMinutes >= startMinutes && currentMinutes < closeMinutes
-          );
-        }
-
         const openBool = isCompanyOpen(
           resultChanged1.startHour,
           resultChanged1.endHour,
@@ -2210,12 +1955,12 @@ const companyController = {
             populate: [
               {
                 path: "user",
-                select: "avatar name surname", // Select only the avatar and name fields from user
+                select: "avatar name surname",
               },
               {
                 path: "answer",
                 select: "isLike text date likes",
-                populate: { path: "user", select: "avatar name surname" }, // Select only the content and likes fields from answer
+                populate: { path: "user", select: "avatar name surname" },
               },
             ],
           })
@@ -2225,33 +1970,8 @@ const companyController = {
             populate: { path: "user", select: "name surname avatar" },
           });
 
-        // const hours = moment.tz(process.env.TZ).format("HH:mm");
-        // const splitOpen = resultChanged1.startHour.split(":");
-        // const splitClose = resultChanged1.endHour.split(":");
         await resultChanged1.save();
         const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-        function isCompanyOpen(startHour, closeHour, currentTime) {
-          const parseTime = (time) => {
-            const [hour, minute] = time.split(":").map(Number);
-            return { hour, minute };
-          };
-
-          const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-          const start = parseTime(startHour);
-          const close = parseTime(closeHour);
-          const current = parseTime(currentTime);
-
-          const startMinutes = toMinutes(start);
-          const closeMinutes =
-            toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-          const currentMinutes = toMinutes(current);
-
-          return (
-            currentMinutes >= startMinutes && currentMinutes < closeMinutes
-          );
-        }
 
         const openBool = isCompanyOpen(
           resultChanged1.startHour,
@@ -2259,41 +1979,7 @@ const companyController = {
           hours
         );
         resultChanged1.open = openBool;
-        // if (
-        //   Number(hours) >= Number(splitOpen[0]) &&
-        //   Number(hours) < Number(splitClose[0])
-        // ) {
-        //   resultChanged1.open = true;
-        // }
-        // resultChanged1.share=`/company/${resultChanged1._id}`
-        // for (let i = 0; i < resultChanged1.comments.length; i++) {
-        //   let object = {};
-        //   const commentsLength = await companyComment.find({
-        //     user: resultChanged1.comments[i].user._id.toString(),
-        //     companyId: resultChanged1._id.toString(),
-        //   });
-        //   object.comments_count = commentsLength.length;
-        //   object.avatar = resultChanged1.comments[i].user.avatar;
-        //   object.name = resultChanged1.comments[i].user.name;
-        //   object.surname = resultChanged1.comments[i].user.surname;
-        //   object.text = resultChanged1.comments[i].text;
 
-        //   const commRating = await companyRating.findOne({
-        //     user: resultChanged1.comments[i].user._id.toString(),
-        //     companyId: resultChanged1._id.toString(),
-        //   });
-
-        //   // if (commRating) {
-        //   //   let ratingObject = {};
-        //   //   ratingObject.date = isRating.date;
-        //   //   ratingObject.rating = isRating.rating;
-        //   //   object.rating = ratingObject;
-        //   // } else {
-        //   //   object.rating = null;
-        //   // }
-        //   resultChanged1.impressions.push(object);
-        // }
-        // resultChanged1.impressions.reverse();
         let upcomingDeals = [];
         for (let i = 0; i < resultChanged1.hotDeals.length; i++) {
           const fixedTime = moment.tz(
@@ -2366,10 +2052,7 @@ const companyController = {
               path: "category",
               select: "name avatar",
             })
-            // .populate("phoneNumbers")
-            // .populate("likes")
             .populate("hotDeals");
-          // .populate("comments");
 
           for (let z = 0; z < resultCompany.length; z++) {
             if (latitude && longitude) {
@@ -2408,39 +2091,8 @@ const companyController = {
               }
             }
             resultCompany[z].hotDeals = upcomingDeals;
-            // const hours = moment.tz(process.env.TZ).format("HH:mm");
-            // const splitOpen = resultCompany[z].startHour.split(":");
-            // const splitClose = resultCompany[z].endHour.split(":");
 
-            // if (
-            //   Number(hours) >= Number(splitOpen[0]) &&
-            //   Number(hours) < Number(splitClose[0])
-            // ) {
-            //   resultCompany[z].open = true;
-            // }
             const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
 
             const openBool = isCompanyOpen(
               resultCompany[z].startHour,
@@ -2462,7 +2114,6 @@ const companyController = {
         const token = authHeader.split(" ")[1];
 
         const user = jwt.decode(token);
-        // const user = { id: "656ecb2e923c5a66768f4cd3" };
 
         let dbObj = [];
         const resultCategory = await companyCategory.find();
@@ -2525,28 +2176,6 @@ const companyController = {
 
             const hours = moment.tz(process.env.TZ).format("HH:mm");
 
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
-
             const openBool = isCompanyOpen(
               resultCompany[z].startHour,
               resultCompany[z].endHour,
@@ -2580,10 +2209,6 @@ const companyController = {
         const user = jwt.decode(token);
         const result = await Company.find({ owner: { $ne: user.id } })
           .populate("images")
-          // .populate("services")
-          // .populate("phoneNumbers")
-          // .populate("likes")
-          // .populate("comments")
           .populate("hotDeals")
           .populate("category");
 
@@ -2596,7 +2221,6 @@ const companyController = {
           );
         });
         for (let z = 0; z < result.length; z++) {
-          // const now = new Date();
           let upcomingDeals = [];
           for (let i = 0; i < result[z].hotDeals.length; i++) {
             const dealTime = "2024-12-02 15:00";
@@ -2606,7 +2230,6 @@ const companyController = {
               process.env.TZ
             );
 
-            // Check if the fixed time is after now
             const now = moment.tz(process.env.TZ);
             if (fixedTime.isAfter(now)) {
               upcomingDeals.push(result[z].hotDeals[i]);
@@ -2618,40 +2241,8 @@ const companyController = {
             }
           }
           result[z].hotDeals = upcomingDeals;
-          // const hours = now.getHours();
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].startHour.split(":");
-          // const splitClose = result[z].endHour.split(":");
 
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].startHour,
@@ -2666,10 +2257,6 @@ const companyController = {
       } else {
         const result = await Company.find()
           .populate("images")
-          // .populate("services")
-          // .populate("phoneNumbers")
-          // .populate("likes")
-          // .populate("comments")
           .populate("hotDeals")
           .populate("category");
 
@@ -2682,7 +2269,6 @@ const companyController = {
           );
         });
         for (let z = 0; z < result.length; z++) {
-          // const now = new Date();
           let upcomingDeals = [];
           for (let i = 0; i < result[z].hotDeals.length; i++) {
             const dealTime = "2024-12-02 15:00";
@@ -2692,7 +2278,6 @@ const companyController = {
               process.env.TZ
             );
 
-            // Check if the fixed time is after now
             const now = moment.tz(process.env.TZ);
             if (fixedTime.isAfter(now)) {
               upcomingDeals.push(result[z].hotDeals[i]);
@@ -2704,40 +2289,8 @@ const companyController = {
             }
           }
           resultCompany[z].hotDeals = upcomingDeals;
-          // const hours = now.getHours();
-          // const hours = moment.tz(process.env.TZ).format("HH:mm");
-          // const splitOpen = result[z].startHour.split(":");
-          // const splitClose = result[z].endHour.split(":");
 
-          // if (
-          //   Number(hours) >= Number(splitOpen[0]) &&
-          //   Number(hours) < Number(splitClose[0])
-          // ) {
-          //   result[z].open = true;
-          // }
           const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-          function isCompanyOpen(startHour, closeHour, currentTime) {
-            const parseTime = (time) => {
-              const [hour, minute] = time.split(":").map(Number);
-              return { hour, minute };
-            };
-
-            const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-            const start = parseTime(startHour);
-            const close = parseTime(closeHour);
-            const current = parseTime(currentTime);
-
-            const startMinutes = toMinutes(start);
-            const closeMinutes =
-              toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-            const currentMinutes = toMinutes(current);
-
-            return (
-              currentMinutes >= startMinutes && currentMinutes < closeMinutes
-            );
-          }
 
           const openBool = isCompanyOpen(
             result[z].startHour,
@@ -2797,9 +2350,9 @@ const companyController = {
       const resultChanged1 = await Company.findOneAndUpdate(
         { _id: userDb.company._id },
         {
-          $set: { rating: averageRating }, // Set new rating
+          $set: { rating: averageRating },
         },
-        { new: true } // Return the updated document
+        { new: true }
       )
         .populate("images")
         .populate({ path: "category", select: "name avatar" })
@@ -2820,12 +2373,12 @@ const companyController = {
           populate: [
             {
               path: "user",
-              select: "avatar name surname", // Select only the avatar and name fields from user
+              select: "avatar name surname",
             },
             {
               path: "answer",
               select: "isLike text date likes",
-              populate: { path: "user", select: "avatar name surname" }, // Select only the content and likes fields from answer
+              populate: { path: "user", select: "avatar name surname" },
             },
           ],
         })
@@ -2860,26 +2413,6 @@ const companyController = {
       await resultChanged1.save();
 
       const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-      function isCompanyOpen(startHour, closeHour, currentTime) {
-        const parseTime = (time) => {
-          const [hour, minute] = time.split(":").map(Number);
-          return { hour, minute };
-        };
-
-        const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-        const start = parseTime(startHour);
-        const close = parseTime(closeHour);
-        const current = parseTime(currentTime);
-
-        const startMinutes = toMinutes(start);
-        const closeMinutes =
-          toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-        const currentMinutes = toMinutes(current);
-
-        return currentMinutes >= startMinutes && currentMinutes < closeMinutes;
-      }
 
       const openBool = isCompanyOpen(
         resultChanged1.startHour,
@@ -2959,7 +2492,7 @@ const companyController = {
         const serviceRegisterAfter = await servicesRegistrations.find({
           serviceId: resultChanged1.services[i],
           pay: true,
-          date: { $gt: tomorrow }, // Matches today and dates after today
+          date: { $gt: tomorrow },
         });
 
         countAfter.push(serviceRegisterAfter.length);
@@ -2980,13 +2513,11 @@ const companyController = {
       resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0);
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
 
-      // resultChanged1.todayRegisters = countToday;
-      // resultChanged1.afterRegisters = countAfter;
       function removeDuplicatesByUser(data) {
         const uniqueEntries = {};
 
         data.forEach((item) => {
-          uniqueEntries[item.user] = item; // Overwrite to keep the last occurrence
+          uniqueEntries[item.user] = item;
         });
 
         return Object.values(uniqueEntries);
@@ -3096,14 +2627,6 @@ const companyController = {
       res.status(500).send({ message: "Server Error" });
     }
   },
-  // editeCompany: async (req, res) => {
-  //   try {
-  //     const result = await companyService.editeCompany();
-  //     res.status(200).send(result);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // },
   addService: async (req, res) => {
     try {
       const { companyId, type, description, cost, images } = req.body;
@@ -3158,12 +2681,6 @@ const companyController = {
           .populate("likes")
           .populate("category");
       }
-
-      // if (date_from) {
-      //   params.started_time = {
-      //     $gte: new Date(date_from).toISOString(),
-      //   };
-      // }
 
       const eventCats = await companyCategory.find();
       events.sort(
@@ -3229,7 +2746,6 @@ const companyController = {
           company.sort((a, b) => a.kilometr - b.kilometr);
 
           for (let z = 0; z < company.length; z++) {
-            // const now = new Date();
             let upcomingDeals = [];
             for (let i = 0; i < company[z].hotDeals.length; i++) {
               const dealTime = "2024-12-02 15:00";
@@ -3239,7 +2755,6 @@ const companyController = {
                 process.env.TZ
               );
 
-              // Check if the fixed time is after now
               const now = moment.tz(process.env.TZ);
               if (fixedTime.isAfter(now)) {
                 upcomingDeals.push(company[z].hotDeals[i]);
@@ -3251,40 +2766,8 @@ const companyController = {
               }
             }
             company[z].hotDeals = upcomingDeals;
-            // const hours = now.getHours();
-            // const hours = moment.tz(process.env.TZ).format("HH:mm");
-            // const splitOpen = company[z].startHour.split(":");
-            // const splitClose = company[z].endHour.split(":");
 
-            // if (
-            //   Number(hours) >= Number(splitOpen[0]) &&
-            //   Number(hours) < Number(splitClose[0])
-            // ) {
-            //   company[z].open = true;
-            // }
             const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
 
             const openBool = isCompanyOpen(
               company[z].startHour,
@@ -3340,9 +2823,6 @@ const companyController = {
           company.sort((a, b) => a.kilometr - b.kilometr);
 
           for (let z = 0; z < company.length; z++) {
-            // const hours = moment.tz(process.env.TZ).format("HH:mm");
-            // const splitOpen = company[z].startHour.split(":");
-            // const splitClose = company[z].endHour.split(":");
             let upcomingDeals = [];
             for (let i = 0; i < company[z].hotDeals.length; i++) {
               const dealTime = "2024-12-02 15:00";
@@ -3352,7 +2832,6 @@ const companyController = {
                 process.env.TZ
               );
 
-              // Check if the fixed time is after now
               const now = moment.tz(process.env.TZ);
               if (fixedTime.isAfter(now)) {
                 upcomingDeals.push(company[z].hotDeals[i]);
@@ -3364,36 +2843,8 @@ const companyController = {
               }
             }
             company[z].hotDeals = upcomingDeals;
-            // if (
-            //   Number(hours) >= Number(splitOpen[0]) &&
-            //   Number(hours) < Number(splitClose[0])
-            // ) {
-            //   company[z].open = true;
-            // }
 
             const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
 
             const openBool = isCompanyOpen(
               company[z].startHour,
@@ -3447,9 +2898,6 @@ const companyController = {
           company.sort((a, b) => a.kilometr - b.kilometr);
 
           for (let z = 0; z < company.length; z++) {
-            // const hours = moment.tz(process.env.TZ).format("HH:mm");
-            // const splitOpen = company[z].startHour.split(":");
-            // const splitClose = company[z].endHour.split(":");
             let upcomingDeals = [];
             for (let i = 0; i < company[z].hotDeals.length; i++) {
               const dealTime = "2024-12-02 15:00";
@@ -3470,35 +2918,8 @@ const companyController = {
               }
             }
             company[z].hotDeals = upcomingDeals;
-            // if (
-            //   Number(hours) >= Number(splitOpen[0]) &&
-            //   Number(hours) < Number(splitClose[0])
-            // ) {
-            //   company[z].open = true;
-            // }
+
             const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
 
             const openBool = isCompanyOpen(
               company[z].startHour,
@@ -3552,9 +2973,6 @@ const companyController = {
           company.sort((a, b) => a.kilometr - b.kilometr);
 
           for (let z = 0; z < company.length; z++) {
-            // const hours = moment.tz(process.env.TZ).format("HH:mm");
-            // const splitOpen = company[z].startHour.split(":");
-            // const splitClose = company[z].endHour.split(":");
             let upcomingDeals = [];
             for (let i = 0; i < company[z].hotDeals.length; i++) {
               const dealTime = "2024-12-02 15:00";
@@ -3564,7 +2982,6 @@ const companyController = {
                 process.env.TZ
               );
 
-              // Check if the fixed time is after now
               const now = moment.tz(process.env.TZ);
               if (fixedTime.isAfter(now)) {
                 upcomingDeals.push(company[z].hotDeals[i]);
@@ -3576,35 +2993,8 @@ const companyController = {
               }
             }
             company[z].hotDeals = upcomingDeals;
-            // if (
-            //   Number(hours) >= Number(splitOpen[0]) &&
-            //   Number(hours) < Number(splitClose[0])
-            // ) {
-            //   company[z].open = true;
-            // }
+
             const hours = moment.tz(process.env.TZ).format("HH:mm");
-
-            function isCompanyOpen(startHour, closeHour, currentTime) {
-              const parseTime = (time) => {
-                const [hour, minute] = time.split(":").map(Number);
-                return { hour, minute };
-              };
-
-              const toMinutes = ({ hour, minute }) => hour * 60 + minute;
-
-              const start = parseTime(startHour);
-              const close = parseTime(closeHour);
-              const current = parseTime(currentTime);
-
-              const startMinutes = toMinutes(start);
-              const closeMinutes =
-                toMinutes(close) + (close.hour < start.hour ? 24 * 60 : 0); // Handle next-day close
-              const currentMinutes = toMinutes(current);
-
-              return (
-                currentMinutes >= startMinutes && currentMinutes < closeMinutes
-              );
-            }
 
             const openBool = isCompanyOpen(
               company[z].startHour,

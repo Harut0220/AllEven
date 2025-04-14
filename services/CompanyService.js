@@ -399,80 +399,158 @@ const companyService = {
   },
   destroyCompany: async (des_events) => {
     if (Array.isArray(des_events)) {
-      for (let i = 0; i < des_events.length; i++) {
-        const company = await companyModel.findById(des_events[i]);
-        await Notification.deleteMany({ companyId: des_events[i] });
-        await Report.deleteMany({ company: des_events[i] });
+      for await (const companyId of des_events) {
+        const company = await companyModel.findById(companyId);
+        await Notification.deleteMany({ companyId });
+        await Report.deleteMany({ company: companyId });
+        const hotDeals=await companyHotDeals.find({companyId:company._id})
+        for await (const hotDeal of hotDeals){
+          await Notification.deleteMany({dealId:hotDeal._id})
+        }
         if (!company) {
           throw new Error("Event not found");
         }
-
-        const comments = await companyComment.find({
-          companyId: des_events[i],
-        });
-
-        for (const comment of comments) {
+      
+        const comments = await companyComment.find({ companyId });
+      
+        for await (const comment of comments) {
           await companyCommentLike.deleteMany({ commentId: comment._id });
-
+      
           const answers = await companyCommentAnswer.find({
             commentId: comment._id,
           });
-
-          for (const answer of answers) {
+      
+          for await (const answer of answers) {
             await companyCommentAnswerLike.deleteMany({ answerId: answer._id });
           }
-
+      
           await companyCommentAnswer.deleteMany({ commentId: comment._id });
         }
-        await companyParticipants.deleteMany({ companyId: des_events[i] });
-        await ImpressionsCompany.deleteMany({ company: des_events[i] });
-
-        await companyComment.deleteMany({ companyId: des_events[i] });
-        await companyImage.deleteMany({ companyId: des_events[i] });
-        await companyLikes.deleteMany({ companyId: des_events[i] });
-        await companyFavorit.deleteMany({ companyId: des_events[i] });
-        await companyView.deleteMany({ companyId: des_events[i] });
-        await companyRating.deleteMany({ companyId: des_events[i] });
-        await companyPhones.deleteMany({ companyId: des_events[i] });
-        await paysStore.deleteMany({ companyId: des_events[i] });
-        const companyHotDealDb = await companyHotDeals.find({
-          companyId: des_events[i],
-        });
-        for (let i = 0; i < companyHotDealDb.length; i++) {
-          await companyHotDealRegistration.deleteMany({
-            dealId: companyHotDealDb[i]._id,
-          });
+      
+        await companyParticipants.deleteMany({ companyId });
+        await ImpressionsCompany.deleteMany({ company: companyId });
+      
+        await companyComment.deleteMany({ companyId });
+        await companyImage.deleteMany({ companyId });
+        await companyLikes.deleteMany({ companyId });
+        await companyFavorit.deleteMany({ companyId });
+        await companyView.deleteMany({ companyId });
+        await companyRating.deleteMany({ companyId });
+        await companyPhones.deleteMany({ companyId });
+        await paysStore.deleteMany({ companyId });
+      
+        const companyHotDealDb = await companyHotDeals.find({ companyId });
+      
+        for await (const deal of companyHotDealDb) {
+          await companyHotDealRegistration.deleteMany({ dealId: deal._id });
         }
-        const services = await CompanyServiceModel.find({
-          companyId: des_events[i],
-        });
-        for (let z = 0; z < services.length; z++) {
-          await Notification.deleteMany({ serviceId: services[z]._id });
-          await Report.deleteMany({ service: services[z]._id });
-          await paysStore.deleteMany({ serviceId: services[z]._id });
+      
+        const services = await CompanyServiceModel.find({ companyId });
+      
+        for await (const service of services) {
+          await Notification.deleteMany({ serviceId: service._id });
+          await Report.deleteMany({ service: service._id });
+          await paysStore.deleteMany({ serviceId: service._id });
         }
-        for (let j = 0; j < services.length; j++) {
-          await servicesRegistrations.deleteMany({
-            serviceId: services[j]._id,
-          });
+      
+        for await (const service of services) {
+          await servicesRegistrations.deleteMany({ serviceId: service._id });
         }
-        for (let i = 0; i < company.participants.length; i++) {
-          await companyParticipants.findByIdAndDelete(company.participants[i]);
+      
+        for await (const participantId of company.participants) {
+          await companyParticipants.findByIdAndDelete(participantId);
         }
-        await CompanyServiceModel.deleteMany({ companyId: des_events[i] });
-        await companyImpressionImages.deleteMany({ companyId: des_events[i] });
-        await companyHotDeals.deleteMany({ companyId: des_events[i] });
+      
+        await CompanyServiceModel.deleteMany({ companyId });
+        await companyImpressionImages.deleteMany({ companyId });
+        await companyHotDeals.deleteMany({ companyId });
+      
         const UserDb = await User.findById(company.owner.toString());
         UserDb.company = null;
         await UserDb.save();
+      
         await company.remove();
         console.log("Company and all related data deleted successfully");
       }
+      
+      // for (let i = 0; i < des_events.length; i++) {
+      //   const company = await companyModel.findById(des_events[i]);
+      //   await Notification.deleteMany({ companyId: des_events[i] });
+      //   await Report.deleteMany({ company: des_events[i] });
+      //   if (!company) {
+      //     throw new Error("Event not found");
+      //   }
+
+      //   const comments = await companyComment.find({
+      //     companyId: des_events[i],
+      //   });
+
+      //   for (const comment of comments) {
+      //     await companyCommentLike.deleteMany({ commentId: comment._id });
+
+      //     const answers = await companyCommentAnswer.find({
+      //       commentId: comment._id,
+      //     });
+
+      //     for (const answer of answers) {
+      //       await companyCommentAnswerLike.deleteMany({ answerId: answer._id });
+      //     }
+
+      //     await companyCommentAnswer.deleteMany({ commentId: comment._id });
+      //   }
+      //   await companyParticipants.deleteMany({ companyId: des_events[i] });
+      //   await ImpressionsCompany.deleteMany({ company: des_events[i] });
+
+      //   await companyComment.deleteMany({ companyId: des_events[i] });
+      //   await companyImage.deleteMany({ companyId: des_events[i] });
+      //   await companyLikes.deleteMany({ companyId: des_events[i] });
+      //   await companyFavorit.deleteMany({ companyId: des_events[i] });
+      //   await companyView.deleteMany({ companyId: des_events[i] });
+      //   await companyRating.deleteMany({ companyId: des_events[i] });
+      //   await companyPhones.deleteMany({ companyId: des_events[i] });
+      //   await paysStore.deleteMany({ companyId: des_events[i] });
+      //   const companyHotDealDb = await companyHotDeals.find({
+      //     companyId: des_events[i],
+      //   });
+      //   for (let i = 0; i < companyHotDealDb.length; i++) {
+      //     await companyHotDealRegistration.deleteMany({
+      //       dealId: companyHotDealDb[i]._id,
+      //     });
+      //   }
+      //   const services = await CompanyServiceModel.find({
+      //     companyId: des_events[i],
+      //   });
+      //   for (let z = 0; z < services.length; z++) {
+      //     await Notification.deleteMany({ serviceId: services[z]._id });
+      //     await Report.deleteMany({ service: services[z]._id });
+      //     await paysStore.deleteMany({ serviceId: services[z]._id });
+      //   }
+      //   for (let j = 0; j < services.length; j++) {
+      //     await servicesRegistrations.deleteMany({
+      //       serviceId: services[j]._id,
+      //     });
+      //   }
+      //   for (let i = 0; i < company.participants.length; i++) {
+      //     await companyParticipants.findByIdAndDelete(company.participants[i]);
+      //   }
+      //   await CompanyServiceModel.deleteMany({ companyId: des_events[i] });
+      //   await companyImpressionImages.deleteMany({ companyId: des_events[i] });
+      //   await companyHotDeals.deleteMany({ companyId: des_events[i] });
+      //   const UserDb = await User.findById(company.owner.toString());
+      //   UserDb.company = null;
+      //   await UserDb.save();
+      //   await company.remove();
+      //   console.log("Company and all related data deleted successfully");
+      // }
     }
     if (typeof des_events === "string") {
       const company = await companyModel.findById(des_events);
       await Notification.deleteMany({ companyId: des_events });
       await Report.deleteMany({ company: des_events });
+      const hotDeals=await companyHotDeals.find({companyId:company._id})
+      for await (const hotdeal of hotDeals){
+        await Notification.deleteMany({dealId:hotdeal._id})
+      }
       if (!company) {
         throw new Error("Meeting not found");
       }

@@ -62,6 +62,7 @@ const servicesController = {
         serviceId: updatedDoc.serviceId._id,
         register: id,
         navigate: true,
+        companyId:serviceDb.companyId._id,
         // categoryIcon: service.serviceId.images[0],
         link: evLink,
       };
@@ -498,6 +499,7 @@ const servicesController = {
           type: "confirm_come",
           message: `Услугу ${service.serviceId.type} на которую вы записались предлагают перенести на ${date}.Причин-${text}`,
           serviceId: service.serviceId._id,
+          companyId:serviceDb.companyId,
           register: id,
           navigate: false,
           // categoryIcon: service.serviceId.images[0],

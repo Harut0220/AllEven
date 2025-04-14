@@ -128,6 +128,10 @@ class ProfileController {
     const user1 = jwt.decode(token1);
     const eventsDb = await Event.find({ owner: user1.id });
     const companiesDb = await companyModel.findOne({ owner: user1.id });
+    const hotDeals = await companyHotDeals.find({ companyId: companiesDb._id });
+    for await (const hotDeal of hotDeals) {
+      await Notification.deleteMany({ dealId: hotDeal._id });
+    }
     const meetingsDb = await meetingModel.find({ user: user1.id });
     await Notification.deleteMany({ user: user1.id });
     for await (const element of eventsDb) {
@@ -138,23 +142,23 @@ class ProfileController {
       await Notification.deleteMany({ meetingId: element._id });
     }
 
-    for await (const element of eventsDb){
-      await Notification.deleteMany({eventId:element._id})
+    for await (const element of eventsDb) {
+      await Notification.deleteMany({ eventId: element._id });
     }
-    
-    await Notification.deleteMany({companyId:companiesDb._id})
+
+    await Notification.deleteMany({ companyId: companiesDb._id });
     setTimeout(async () => {
       await Report.deleteMany({});
       const CompanyParticipantsDb = await companyParticipants.find({
         user: user1.id,
       });
 
-      for (let z = 0; z < CompanyParticipantsDb.length; z++) {
-        await companyModel.findByIdAndUpdate(
-          CompanyParticipantsDb[z].companyId,
-          { $pull: { participants: CompanyParticipantsDb[z]._id } }
-        );
+      for await (const participant of CompanyParticipantsDb) {
+        await companyModel.findByIdAndUpdate(participant.companyId, {
+          $pull: { participants: participant._id },
+        });
       }
+
       await companyParticipants.deleteMany({ user: user1.id });
       const EventAnswerLikeDb = await EventCommentAnswerLike.find({
         user: user1.id,
@@ -176,123 +180,130 @@ class ProfileController {
         user: user1.id,
       });
 
-      for (let i = 0; i < EventIpressionImageDb.length; i++) {
-        await Event.findByIdAndUpdate(EventIpressionImageDb[i].eventId, {
-          $pull: { impression_images: EventIpressionImageDb[i]._id },
+      for await (const impressionImage of EventIpressionImageDb) {
+        await Event.findByIdAndUpdate(impressionImage.event, {
+          $pull: { impression_images: impressionImage._id },
         });
       }
+
       await EventImpressionImages.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventViewsDb.length; i++) {
-        await Event.findByIdAndUpdate(EventViewsDb[i].eventId, {
-          $pull: { views: EventViewsDb[i]._id },
+      for await (const view of EventViewsDb) {
+        await Event.findByIdAndUpdate(view.eventId, {
+          $pull: { views: view._id },
         });
       }
+
       await EventView.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventParticipantsSpotDb.length; i++) {
-        await Event.findByIdAndUpdate(EventParticipantsSpotDb[i].eventId, {
-          $pull: { participantsSpot: EventParticipantsSpotDb[i]._id },
+      for await (const participantSpot of EventParticipantsSpotDb) {
+        await Event.findByIdAndUpdate(participantSpot.eventId, {
+          $pull: { participantsSpot: participantSpot._id },
         });
       }
+
       await EventParticipantsSpot.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventParticipantsDb.length; i++) {
-        await Event.findByIdAndUpdate(EventParticipantsDb[i].eventId, {
-          $pull: { participants: EventParticipantsDb[i]._id },
+      for await (const participant of EventParticipantsDb) {
+        await Event.findByIdAndUpdate(participant.eventId, {
+          $pull: { participants: participant._id },
         });
       }
+
       await EventParticipants.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventRatingDb.length; i++) {
-        await Event.findByIdAndUpdate(EventRatingDb[i].eventId, {
-          $pull: { ratings: EventRatingDb[i]._id },
+      for await (const rating of EventRatingDb) {
+        await Event.findByIdAndUpdate(rating.event, {
+          $pull: { ratings: rating._id },
         });
       }
+
       await EventRating.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventLikeDb.length; i++) {
-        await Event.findByIdAndUpdate(EventLikeDb[i].eventId, {
-          $pull: { likes: EventLikeDb[i]._id },
+      for await (const like of EventLikeDb) {
+        await Event.findByIdAndUpdate(like.eventId, {
+          $pull: { likes: like._id },
         });
       }
+
       await EventLike.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < EventFavoriteDb.length; i++) {
-        await Event.findByIdAndUpdate(EventFavoriteDb[i].eventId, {
-          $pull: { favorites: EventFavoriteDb[i]._id },
+      for await (const favorite of EventFavoriteDb) {
+        await Event.findByIdAndUpdate(favorite.eventId, {
+          $pull: { favorites: favorite._id },
         });
       }
+
       await EventFavorites.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < EventAnswerLikeDb.length; z++) {
-        await EventCommentAnswer.findByIdAndUpdate(
-          EventAnswerLikeDb[z].answerId,
-          {
-            $pull: { likes: EventAnswerLikeDb[z]._id },
-          }
-        );
+      for await (const answerLike of EventAnswerLikeDb) {
+        await EventCommentAnswer.findByIdAndUpdate(answerLike.answerId, {
+          $pull: { likes: answerLike._id },
+        });
       }
+
       await EventCommentAnswerLike.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < EventAnswerDb.length; z++) {
-        await EventComment.findByIdAndUpdate(EventAnswerDb[z].answerId, {
-          $pull: { answer: EventAnswerDb[z]._id },
+      for await (const answer of EventAnswerDb) {
+        await EventComment.findByIdAndUpdate(answer.answerId, {
+          $pull: { answer: answer._id },
         });
       }
+
       await EventCommentAnswer.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < EventCommentLike.length; z++) {
-        await EventComment.findByIdAndUpdate(EventCommentLike[z].commentId, {
-          $pull: { likes: EventCommentLike[z]._id },
+      for await (const commentLike of EventCommentLike) {
+        await EventComment.findByIdAndUpdate(commentLike.commentId, {
+          $pull: { likes: commentLike._id },
         });
       }
+
       await EventCommentLikes.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < EventMyComment.length; z++) {
-        await Event.findByIdAndUpdate(EventMyComment[z].event, {
-          $pull: { comments: EventMyComment[z]._id },
+      for await (const myComment of EventMyComment) {
+        await Event.findByIdAndUpdate(myComment.event, {
+          $pull: { comments: myComment._id },
         });
       }
+
       await EventComment.deleteMany({ user: user1.id });
 
       if (eventsDb.length) {
-        for (let i = 0; i < eventsDb.length; i++) {
-          const event = await Event.findById(eventsDb[i]._id);
+        for await (const event of eventsDb) {
+          const foundEvent = await Event.findById(event._id);
 
-          if (!event) {
+          if (!foundEvent) {
             throw new Error("Event not found");
           }
 
-          const comments = await EventComment.find({
-            event: eventsDb[i]._id,
-          });
+          const comments = await EventComment.find({ event: event._id });
 
-          for (const comment of comments) {
+          for await (const comment of comments) {
             await EventCommentLikes.deleteMany({ commentId: comment._id });
 
             const answers = await EventCommentAnswer.find({
               commentId: comment._id,
             });
 
-            for (const answer of answers) {
+            for await (const answer of answers) {
               await EventCommentAnswerLike.deleteMany({ answerId: answer._id });
             }
 
             await EventCommentAnswer.deleteMany({ commentId: comment._id });
           }
 
-          await EventComment.deleteMany({ event: eventsDb[i]._id });
-          await EventCommentLikes.deleteMany({ eventId: eventsDb[i]._id });
-          await EventFavorites.deleteMany({ eventId: eventsDb[i]._id });
-          await EventViews.deleteMany({ eventId: eventsDb[i]._id });
-          await EventRating.deleteMany({ event: eventsDb[i]._id });
-          await EventImpressionImages.deleteMany({ event: eventsDb[i]._id });
-          await EventParticipantsSpot.deleteMany({ eventId: eventsDb[i]._id });
-          await EventParticipants.deleteMany({ eventId: eventsDb[i]._id });
-          await event.remove();
+          await EventComment.deleteMany({ event: event._id });
+          await EventCommentLikes.deleteMany({ eventId: event._id });
+          await EventFavorites.deleteMany({ eventId: event._id });
+          await EventViews.deleteMany({ eventId: event._id });
+          await EventRating.deleteMany({ event: event._id });
+          await EventImpressionImages.deleteMany({ event: event._id });
+          await EventParticipantsSpot.deleteMany({ eventId: event._id });
+          await EventParticipants.deleteMany({ eventId: event._id });
+          await foundEvent.remove();
           console.log("Event and all related data deleted successfully");
         }
+
         await EventCategory.deleteMany({ owner: user1.id });
       }
 
@@ -319,92 +330,94 @@ class ProfileController {
         user: user1.id,
       });
 
-      for (let i = 0; i < dealRegisters.length; i++) {
+      for await (const dealRegister of dealRegisters) {
         const hotDeal = await companyHotDeals.find({
-          registration: dealRegisters[i],
+          registration: dealRegister,
         });
         await hotDeal.remove();
       }
+
       await companyHotDeals.deleteMany({ user: user1.id });
       await companyHotDealRegistrations.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyAnswerLikeDb.length; i++) {
-        await companyCommentAnswer.findByIdAndUpdate(
-          CompanyAnswerLikeDb[i].answerId,
-          {
-            $pull: { likes: CompanyAnswerLikeDb[i]._id },
-          }
-        );
+      for await (const answerLike of CompanyAnswerLikeDb) {
+        await companyCommentAnswer.findByIdAndUpdate(answerLike.answerId, {
+          $pull: { likes: answerLike._id },
+        });
       }
+
       await companyCommentAnswerLike.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyAnswerDb.length; i++) {
-        await companyComment.findByIdAndUpdate(CompanyAnswerDb[i].commentId, {
-          $pull: { answer: CompanyAnswerDb[i]._id },
+      for await (const answer of CompanyAnswerDb) {
+        await companyComment.findByIdAndUpdate(answer.commentId, {
+          $pull: { answer: answer._id },
         });
       }
+
       await companyCommentAnswer.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyCommentLike.length; i++) {
-        await companyComment.findByIdAndUpdate(
-          CompanyCommentLike[i].commentId,
-          {
-            $pull: { likes: CompanyCommentLike[i]._id },
-          }
-        );
+      for await (const commentLike of CompanyCommentLike) {
+        await companyComment.findByIdAndUpdate(commentLike.commentId, {
+          $pull: { likes: commentLike._id },
+        });
       }
+
       await companyCommentLike.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyMyComment.length; i++) {
-        await companyModel.findByIdAndUpdate(CompanyMyComment[i].companyId, {
-          $pull: { comments: CompanyMyComment[i]._id },
+      for await (const myComment of CompanyMyComment) {
+        await companyModel.findByIdAndUpdate(myComment.companyId, {
+          $pull: { comments: myComment._id },
         });
       }
+
       await companyComment.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyFavoriteDb.length; i++) {
-        await companyModel.findByIdAndUpdate(CompanyFavoriteDb[i].companyId, {
-          $pull: { favorites: CompanyFavoriteDb[i]._id },
+      for await (const favorite of CompanyFavoriteDb) {
+        await companyModel.findByIdAndUpdate(favorite.companyId, {
+          $pull: { favorites: favorite._id },
         });
       }
+
       await companyFavorit.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyLikeDb.length; i++) {
-        await companyModel.findByIdAndUpdate(CompanyLikeDb[i].companyId, {
-          $pull: { likes: CompanyLikeDb[i]._id },
+      for await (const like of CompanyLikeDb) {
+        await companyModel.findByIdAndUpdate(like.companyId, {
+          $pull: { likes: like._id },
         });
       }
+
       await companyLikes.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < CompanyRatingDb.length; i++) {
-        await companyModel.findByIdAndUpdate(CompanyRatingDb[i].companyId, {
-          $pull: { ratings: CompanyRatingDb[i]._id },
+      for await (const rating of CompanyRatingDb) {
+        await companyModel.findByIdAndUpdate(rating.companyId, {
+          $pull: { ratings: rating._id },
         });
       }
+
       await companyRating.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < CompanyViewsDb.length; z++) {
-        await companyModel.findByIdAndUpdate(CompanyViewsDb[z].companyId, {
-          $pull: { view: CompanyViewsDb[z]._id },
+      for await (const view of CompanyViewsDb) {
+        await companyModel.findByIdAndUpdate(view.companyId, {
+          $pull: { view: view._id },
         });
       }
+
       await companyView.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < CompanyIpressionImageDb.length; z++) {
-        await companyModel.findByIdAndUpdate(
-          CompanyIpressionImageDb[z].companyId,
-          {
-            $pull: { impression_images: CompanyIpressionImageDb[z]._id },
-          }
-        );
-      }
-      await companyImpressionImages.deleteMany({ user: user1.id });
-
-      for (let z = 0; z < registerDb.length; z++) {
-        await companyService.findByIdAndUpdate(registerDb[z].serviceId, {
-          $pull: { serviceRegister: registerDb[z]._id },
+      for await (const impressionImage of CompanyIpressionImageDb) {
+        await companyModel.findByIdAndUpdate(impressionImage.companyId, {
+          $pull: { impression_images: impressionImage._id },
         });
       }
+
+      await companyImpressionImages.deleteMany({ user: user1.id });
+
+      for await (const register of registerDb) {
+        await companyService.findByIdAndUpdate(register.serviceId, {
+          $pull: { serviceRegister: register._id },
+        });
+      }
+
       await servicesRegistrations.deleteMany({ user: user1.id });
 
       //user datas other company
@@ -420,14 +433,14 @@ class ProfileController {
           companyId: companiesDb._id,
         });
 
-        for (const comment of comments) {
+        for await (const comment of comments) {
           await companyCommentLike.deleteMany({ commentId: comment._id });
 
           const answers = await companyCommentAnswer.find({
             commentId: comment._id,
           });
 
-          for (const answer of answers) {
+          for await (const answer of answers) {
             await companyCommentAnswerLike.deleteMany({ answerId: answer._id });
           }
 
@@ -488,141 +501,177 @@ class ProfileController {
         user: user1.id,
       });
 
-      for (let i = 0; i < MeetingIpressionImageDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(
-          MeetingIpressionImageDb[i].meeting,
-          {
-            $pull: { impression_images: MeetingIpressionImageDb[i]._id },
-          }
-        );
+      for await (const impressionImage of MeetingIpressionImageDb) {
+        await meetingModel.findByIdAndUpdate(impressionImage.meeting, {
+          $pull: { impression_images: impressionImage._id },
+        });
       }
+
       await MeetingImpressionImage.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingViewsDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(MeetingViewsDb[i].meetingId, {
-          $pull: { views: MeetingViewsDb[i]._id },
+      for await (const view of MeetingViewsDb) {
+        await meetingModel.findByIdAndUpdate(view.meetingId, {
+          $pull: { views: view._id },
         });
       }
+
       await meetingView.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingParticipantsSpotDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(
-          MeetingParticipantsSpotDb[i].meetingId,
-          {
-            $pull: { participantsSpot: MeetingParticipantsSpotDb[i]._id },
-          }
-        );
+      for await (const participantSpot of MeetingParticipantsSpotDb) {
+        await meetingModel.findByIdAndUpdate(participantSpot.meetingId, {
+          $pull: { participantsSpot: participantSpot._id },
+        });
       }
+
       await meetingParticipantSpot.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingParticipantsDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(
-          MeetingParticipantsDb[i].meetingId,
-          {
-            $pull: { participants: MeetingParticipantsDb[i]._id },
-          }
-        );
+      for await (const participant of MeetingParticipantsDb) {
+        await meetingModel.findByIdAndUpdate(participant.meetingId, {
+          $pull: { participants: participant._id },
+        });
       }
+
       await meetingParticipant.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingRatingDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(MeetingRatingDb[i].meetingId, {
-          $pull: { ratings: MeetingRatingDb[i]._id },
+      for await (const rating of MeetingRatingDb) {
+        await meetingModel.findByIdAndUpdate(rating.meetingId, {
+          $pull: { ratings: rating._id },
         });
       }
+
       await meetingRating.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingLikeDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(MeetingLikeDb[i].meetingId, {
-          $pull: { likes: MeetingLikeDb[i]._id },
+      for await (const like of MeetingLikeDb) {
+        await meetingModel.findByIdAndUpdate(like.meetingId, {
+          $pull: { likes: like._id },
         });
       }
+
       await meetingLikes.deleteMany({ user: user1.id });
 
-      for (let i = 0; i < MeetingFavoriteDb.length; i++) {
-        await meetingModel.findByIdAndUpdate(MeetingFavoriteDb[i].meetingId, {
-          $pull: { favorites: MeetingFavoriteDb[i]._id },
+      for await (const favorite of MeetingFavoriteDb) {
+        await meetingModel.findByIdAndUpdate(favorite.meetingId, {
+          $pull: { favorites: favorite._id },
         });
       }
+
       await meetingFavorit.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < MeetingAnswerLikeDb.length; z++) {
-        await meetingCommentAnswer.findByIdAndUpdate(
-          MeetingAnswerLikeDb[z].answerId,
-          {
-            $pull: { likes: MeetingAnswerLikeDb[z]._id },
-          }
-        );
+      for await (const answerLike of MeetingAnswerLikeDb) {
+        await meetingCommentAnswer.findByIdAndUpdate(answerLike.answerId, {
+          $pull: { likes: answerLike._id },
+        });
       }
+
       await meetingCommentAnswerLike.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < MeetingAnswerDb.length; z++) {
-        await meetingComment.findByIdAndUpdate(MeetingAnswerDb[z].commentId, {
-          $pull: { answer: MeetingAnswerDb[z]._id },
+      for await (const answer of MeetingAnswerDb) {
+        await meetingComment.findByIdAndUpdate(answer.commentId, {
+          $pull: { answer: answer._id },
         });
       }
+
       await meetingCommentAnswer.deleteMany({ user: user1.id });
 
-      for (let z = 0; z < MeetingCommentLike.length; z++) {
-        await meetingComment.findByIdAndUpdate(
-          MeetingCommentLike[z].commentId,
-          {
-            $pull: { likes: MeetingCommentLike[z]._id },
-          }
-        );
-      }
-      await meetingCommentLikes.deleteMany({ user: user1.id });
-
-      for (let z = 0; z < MeetingMyComment.length; z++) {
-        await meetingModel.findByIdAndUpdate(MeetingMyComment[z].meetingId, {
-          $pull: { comments: MeetingMyComment[z]._id },
+      for await (const commentLike of MeetingCommentLike) {
+        await meetingComment.findByIdAndUpdate(commentLike.commentId, {
+          $pull: { likes: commentLike._id },
         });
       }
+
+      await meetingCommentLikes.deleteMany({ user: user1.id });
+
+      for await (const comment of MeetingMyComment) {
+        await meetingModel.findByIdAndUpdate(comment.meetingId, {
+          $pull: { comments: comment._id },
+        });
+      }
+
       await meetingComment.deleteMany({ user: user1.id });
       //user datas meeting
       if (meetingsDb.length) {
-        for (let i = 0; i < meetingsDb.length; i++) {
-          const meeting = await meetingModel.findById(meetingsDb[i]._id);
+        for await (const meetingDb of meetingsDb) {
+          const meeting = await meetingModel.findById(meetingDb._id);
 
           if (!meeting) {
             throw new Error("Meeting not found");
           }
 
           const comments = await meetingComment.find({
-            meetingId: meetingsDb[i]._id,
+            meetingId: meetingDb._id,
           });
 
-          for (const comment of comments) {
+          for await (const comment of comments) {
             await meetingCommentLikes.deleteMany({ commentId: comment._id });
 
             const answers = await meetingCommentAnswer.find({
               commentId: comment._id,
             });
 
-            for (const answer of answers) {
+            for await (const answer of answers) {
               await MeetingAnswerLikes.deleteMany({ answerId: answer._id });
             }
 
             await meetingCommentAnswer.deleteMany({ commentId: comment._id });
           }
 
-          await meetingComment.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingImages.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingLikes.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingFavorit.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingParticipantSpot.deleteMany({
-            meetingId: meetingsDb[i]._id,
-          });
-          await meetingView.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingRating.deleteMany({ meetingId: meetingsDb[i]._id });
-          await meetingParticipant.deleteMany({ meetingId: meetingsDb[i]._id });
-          await MeetingImpressionImage.deleteMany({
-            meetingId: meetingsDb[i]._id,
-          });
+          await meetingComment.deleteMany({ meetingId: meetingDb._id });
+          await meetingImages.deleteMany({ meetingId: meetingDb._id });
+          await meetingLikes.deleteMany({ meetingId: meetingDb._id });
+          await meetingFavorit.deleteMany({ meetingId: meetingDb._id });
+          await meetingParticipantSpot.deleteMany({ meetingId: meetingDb._id });
+          await meetingView.deleteMany({ meetingId: meetingDb._id });
+          await meetingRating.deleteMany({ meetingId: meetingDb._id });
+          await meetingParticipant.deleteMany({ meetingId: meetingDb._id });
+          await MeetingImpressionImage.deleteMany({ meetingId: meetingDb._id });
           await meetingVerify.deleteMany({ user: user1.id });
+
           await meeting.remove();
           console.log("Meetings and all related data deleted successfully");
         }
+
+        // for (let i = 0; i < meetingsDb.length; i++) {
+        //   const meeting = await meetingModel.findById(meetingsDb[i]._id);
+
+        //   if (!meeting) {
+        //     throw new Error("Meeting not found");
+        //   }
+
+        //   const comments = await meetingComment.find({
+        //     meetingId: meetingsDb[i]._id,
+        //   });
+
+        //   for (const comment of comments) {
+        //     await meetingCommentLikes.deleteMany({ commentId: comment._id });
+
+        //     const answers = await meetingCommentAnswer.find({
+        //       commentId: comment._id,
+        //     });
+
+        //     for (const answer of answers) {
+        //       await MeetingAnswerLikes.deleteMany({ answerId: answer._id });
+        //     }
+
+        //     await meetingCommentAnswer.deleteMany({ commentId: comment._id });
+        //   }
+
+        //   await meetingComment.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingImages.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingLikes.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingFavorit.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingParticipantSpot.deleteMany({
+        //     meetingId: meetingsDb[i]._id,
+        //   });
+        //   await meetingView.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingRating.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await meetingParticipant.deleteMany({ meetingId: meetingsDb[i]._id });
+        //   await MeetingImpressionImage.deleteMany({
+        //     meetingId: meetingsDb[i]._id,
+        //   });
+        //   await meetingVerify.deleteMany({ user: user1.id });
+        //   await meeting.remove();
+        //   console.log("Meetings and all related data deleted successfully");
+        // }
       }
       ///////////////////////////////////////////////////////////////////////////////
       //meeting deleteMany

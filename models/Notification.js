@@ -64,6 +64,10 @@ const Notification = new Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Company",
     },
+    dealId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "company_hot_deals",
+    },
     // createId:{type:mongoose.Schema.ObjectId,required:false},
     serviceId: {
       type: mongoose.Schema.ObjectId,

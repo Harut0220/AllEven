@@ -562,55 +562,101 @@ class EventService {
   // };
 
   destroy = async (des_events) => {
-    if (Array.isArray(des_events)) {
-      for (let i = 0; i < des_events.length; i++) {
-        const event = await Event.findById(des_events[i]);
-        await Notification.deleteMany({ eventId: des_events[i] });
-        await Report.deleteMany({ event: des_events[i] });
+    // if (Array.isArray(des_events)) {
+    //   for (let i = 0; i < des_events.length; i++) {
+    //     const event = await Event.findById(des_events[i]);
+    //     await Notification.deleteMany({ eventId: des_events[i] });
+    //     await Report.deleteMany({ event: des_events[i] });
 
+    //     if (!event) {
+    //       throw new Error("Event not found");
+    //     }
+
+    //     for (const imageId of event.images) {
+    //       await EventImage.findByIdAndDelete(imageId);
+    //     }
+
+    //     const comments = await EventComment.find({
+    //       event: des_events[i],
+    //     });
+
+    //     for (const comment of comments) {
+    //       await EventCommentLikes.deleteMany({ commentId: comment._id });
+
+    //       const answers = await EventCommentAnswer.find({
+    //         commentId: comment._id,
+    //       });
+
+    //       for (const answer of answers) {
+    //         await EventCommentAnswerLike.deleteMany({ answerId: answer._id });
+    //       }
+
+    //       await EventCommentAnswer.deleteMany({ commentId: comment._id });
+    //     }
+    //     await ImpressionsEvent.deleteMany({ event: des_events[i] });
+
+    //     await EventComment.deleteMany({ event: des_events[i] });
+    //     // await EventImage.deleteMany({ event: des_events[i] });
+    //     await EventLikes.deleteMany({ eventId: des_events[i] });
+    //     await EventFavorites.deleteMany({ eventId: des_events[i] });
+    //     await EventViews.deleteMany({ eventId: des_events[i] });
+    //     await EventRating.deleteMany({ event: des_events[i] });
+    //     await EventImpressionImages.deleteMany({ event: des_events[i] });
+    //     await EventParticipantsSpot.deleteMany({ eventId: des_events[i] });
+    //     await EventParticipants.deleteMany({ eventId: des_events[i] });
+    //     await User.findByIdAndUpdate(event.owner.toString(), {
+    //       $pull: { events: des_events[i] },
+    //     });
+    //     await event.remove();
+    //     console.log("Event and all related data deleted successfully");
+    //   }
+    if (Array.isArray(des_events)) {
+      for await (const eventId of des_events) {
+        const event = await Event.findById(eventId);
+        await Notification.deleteMany({ eventId });
+        await Report.deleteMany({ event: eventId });
+    
         if (!event) {
           throw new Error("Event not found");
         }
-
-        for (const imageId of event.images) {
+    
+        for await (const imageId of event.images) {
           await EventImage.findByIdAndDelete(imageId);
         }
-
-        const comments = await EventComment.find({
-          event: des_events[i],
-        });
-
-        for (const comment of comments) {
+    
+        const comments = await EventComment.find({ event: eventId });
+    
+        for await (const comment of comments) {
           await EventCommentLikes.deleteMany({ commentId: comment._id });
-
+    
           const answers = await EventCommentAnswer.find({
             commentId: comment._id,
           });
-
-          for (const answer of answers) {
+    
+          for await (const answer of answers) {
             await EventCommentAnswerLike.deleteMany({ answerId: answer._id });
           }
-
+    
           await EventCommentAnswer.deleteMany({ commentId: comment._id });
         }
-        await ImpressionsEvent.deleteMany({ event: des_events[i] });
-
-        await EventComment.deleteMany({ event: des_events[i] });
-        // await EventImage.deleteMany({ event: des_events[i] });
-        await EventLikes.deleteMany({ eventId: des_events[i] });
-        await EventFavorites.deleteMany({ eventId: des_events[i] });
-        await EventViews.deleteMany({ eventId: des_events[i] });
-        await EventRating.deleteMany({ event: des_events[i] });
-        await EventImpressionImages.deleteMany({ event: des_events[i] });
-        await EventParticipantsSpot.deleteMany({ eventId: des_events[i] });
-        await EventParticipants.deleteMany({ eventId: des_events[i] });
+    
+        await ImpressionsEvent.deleteMany({ event: eventId });
+        await EventComment.deleteMany({ event: eventId });
+        // await EventImage.deleteMany({ event: eventId });
+        await EventLikes.deleteMany({ eventId });
+        await EventFavorites.deleteMany({ eventId });
+        await EventViews.deleteMany({ eventId });
+        await EventRating.deleteMany({ event: eventId });
+        await EventImpressionImages.deleteMany({ event: eventId });
+        await EventParticipantsSpot.deleteMany({ eventId });
+        await EventParticipants.deleteMany({ eventId });
         await User.findByIdAndUpdate(event.owner.toString(), {
-          $pull: { events: des_events[i] },
+          $pull: { events: eventId },
         });
         await event.remove();
         console.log("Event and all related data deleted successfully");
       }
-    } else if (typeof des_events === "string") {
+    }else if (typeof des_events === "string") {
       const event = await Event.findById(des_events);
       await Notification.deleteMany({ eventId: des_events });
       await Report.deleteMany({ event: des_events });
@@ -626,19 +672,33 @@ class EventService {
         companyId: des_events,
       });
 
-      for (const comment of comments) {
-        await EventCommentLikes.deleteMany({ commentId: comment._id });
+      // for (const comment of comments) {
+      //   await EventCommentLikes.deleteMany({ commentId: comment._id });
 
+      //   const answers = await EventCommentAnswer.find({
+      //     commentId: comment._id,
+      //   });
+
+      //   for (const answer of answers) {
+      //     await EventCommentAnswerLike.deleteMany({ answerId: answer._id });
+      //   }
+
+      //   await EventCommentAnswer.deleteMany({ commentId: comment._id });
+      // }
+      for await (const comment of comments) {
+        await EventCommentLikes.deleteMany({ commentId: comment._id });
+      
         const answers = await EventCommentAnswer.find({
           commentId: comment._id,
         });
-
-        for (const answer of answers) {
+      
+        for await (const answer of answers) {
           await EventCommentAnswerLike.deleteMany({ answerId: answer._id });
         }
-
+      
         await EventCommentAnswer.deleteMany({ commentId: comment._id });
       }
+      
       await ImpressionsEvent.deleteMany({ event: des_events });
 
       await EventComment.deleteMany({ event: des_events });

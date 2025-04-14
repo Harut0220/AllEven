@@ -6,71 +6,49 @@ import companyHotDeals from "../models/company/companyHotDeals.js";
 import companyHotDealRegistration from "../models/company/companyHotDealRegistration.js";
 import companyModel from "../models/company/companyModel.js";
 
-
 //45
-cron.schedule('*/10 * * * *', () => {
-  let NotifService = new NotificationService()
+cron.schedule("*/10 * * * *", () => {
+  let NotifService = new NotificationService();
 
   let nowDate = new Date().getTime();
 
   NotifService.cronByDate(nowDate);
-
 });
 
-cron.schedule('0 0 */15 * * *', () => {
-  const EventServ = new EventService();
-    EventServ.changeSituation();
-});
+// cron.schedule("0 0 */15 * * *", () => {
+//   const EventServ = new EventService();
+//   EventServ.changeSituation();
+// });
 
-cron.schedule('0 0-23/1 * * *', () => {
-  const EventServ = new EventService();
-  EventServ.sendEventNotif()
-});
+// cron.schedule("0 0-23/1 * * *", () => {
+//   const EventServ = new EventService();
+//   EventServ.sendEventNotif();
+// });
 
 // Schedule a cron job to run every 1 hour   '0 * * * *'
 // every 5 minute   */5 * * * *
-cron.schedule('0 * * * *', () => {
+cron.schedule("0 * * * *", () => {
   const EventServ = new EventService();
-  EventServ.sendCreateEventNotif()
+  EventServ.sendCreateEventNotif();
 });
 
-cron.schedule('0 0 * * *', async() => {
-  const hotDealsDb=await companyHotDeals.find({situation:"passed"});
+// cron.schedule("0 0 * * *", async () => {
+//   const hotDealsDb = await companyHotDeals.find({ situation: "passed" });
 
-  for(let i=0;i<hotDealsDb.length;i++){
-    for(let j=0;j<hotDealsDb[i].registration.length;j++){
-       await companyHotDealRegistration.findByIdAndDelete(hotDealsDb[i].registration[j]._id)
-    }
-    await companyModel.findByIdAndUpdate(hotDealsDb[i].companyId,{$pull:{hotDeals:hotDealsDb[i]._id}})
-  }
-  await companyHotDeals.deleteMany({situation:"passed"})
-});
-
+//   for (let i = 0; i < hotDealsDb.length; i++) {
+//     for (let j = 0; j < hotDealsDb[i].registration.length; j++) {
+//       await companyHotDealRegistration.findByIdAndDelete(
+//         hotDealsDb[i].registration[j]._id
+//       );
+//     }
+//     await companyModel.findByIdAndUpdate(hotDealsDb[i].companyId, {
+//       $pull: { hotDeals: hotDealsDb[i]._id },
+//     });
+//   }
+//   await companyHotDeals.deleteMany({ situation: "passed" });
+// });
 
 export default cron;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import cron from "node-cron";
 // import NotificationService from "../services/NotificationService.js";
@@ -149,16 +127,13 @@ export default cron;
 //       }
 //     }
 
-
 //  /////////////////////////////////////////////////////////////
-
 
 //   } catch (error) {
 //     console.error(error);
 //   }
 
 // });
-
 
 // cron.schedule("*/2 * * * *", async () => {
 // try {

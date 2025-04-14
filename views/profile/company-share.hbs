@@ -104,7 +104,7 @@
     <div class="carousel-inner">
       {{#optionsFromArraysShare images "_id" "url" }}
         <div class="carousel-item {{#if first}}active{{/if}}" data-index="{{index}}">
-          <img src="/{{url}}" class="d-block w-100" alt="..." />
+          <img src="/{{url}}?width=1200&height=700" class="d-block w-100" alt="..." />
         </div>
       {{/optionsFromArraysShare}}
     </div>

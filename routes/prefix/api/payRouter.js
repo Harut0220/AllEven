@@ -177,6 +177,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     user: companyDb.owner._id.toString(),
     type: "Присоединение",
     navigate: true,
+    dealId:dealDb._id,
     message: `Пользователь ${userDB.name} ${userDB.surname} записался(лась) на ваше горящее предложение в ${time}.`,
     link: evLink,
   };
@@ -186,6 +187,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     user: companyDb.owner._id.toString(),
     type: "Присоединение",
     navigate: true,
+    dealId:dealDb._id,
     message: `Пользователь ${userDB.name} ${userDB.surname} записался(лась) на ваше горящее предложение в ${time}.`,
     link: evLink,
   });

@@ -115,52 +115,6 @@ app.get("/page/:num/", async function (req, res) {
 });
 
 
-
-app.get("/test/register", async (req, res) => {
-  const idMeet = "67c9491ce280217a88f0a457";
-  const eventDb = await companyModel
-    .findById(idMeet)
-    .populate("category")
-    .exec();
-
-  const evLink = `alleven://myCompany/${companyDb._id}`;
-
-  const time = date.split(" ")[1];
-  const day = date.split(" ")[0].split("-")[2];
-  const monthName = moment(date).locale("ru").format("MMMM");
-
-  const dataNotif = {
-    status: 2,
-    date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-    user: companyDb.owner._id.toString(),
-    type: "confirm_come",
-    message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-    registerId: registerDb._id,
-    serviceId: service._id,
-    link: evLink,
-  };
-  const nt = new Notification(dataNotif);
-  await nt.save();
-  if (companyDb.owner.notifCompany) {
-    notifEvent.emit(
-      "send",
-      companyDb.owner._id.toString(),
-      JSON.stringify({
-        type: "confirm_come",
-        serviceId: service._id,
-        date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
-        registerId: registerDb._id,
-        serviceId: service._id,
-        message: `Пользователь ${userDb.name} ${userDb.surname} записался на услугу на ${day} ${monthName} ${time}.`,
-        link: evLink,
-      })
-    );
-  }
-
-  return res.send("Test");
-});
-
-
 const start = async () => {
   await connect();
   app.listen(process.env.PORT, () =>

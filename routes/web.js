@@ -1,12 +1,9 @@
 import { Router } from "express";
-import UserController from "../controllers/user/UserController.js";
 const webRoutes = Router();
 import authCookieJWT from '../middlewares/authCookieJWT.js';
 import AuthController from '../controllers/user/AuthController.js';
 import {profileRoutes} from './prefix/web/profile.js';
 import RedirectIfAuthenticated from '../middlewares/RedirectIfAuthenticated.js';
-import { admin } from "../config/firebase/messaging.js";
-import notifEvent from "../events/NotificationEvent.js";
 
 
 webRoutes.get('/',(req,res)=>{

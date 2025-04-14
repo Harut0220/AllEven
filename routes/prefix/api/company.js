@@ -12,8 +12,6 @@ companyRoutes.get("/getCategories", companyController.getCategory);
 
 companyRoutes.get("/days", companyController.days);
 
-// companyRoutes.get("/singl/:id", isEmpParamObjId, companyController.singl);
-
 companyRoutes.get("/single", companyController.single);
 
 companyRoutes.get("/near/:id", isEmpParamObjId, companyController.near);
@@ -23,8 +21,6 @@ companyRoutes.get("/radius", companyController.radius); //kilometer motikic heru
 companyRoutes.get("/popular", companyController.popular);
 
 companyRoutes.get("/page", companyController.index); //for admin
-
-// companyRoutes.put("/edite", companyController.editeCompany);
 
 companyRoutes.post("/add", newAuthJWT, company, companyController.addCompany);
 
@@ -37,8 +33,6 @@ companyRoutes.post(
 companyRoutes.post("/online/pay", newAuthJWT, companyController.online);
 
 companyRoutes.post("/add/service", companyController.addService);
-
-// companyRoutes.post("/delete/service", companyController.deleteService);
 
 companyRoutes.get("/allCompanies", companyController.getCompanys); //kilometer motikic heru
 
@@ -126,6 +120,5 @@ companyRoutes.get(
   newAuthJWT,
   companyController.myImpressions
 );
-// companyRoutes.get( "/deal/register/:id", isEmpParamObjId, companyController.dealsRegisters);
 
 export default companyRoutes;
