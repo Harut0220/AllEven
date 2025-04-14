@@ -242,9 +242,6 @@ const companyService = {
       await companyModel.findByIdAndUpdate(data._id, { $set: { images: [] } });
 
       if (typeof data.images[0] === "string") {
-        companyDbforImg.images.map(async (imgId) => {
-          const imageDel = await deleteImage(__dirname, imgId.url);
-        });
         for (let i = 0; i < data.images.length; i++) {
           const image = new companyImage({
             url: data.images[i],
@@ -257,8 +254,6 @@ const companyService = {
             $push: { images: image._id },
           });
         }
-      } else {
-        delete data.images;
       }
 
       await companyPhones.deleteMany({ companyId: data._id });
