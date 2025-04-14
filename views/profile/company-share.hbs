@@ -58,6 +58,10 @@
       gap: 40px;
       flex-wrap: wrap;
     }
+    .title_name{
+      display: flex;
+      flex-wrap: wrap;
+    }
 </style>
 <div class="container" style="background-color: #F6F5F7;">
   <div
@@ -124,7 +128,7 @@
     </button>
   </div>
   <div class="datas">
-    <h3 >{{getValue event "companyName"}}</h3>
+    <h3 class="title_name">{{getValue event "companyName"}}</h3>
     <div class="event_desc"><span style="font-weight: bold;">Описание:</span>
         {{serviceName}}
     </div>
