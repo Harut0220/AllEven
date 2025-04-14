@@ -143,6 +143,8 @@ class AuthController {
   passwordReset = async (req, res) => {
     const { phone_number } = req.body;
     let rand = await this.GenerateRand.pin();
+    console.log("password reset",phone_number);
+    
     let success = myCache.set(`reset_pass_${phone_number}`, rand, 54000);
     const sendSMS = await this.SmsProstoService.sendMessage(phone_number, rand);
     return res.json({
@@ -153,7 +155,8 @@ class AuthController {
 
   passwordResetConfirm = async (req, res) => {
     const { phone_number, phone_number_code, password } = req.body;
-
+    console.log("password reset confirm",phone_number, phone_number_code, password);
+    
     let ph_num_c = myCache.get(`reset_pass_${phone_number}`);
     if (!ph_num_c) {
       return res.json({
@@ -176,6 +179,8 @@ class AuthController {
 
   passwordResetNewPass = async (req, res) => {
     const { phone_number, password } = req.body;
+    console.log("password reset new pass",phone_number, password);
+    
     await this.UserService.updateByPhone(phone_number, {
       password: password.toString(),
     });

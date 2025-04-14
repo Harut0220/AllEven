@@ -19,7 +19,8 @@ class FileUploadController{
     storeMulti = async (req,res) => {
         const files = req.files.file;
         const paths = [];
-
+        console.log(files,"files paths");
+        
         for(let f=0;f<files.length;f++){
             if(files[f].mimetype && files[f].mimetype.includes('image')){
                 paths.push(await this.UploadService.storeLowResImage(files[f].data))
