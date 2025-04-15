@@ -369,8 +369,7 @@ const loadNotifs = async () => {
    document.getElementById("notificationCountSpan").innerHTML = notifsAdmin.messages.length > 0 ?  notifsAdmin.messages.length : "";
 
   notifsAdmin.messages.forEach(el => {
-    // console.log(el, "el");
-    el._id=
+    el._id=notifsAdmin._id
     appendDiv("notifModal", generateNotifDiv(el));
   });
 };
