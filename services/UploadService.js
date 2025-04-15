@@ -66,6 +66,7 @@ class UploadService {
   storeLowResImage = async (data, quality = 15) => {
     const ref = `${uuidv4()}.jpeg`;
     await sharp(data)
+      .rotate() // Fix orientation based on EXIF
       .jpeg({ quality })
       .toFile("storage/uploads/" + ref);
 
