@@ -12,7 +12,7 @@ class ShareEventController {
   meetIndex = async (req, res) => {
     const meetingId = req.params.id;
 
-    const event = await meetingModel.findById(meetingId).populate("images").populate({path:"user",select:"phone_number"});
+    const event = await meetingModel.findById(meetingId).populate("images").populate({path:"user",select:"_id phone_number"});
     const date=event.date.split(" ")[0]
     const time=event.date.split(" ")[1]
 
@@ -30,12 +30,13 @@ class ShareEventController {
     }else if(event.description.length===countLength||event.description.length<countLength){
       resultDescription=event.description
     }
-    
+    const owner=event.user._id
     res.render("profile/meeting-share", {
       title: resultName,
       event,
       date,
       time,
+      owner,
       description:resultDescription,
       images:event.images,
       phone_number:event.user.phone_number,
@@ -92,10 +93,11 @@ class ShareEventController {
     }else if(serviceName.length===countLength||serviceName.length<countLength){
       resultDescription=serviceName
     }
-
+    const owner=event.owner._id
     res.render("profile/company-share", {
       title: resultName,
       event,
+      owner,
       imageHeader:event.images[0].url,
       image: event.images[0],
       images: event.images,

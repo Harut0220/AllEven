@@ -159,10 +159,10 @@
         Cкачайте сейчас и получите доступ ко всем событиям.
       </span>
       <div class="download_icon_div">
-        <a href="javascript:void(0);" onclick="openAppOrStore('{{getValue event "_id"}}')">
+        <a href="javascript:void(0);" onclick="openAppOrStore('{{getValue event "_id"}}','{{owner}}')">
         <img class="play_market" src="/img/google-черный.svg" alt="Play Market">
         </a>
-        <a href="javascript:void(0);" onclick="openAppOrStoreIOS('{{getValue event "_id"}}')">
+        <a href="javascript:void(0);" onclick="openAppOrStoreIOS('{{getValue event "_id"}}','{{owner}}')">
         <img class="app_store" src="/img/app-черная.svg" alt="App Store">
         </a>
       </div>
@@ -171,10 +171,10 @@
 </div>
 <script src="../../public/js/axios.js"></script>
 <script>
-      function openAppOrStore(id) {
+      function openAppOrStore(id,ownerMeet) {
       var packageName = "com.alleven.package"; // Replace with your actual package name
-      var appScheme = `alleven://singleMeeting/${id}`; // Replace with your actual deep link
-
+      var appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
+      console.log(appScheme,"appScheme")
       // Try opening the app
       window.location.href = appScheme;
 
@@ -185,9 +185,9 @@
       }, 2000);
     }
 
-      function openAppOrStoreIOS(id) {
+      function openAppOrStoreIOS(id,ownerMeet) {
       var packageName = "1662109163"; // Replace with your actual package name
-      var appScheme = `alleven://singleEvent/${id}`; // Replace with your actual deep link
+      var appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
 
       // Try opening the app
       window.location.href = appScheme;
