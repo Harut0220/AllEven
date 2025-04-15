@@ -132,6 +132,7 @@ class ShareEventController {
     const baseUrl = req.protocol + "://" + req.get("host");
     const date=event.started_time.split(" ")[0]
     const time=event.started_time.split(" ")[1]
+    
     res.render("profile/event-share", {
       title: resultName,
       event,

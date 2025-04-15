@@ -169,42 +169,23 @@
       </span>
       <div class="download_icon_div">
         {{!-- href="https://play.google.com/store/apps/details?id=com.alleven" --}}
-        <a  href="javascript:void(0);" onclick="openAppOrStore('{{event._id}}')">
+        <a  href="javascript:void(0);" onclick="openAppOrStore('{{event._id}}','{{event.owner._id}}')">
         {{!-- <img class="play_market" src="/public/images/pics/playmarket.png" alt="Play Market"> --}}
         <img class="play_market" src="/img/google-черный.svg" alt="Play Market">
         </a>
-        <a href="javascript:void(0);" onclick="openAppOrStoreIOS('{{event._id}}')">
+        <a href="javascript:void(0);" onclick="openAppOrStoreIOS('{{event._id}}','{{event.owner._id}}')">
         <img class="app_store" src="/img/app-черная.svg" alt="App Store">
         </a>
       </div>
     </div>
   </div>
 </div>
-<script src="../../public/js/axios.js"></script>
 <script>
-      function openAppOrStore(id) {
-        const getCleaningData = async () => {
-              try {
-                const response = await axios.get(`/api/event/near/${id}`);
-                const cleaningData = response.data;
-                // console.log('Cleaning Data:', cleaningData);
-                return cleaningData;
-              } catch (error) {
-                console.error('Error fetching cleaning data:', error);
-                throw error;
-              }
-         };
 
-     const loadNotifs = async () => {
-       const notifsAdmin = await getCleaningData();
-       return notifsAdmin
-     };
-
-     const eventRes= loadNotifs(); // run the async wrapper
-     console.log(eventRes._id)
+      function openAppOrStore(id,owner) {
       var packageName = "com.alleven.package"; // Replace with your actual package name
-      var appScheme = `alleven://singleEvent/${id}?owner=${eventRes.owner}`; // Replace with your actual deep link
-
+      var appScheme = `alleven://singleEvent/${id}?owner=${owner}`; // Replace with your actual deep link
+      console.log(appScheme)
       // Try opening the app
       window.location.href = appScheme;
 
@@ -215,9 +196,9 @@
       }, 2000);
     }
 
-      function openAppOrStoreIOS(id) {
+      function openAppOrStoreIOS(id,owner) {
       var packageName = "1662109163"; // Replace with your actual package name
-      var appScheme = `alleven://singleEvent/${id}`; // Replace with your actual deep link
+      var appScheme = `alleven://singleEvent/${id}?owner=${owner}`; // Replace with your actual deep link
 
       // Try opening the app
       window.location.href = appScheme;

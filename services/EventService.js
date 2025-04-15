@@ -908,7 +908,7 @@ class EventService {
         },
         {
           path: "owner",
-          select: ["name", "surname", "email", "phone_number", "avatar"],
+          select: ["_id","name", "surname", "email", "phone_number", "avatar"],
         },
         {
           path: "favorites",
