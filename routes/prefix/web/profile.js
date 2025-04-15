@@ -38,6 +38,10 @@ profileRoutes.post("/users/update/:id", adminOrModerator,isEmpParamObjId, UserCo
 
 profileRoutes.get("/notification", NotificationController.indexForAdmin);
 
+profileRoutes.post("/notification/confirm/:id",NotificationController.notificationAdminConfirm)
+
+profileRoutes.get("/notifications/admin",NotificationController.getNotifsAdmin)
+
 profileRoutes.post(
   "/notification/store",
   notStore,

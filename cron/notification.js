@@ -5,6 +5,11 @@ import moment from "moment-timezone";
 import companyHotDeals from "../models/company/companyHotDeals.js";
 import companyHotDealRegistration from "../models/company/companyHotDealRegistration.js";
 import companyModel from "../models/company/companyModel.js";
+import servicesRegistrations from "../models/services/servicesRegistrations.js";
+import Notification from "../models/Notification.js";
+import notifEvent from "../events/NotificationEvent.js";
+import companyService from "../models/company/companyService.js";
+import User from "../models/User.js";
 
 //45
 cron.schedule("*/10 * * * *", () => {
@@ -13,6 +18,56 @@ cron.schedule("*/10 * * * *", () => {
   let nowDate = new Date().getTime();
 
   NotifService.cronByDate(nowDate);
+});
+
+// Runs every 30 minutes
+cron.schedule("*/30 * * * *", async () => {
+  console.log("Running task every 30 minutes");
+  const serviceRegistersDb = await servicesRegistrations
+    .find({ status: 0 })
+    .populate("serviceId");
+  for await (const register of serviceRegistersDb) {
+    const serviceDb = await companyService.findById(register.serviceId._id);
+    if (serviceDb) {
+      if (register.dealDate === register.date) {
+        const evLink = `alleven://myCompany/${register.serviceId.companyId}`;
+        const companyDb = await companyModel.findById(
+          register.serviceId.companyId
+        );
+        if (companyDb) {
+          const userDb = await User.findById(companyDb.owner);
+          if (userDb) {
+            const dataNotif = {
+              status: 2,
+              date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+              user: userDb._id.toString(),
+              type: "Регистрации услугу",
+              message: `Внимание!! У вас есть не подтвержденные записи!`,
+              navigate: true,
+              companyId: companyDb._id,
+              link: evLink,
+            };
+            const nt = new Notification(dataNotif);
+            await nt.save();
+            notifEvent.emit(
+              "send",
+              userDb._id.toString(),
+              JSON.stringify({
+                type: "Регистрации услугу",
+                status: 2,
+                date_time: moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm"),
+                message: `Внимание!! У вас есть не подтвержденные записи!`,
+                companyId: companyDb._id,
+                navigate: true,
+                link: evLink,
+              })
+            );
+          }
+        }
+      }
+    }
+  }
+  // Your code here
 });
 
 // cron.schedule("0 0 */15 * * *", () => {

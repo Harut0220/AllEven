@@ -34,6 +34,7 @@ import companyParticipants from "../../../models/company/companyParticipants.js"
 import calculateAverageRating from "../../../helper/ratingCalculate.js";
 import calculateDistance from "../../../helper/distanceCalculate.js";
 import isCompanyOpen from "../../../helper/isCompanyOpen.js";
+import adminNotifStore from "../../../helper/adminNotifStore.js";
 
 const companyController = {
   deleteServiceImage: async (req, res) => {
@@ -596,8 +597,14 @@ const companyController = {
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
       const { companyId, description, cost, date } = req.body;
-      console.log(companyId, description, cost, date,"companyId,description, cost, date");
-      
+      console.log(
+        companyId,
+        description,
+        cost,
+        date,
+        "companyId,description, cost, date"
+      );
+
       const result = await companyService.addHotDeals(
         companyId,
         description,
@@ -1063,6 +1070,12 @@ const companyController = {
           data: company,
         })
       );
+      await adminNotifStore({
+        type: "Онлайн оплата",
+        message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
+        data: company,
+      });
+
       res
         .status(200)
         .send({ message: "success", onlinePay: company.onlinePay });
@@ -2442,18 +2455,20 @@ const companyController = {
       }
       let upcomingDeals = [];
       // console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
-      const hotDealsDb=await companyHotDeals.find({companyId:resultChanged1._id})
+      const hotDealsDb = await companyHotDeals.find({
+        companyId: resultChanged1._id,
+      });
       // for await(let i = 0; i < resultChanged1.hotDeals.length; i++) {
-      for await (const hotDeal of hotDealsDb){
+      for await (const hotDeal of hotDealsDb) {
         const todayDate = moment.tz(process.env.TZ).format("YYYY-MM-DD");
-        const dealDateSpl =hotDeal.date.split(" ")[0];
+        const dealDateSpl = hotDeal.date.split(" ")[0];
         console.log(dealDateSpl === todayDate, "dealDateSpl===todayDate");
         console.log("dealDateSpl", dealDateSpl);
         console.log("todayDate", todayDate);
 
         if (dealDateSpl === todayDate) {
           // console.log("today deal",hotDeal);
-          if(hotDeal.registration){
+          if (hotDeal.registration) {
             upcomingDeals.push(hotDeal);
           }
         }
@@ -2466,14 +2481,11 @@ const companyController = {
         const now = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm");
 
         if (!fixedTime.isAfter(now)) {
-          await companyHotDeals.findByIdAndUpdate(
-            hotDeal._id,
-            {
-              $set: {
-                situation: "passed",
-              },
-            }
-          );
+          await companyHotDeals.findByIdAndUpdate(hotDeal._id, {
+            $set: {
+              situation: "passed",
+            },
+          });
         }
       }
       const today = moment.tz(process.env.TZ).format("YYYY-MM-DD");
@@ -2505,16 +2517,20 @@ const companyController = {
       // for await(const hotDeal of hotDealsDb){
       //   if (hotDeal.registration) {
       //     console.log("hotDeals registration", hotDeal);
-          
+
       //     countToday.push(1);
       //     console.log(countToday, "countToday deal +1");
       //   }
       // }
 
-      resultChanged1.todayRegisters = countToday.reduce((a, b) => a + b, 0)+upcomingDeals.length;
+      resultChanged1.todayRegisters =
+        countToday.reduce((a, b) => a + b, 0) + upcomingDeals.length;
       resultChanged1.afterRegisters = countAfter.reduce((a, b) => a + b, 0);
-      console.log(resultChanged1.todayRegisters, "resultChanged1.todayRegisters");
-      resultChanged1.hotDeals=upcomingDeals
+      console.log(
+        resultChanged1.todayRegisters,
+        "resultChanged1.todayRegisters"
+      );
+      resultChanged1.hotDeals = upcomingDeals;
       function removeDuplicatesByUser(data) {
         const uniqueEntries = {};
 
@@ -2619,6 +2635,11 @@ const companyController = {
             data: db,
           })
         );
+        await adminNotifStore({
+          type: "Новая услуга",
+          message: "event",
+          data: db,
+        })
 
         res.status(200).send(result);
       } else {

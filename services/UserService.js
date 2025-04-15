@@ -689,7 +689,7 @@ class UserService {
   
         const message = {
           notification: {
-            title: d.type,
+            // title: "Новое сообщение",
             body: d.message,
           },
           token: element,
@@ -705,7 +705,7 @@ class UserService {
             payload: {
               aps: {
                 alert: {
-                  title: d.type,
+                  // title: "Новое сообщение",
                   body: d.message,
                 },
                 sound: "default",

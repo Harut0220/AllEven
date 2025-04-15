@@ -100,6 +100,7 @@ class ReportController {
     res.render("profile/complaint/list", {
       layout: "profile",
       title: "Report",
+      user: req.user,
       datas,
     });
   };

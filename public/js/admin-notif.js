@@ -274,34 +274,36 @@ window.addEventListener("DOMContentLoaded", () => {
   const notifSpan = document.getElementById("notificationCountSpan");
   const notifModal = document.getElementById("notifModal");
 
-  notifModal.innerHTML = "";
+  // notifModal.innerHTML = "";
 
-  if (!savedCount || !savedCount.notifs) {
-    notifSpan.innerHTML = "";
-    return;
-  }
+  // if (!savedCount || !savedCount.notifs) {
+  //   notifSpan.innerHTML = "";
+  //   return;
+  // }
 
-  let notifs = savedCount.notifs;
+  // let notifs = savedCount.notifs;
 
-  if (nameForRemove) {
-    notifs = notifs.filter((el) => el.message !== nameForRemove);
-    localStorage.removeItem("notifDataRemove");
-    const obj = {
-      countNotif: notifs.length > 0 ? notifs.length : "",
-      notifs,
-    };
-    localStorage.setItem("notifCount", JSON.stringify(obj));
-  }
+  // if (nameForRemove) {
+  //   notifs = notifs.filter((el) => el.message !== nameForRemove);
+  //   localStorage.removeItem("notifDataRemove");
+  //   const obj = {
+  //     countNotif: notifs.length > 0 ? notifs.length : "",
+  //     notifs,
+  //   };
+  //   localStorage.setItem("notifCount", JSON.stringify(obj));
+  // }
 
-  notifSpan.innerHTML = notifs.length > 0 ? notifs.length : "";
-  notifs.forEach((el) => appendDiv("notifModal", generateNotifDiv(el)));
+  // notifSpan.innerHTML = notifs.length > 0 ? notifs.length : "";
+  // notifs.forEach((el) => appendDiv("notifModal", generateNotifDiv(el)));
 });
 
 
 function generateNotifDiv(data) {
+  // console.log(data,"data");
+  
   return `<div class="notificationModalChild" id="notif-${data.message}">
     <div>${data.type}</div>
-    <a href='${genRoute(data)}' onclick="removeMessage('${data.message}')">
+    <a href='${genRoute(data)}' onclick="removeMessage('${data.message}','${data._id}')">
       ${data.message}
     </a>
     <input
@@ -309,35 +311,71 @@ function generateNotifDiv(data) {
       type="image"
       name="category"
       src="/images/pics/delete 1.svg"
-      onclick="removeNotif(this, '${data.message}')"
+      onclick="removeNotif(this, '${data.message}','${data._id}')"
     />
   </div>`;
 }
 
 
-function removeNotif(el, message) {
+function removeNotif(el, message,id) {
   el.parentElement.remove();
+  // console.log(message,id,"message,id");
+  const count= document.getElementById("notificationCountSpan").innerHTML;
+  document.getElementById("notificationCountSpan").innerHTML=Number(count)-1
+  
+  axios.post(`/admin/profile/notification/confirm/${id}`)
+  // const localSocket = JSON.parse(localStorage.getItem("notifCount"));
+  // if (!localSocket) return;
 
-  const localSocket = JSON.parse(localStorage.getItem("notifCount"));
-  if (!localSocket) return;
+  // const updated = localSocket.notifs.filter((el) => el.message !== message);
+  // const count = updated.length;
 
-  const updated = localSocket.notifs.filter((el) => el.message !== message);
-  const count = updated.length;
+  // let obj = {
+  //   countNotif: count > 0 ? count : "",
+  //   notifs: updated,
+  // };
 
-  let obj = {
-    countNotif: count > 0 ? count : "",
-    notifs: updated,
-  };
-
-  localStorage.setItem("notifCount", JSON.stringify(obj));
-  document.getElementById("notificationCountSpan").innerHTML = count > 0 ? count : "";
+  // localStorage.setItem("notifCount", JSON.stringify(obj));
+  // document.getElementById("notificationCountSpan").innerHTML = count > 0 ? count : "";
 }
 
 
-function removeMessage(message) {
-  console.log("removeMessage", message);
-  localStorage.setItem("notifDataRemove", message);
+function removeMessage(message,id) {
+  const count= document.getElementById("notificationCountSpan").innerHTML;
+  document.getElementById("notificationCountSpan").innerHTML=Number(count)-1
+  axios.post(`/admin/profile/notification/confirm/${id}`)
+
+  // console.log("removeMessage", message);
+  // localStorage.setItem("notifDataRemove", message);
 }
+
+
+const getCleaningData = async () => {
+  try {
+    const response = await axios.get('/admin/profile/notifications/admin');
+    const cleaningData = response.data;
+    // console.log('Cleaning Data:', cleaningData);
+    return cleaningData;
+  } catch (error) {
+    console.error('Error fetching cleaning data:', error);
+    throw error;
+  }
+};
+
+// This needs to be wrapped in an async function
+const loadNotifs = async () => {
+  const notifsAdmin = await getCleaningData();
+  // console.log("res data notif", notifsAdmin);
+   document.getElementById("notificationCountSpan").innerHTML = notifsAdmin.messages.length > 0 ?  notifsAdmin.messages.length : "";
+
+  notifsAdmin.messages.forEach(el => {
+    // console.log(el, "el");
+    el._id=
+    appendDiv("notifModal", generateNotifDiv(el));
+  });
+};
+
+loadNotifs(); // run the async wrapper
 
 
 
@@ -350,31 +388,37 @@ socket.onmessage = function (event) {
     window.location.reload();
     return;
   }
+  appendDiv("notifModal", generateNotifDiv(data));
+  const count= document.getElementById("notificationCountSpan").innerHTML;
+  document.getElementById("notificationCountSpan").innerHTML=Number(count)+1
+  // const localSocket = JSON.parse(localStorage.getItem("notifCount"));
+  // const notifModal = document.getElementById("notifModal");
 
-  const localSocket = JSON.parse(localStorage.getItem("notifCount"));
-  const notifModal = document.getElementById("notifModal");
+  // if (!localSocket) {
+  //   let obj = {
+  //     countNotif: 1,
+  //     notifs: [data],
+  //   };
+  //   localStorage.setItem("notifCount", JSON.stringify(obj));
+  //   document.getElementById("notificationCountSpan").innerHTML = 1;
+  //   appendDiv("notifModal", generateNotifDiv(data));
+  // } else {
+  //   const count = typeof localSocket.countNotif === "string" ?Number(localSocket.countNotif)+1:localSocket.countNotif+1
+  //   let updated = {
+  //     countNotif: count,
+  //     notifs: [...localSocket.notifs, data],
+  //   };
+  //   localStorage.setItem("notifCount", JSON.stringify(updated));
+  //   document.getElementById("notificationCountSpan").innerHTML = updated.countNotif;
 
-  if (!localSocket) {
-    let obj = {
-      countNotif: 1,
-      notifs: [data],
-    };
-    localStorage.setItem("notifCount", JSON.stringify(obj));
-    document.getElementById("notificationCountSpan").innerHTML = 1;
-    appendDiv("notifModal", generateNotifDiv(data));
-  } else {
-    const count = typeof localSocket.countNotif === "string" ?Number(localSocket.countNotif)+1:localSocket.countNotif+1
-    let updated = {
-      countNotif: count,
-      notifs: [...localSocket.notifs, data],
-    };
-    localStorage.setItem("notifCount", JSON.stringify(updated));
-    document.getElementById("notificationCountSpan").innerHTML = updated.countNotif;
-
-    notifModal.innerHTML = "";
-    updated.notifs.forEach((el) => {
-      appendDiv("notifModal", generateNotifDiv(el));
-    });
-  }
+  //   notifModal.innerHTML = "";
+  //   updated.notifs.forEach((el) => {
+  //     appendDiv("notifModal", generateNotifDiv(el));
+  //   });
+  // }
 };
+
+
+
+
 

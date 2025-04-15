@@ -4,6 +4,7 @@ import FeedbackService from "../../../services/FeedbackService.js";
 import notifEvent from "../../../events/NotificationEvent.js";
 import Notification from "../../../models/Notification.js";
 import moment from "moment-timezone";
+import NotificationAdmin from "../../../models/NotificationAdmin.js";
 
 class NotificationController{
 
@@ -11,6 +12,27 @@ class NotificationController{
         this.NotificationService = new NotificationService();
         this.EventCategoryService = new EventCategoryService();
         this.FeedbackService = new FeedbackService();
+    }
+
+    getNotifsAdmin=async(req,res)=>{
+        try {
+            const notifs=await NotificationAdmin.find({read:false})
+            res.status(200).send({success:true,message:"success",messages:notifs})
+        } catch (error) {
+            console.error(error)
+            res.status(500).send({message:"Server Error"})
+        }
+    }
+
+    notificationAdminConfirm=async(req,res)=>{
+        try {
+            const id=req.params.id
+            await NotificationAdmin.findByIdAndUpdate(id,{$set:{read:true}})
+            res.status(200).send({success:true,message:"success"})
+        } catch (error) {
+            console.error(error)
+            res.status(500).sent({message:"Server Error"})
+        }
     }
 
     index = async (req,res) => {

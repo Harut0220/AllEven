@@ -26,6 +26,7 @@ import calculateDistance from "../../../helper/distanceCalculate.js";
 import { separateUpcomingAndPassedEvents } from "../../../helper/upcomingAndPassed.js";
 import Agenda from "agenda";
 import { agenda } from "../../../index.js";
+import adminNotifStore from "../../../helper/adminNotifStore.js";
 class EventController {
   constructor() {
     this.EventService = new EventService();
@@ -226,7 +227,6 @@ class EventController {
     const { event_id, files } = req.body;
     const userDb = await User.findById(user.id);
 
-
     const serviceFunction = async () => {
       const companyImpressionImagesDb = await eventImpressionImages
         .findOne({ event: event_id, user: user.id })
@@ -302,7 +302,6 @@ class EventController {
         );
       }
     }
-
 
     const ifImpressions = await ImpressionsEvent.findOne({
       event: event_id,
@@ -773,6 +772,11 @@ class EventController {
         data: event,
       })
     );
+    await adminNotifStore({
+      type: "Новая события",
+      message: event.name,
+      data: event,
+    });
     const userDb = await User.findById(user.id);
     async function runAgenda(id, type) {
       await agenda.start(); // <-- Important!
@@ -781,7 +785,9 @@ class EventController {
       const dat = eventDb.started_time + ":00";
 
       const eventTime = moment.tz(dat, process.env.TZ);
-      const eventTimeMinusFive = moment.tz(dat, process.env.TZ).subtract(5, 'minutes');
+      const eventTimeMinusFive = moment
+        .tz(dat, process.env.TZ)
+        .subtract(5, "minutes");
 
       const notificationTime = eventTime.clone().subtract(1, "hour");
       if (type === "participants") {
@@ -795,10 +801,14 @@ class EventController {
         );
       }
       if (type === "participantsSpot") {
-        await agenda.schedule(eventTimeMinusFive.toDate(), "send event notification", {
-          eventId: event._id,
-          type: "participantsSpot",
-        });
+        await agenda.schedule(
+          eventTimeMinusFive.toDate(),
+          "send event notification",
+          {
+            eventId: event._id,
+            type: "participantsSpot",
+          }
+        );
       }
       console.log("Job scheduled for:", notificationTime.toDate());
     }
@@ -807,7 +817,7 @@ class EventController {
       try {
         const { eventId, type } = job.attrs.data;
         console.log("mtav define mej");
-        
+
         const eventDb = await Event.findById(eventId)
           .populate({
             path: "participants",
@@ -916,16 +926,6 @@ class EventController {
 
     runAgenda(event._id.toString(), "participants");
     runAgenda(event._id.toString(), "participantsSpot");
-
-
-
-
-
-
-
-
-
-
 
     // const dat = event.started_time + ":00";
 

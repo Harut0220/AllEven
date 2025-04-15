@@ -20,6 +20,7 @@ import meetingParticipant from "../../../models/meeting/meetingParticipant.js";
 import meetingDidNotComeUser from "../../../models/meeting/meetingDidNotComeUser.js";
 import { separateUpcomingAndPassedMeetings } from "../../../helper/upcomingAndPassed.js";
 import { agenda } from "../../../index.js";
+import adminNotifStore from "../../../helper/adminNotifStore.js";
 
 const meetingController = {
   in_place: async (req, res) => {
@@ -1002,6 +1003,11 @@ const meetingController = {
           data: meetingVerify,
         })
       );
+      await adminNotifStore({
+        type: "confirm_passport",
+        message: meetingVerify.user.name,
+        data: meetingVerify,
+      });
 
       return res.status(200).send(result);
     } catch (error) {
@@ -1018,8 +1024,8 @@ const meetingController = {
       const authHeader = req.headers.authorization;
       const token = authHeader.split(" ")[1];
       const user = jwt.decode(token);
-      console.log(meeting,"meeting store data");
-      
+      console.log(meeting, "meeting store data");
+
       const userDb = await User.findById(user.id);
       const phone = userDb.phone_number;
       if (userDb.statusMeeting === "Verified") {
@@ -1397,7 +1403,7 @@ const meetingController = {
     });
     meetingsRes.reverse();
     console.log(meetingsRes, "meetingsRes");
-    
+
     res.render("profile/meeting", {
       layout: "profile",
       title: "Meeting",

@@ -18,17 +18,32 @@ import seedRouter from "./routes/seed.js";
 import reedRouter from "./routes/reed.js";
 import shareRoutes from "./routes/share.js";
 import fs from "fs";
-import notifEvent from "./events/NotificationEvent.js";
-import Notification from "./models/Notification.js";
-import moment from "moment-timezone";
-import companyModel from "./models/company/companyModel.js";
 import Agenda from "agenda";
+import notifEvent from "./events/NotificationEvent.js";
+import adminNotifStore from "./helper/adminNotifStore.js";
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
 dotenv.config();
 
 const app = express();
+app.get("/test/admin",async(req,res)=>{
+      notifEvent.emit(
+        "send",
+        "ADMIN",
+        JSON.stringify({
+          type: "Новая события",
+          message: "name new",
+          data: {name:"Event state",_id:"67f64d6c18383402c4184f71"},
+        })
+      );
+      await adminNotifStore({
+        type: "Новая события",
+        message: "name new",
+        data: {name:"Event state",_id:"67f64d6c18383402c4184f71"},
+      });
+      res.send("1")
+})
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 export const agenda = new Agenda({
@@ -113,7 +128,6 @@ app.get("/page/:num/", async function (req, res) {
     res.status(404).send("not found");
   }
 });
-
 
 const start = async () => {
   await connect();
