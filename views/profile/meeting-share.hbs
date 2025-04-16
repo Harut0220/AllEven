@@ -172,27 +172,23 @@
 <script src="../../public/js/axios.js"></script>
 <script>
       function openAppOrStore(id,ownerMeet) {
-      var packageName = "com.alleven.package"; // Replace with your actual package name
+      var packageName = "com.alleven"; // Replace with your actual package name
       var appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
       console.log(appScheme,"appScheme")
-      // Try opening the app
       window.location.href = appScheme;
 
-      // If the app is not installed, redirect to the Play Store after 2 seconds
       setTimeout(function () {
         window.location.href =
           "https://play.google.com/store/apps/details?id=" + packageName;
       }, 2000);
-    }
+      }
 
       function openAppOrStoreIOS(id,ownerMeet) {
       var packageName = "1662109163"; // Replace with your actual package name
       var appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
 
-      // Try opening the app
       window.location.href = appScheme;
 
-      // If the app is not installed, redirect to the Play Store after 2 seconds
       setTimeout(function () {
         window.location.href =
           "https://apps.apple.com/am/app/alleven/id" + packageName;

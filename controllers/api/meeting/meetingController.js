@@ -993,7 +993,11 @@ const meetingController = {
           user: user.id,
         })
         .populate({ path: "user", select: "-password -fcm_token" });
-
+      const notidb=await adminNotifStore({
+        type: "confirm_passport",
+        message: meetingVerify.user.name,
+        data: meetingVerify,
+      });
       notifEvent.emit(
         "send",
         "ADMIN",
@@ -1001,13 +1005,11 @@ const meetingController = {
           type: "confirm_passport",
           message: meetingVerify.user.name,
           data: meetingVerify,
+          _id:notidb._id
+
         })
       );
-      await adminNotifStore({
-        type: "confirm_passport",
-        message: meetingVerify.user.name,
-        data: meetingVerify,
-      });
+
 
       return res.status(200).send(result);
     } catch (error) {

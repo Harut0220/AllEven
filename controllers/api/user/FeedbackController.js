@@ -28,7 +28,11 @@ class FeedbackController {
       data.user = user.id;
 
       let feedback = await this.FeedbackService.store(data);
-
+      const notidb=await adminNotifStore({
+        type: "Обратная связь",
+        message: userDb.phone_number,
+        data: feedback,
+      });
       notifEvent.emit(
         "send",
         "ADMIN",
@@ -36,13 +40,11 @@ class FeedbackController {
           type: "Обратная связь",
           message: userDb.phone_number,
           data: feedback,
+          _id:notidb._id
+
         })
       );
-      await adminNotifStore({
-        type: "Обратная связь",
-        message: userDb.phone_number,
-        data: feedback,
-      });
+
       // notifEvent.emit('send','ADMIN_FEEDBACK',JSON.stringify(feedback));
       return res.json({ status: "success", message: "message send success" });
     } catch (error) {

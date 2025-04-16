@@ -61,15 +61,21 @@ class DocumentController {
       res.json({ status: "success", message: "Saved success", data: document });
     } else {
       await this.UserService.pushInCollection(req.user.id, doc_id, "documents");
-      notifEvent.emit(
-        "send",
-        "ADMIN",
-        JSON.stringify({ type: "Подтвердил документ", message: req.user.email })
-      );
-      await adminNotifStore({
+
+      const notidb = await adminNotifStore({
         type: "Подтвердил документ",
         message: req.user.email,
       });
+      notifEvent.emit(
+        "send",
+        "ADMIN",
+        JSON.stringify({
+          type: "Подтвердил документ",
+          message: req.user.email,
+          _id: notidb._id,
+        })
+      );
+
       const userDb = await User.findById(req.user.id);
 
       const ifIncludes = userDb.documents.includes(document._id);

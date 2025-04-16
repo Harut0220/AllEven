@@ -1061,6 +1061,12 @@ const companyController = {
       }
 
       const evLink = `alleven://myCompany/${company._id}`;
+     const notidb = await adminNotifStore({
+        type: "Онлайн оплата",
+        message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
+        data: company,
+      });
+
       notifEvent.emit(
         "send",
         "ADMIN",
@@ -1068,13 +1074,11 @@ const companyController = {
           type: "Онлайн оплата",
           message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
           data: company,
+          _id:notidb._id
+
         })
       );
-      await adminNotifStore({
-        type: "Онлайн оплата",
-        message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
-        data: company,
-      });
+
 
       res
         .status(200)
@@ -2625,7 +2629,11 @@ const companyController = {
             })
           );
         }
-
+        const notidb=await adminNotifStore({
+          type: "Новая услуга",
+          message: "event",
+          data: db,
+        })
         notifEvent.emit(
           "send",
           "ADMIN",
@@ -2633,13 +2641,11 @@ const companyController = {
             type: "Новая услуга",
             message: "event",
             data: db,
+            _id:notidb._id
+
           })
         );
-        await adminNotifStore({
-          type: "Новая услуга",
-          message: "event",
-          data: db,
-        })
+
 
         res.status(200).send(result);
       } else {

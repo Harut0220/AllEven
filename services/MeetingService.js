@@ -126,52 +126,98 @@ const meetingService = {
   },
   destroy: async (des_events) => {
     if (Array.isArray(des_events)) {
-      for (let i = 0; i < des_events.length; i++) {
-        const meeting = await meetingModel.findById(des_events[i]);
-        await Notification.deleteMany({ meetingId: des_events[i] });
-        await Report.deleteMany({ meeting: des_events[i] });
+      for await (const meetingId of des_events) {
+        const meeting = await meetingModel.findById(meetingId);
+        console.log(meetingId,"meetingId");
+        
+        await Notification.deleteMany({ meetingId });
+        await Report.deleteMany({ meeting: meetingId });
+      
         if (!meeting) {
           throw new Error("Meeting not found");
         }
-
-        const comments = await meetingComment.find({
-          meetingId: des_events[i],
-        });
-
-        for (const comment of comments) {
+      
+        const comments = await meetingComment.find({ meetingId });
+      
+        for await (const comment of comments) {
           await meetingCommentLikes.deleteMany({ commentId: comment._id });
-
-          const answers = await meetingCommentAnswer.find({
-            commentId: comment._id,
-          });
-
-          for (const answer of answers) {
+      
+          const answers = await meetingCommentAnswer.find({ commentId: comment._id });
+      
+          for await (const answer of answers) {
             await MeetingAnswerLikes.deleteMany({ answerId: answer._id });
           }
-
+      
           await meetingCommentAnswer.deleteMany({ commentId: comment._id });
         }
-        await ImpressionsMeeting.deleteMany({ meeting: des_events[i] });
-
-        await meetingComment.deleteMany({ meetingId: des_events[i] });
-        await meetingImages.deleteMany({ meetingId: des_events[i] });
-        await meetingLikes.deleteMany({ meetingId: des_events[i] });
-        await meetingFavorit.deleteMany({ meetingId: des_events[i] });
-        await meetingParticipantSpot.deleteMany({ meetingId: des_events[i] });
-        await meetingView.deleteMany({ meetingId: des_events[i] });
-        await meetingRating.deleteMany({ meetingId: des_events[i] });
-        await meetingParticipant.deleteMany({ meetingId: des_events[i] });
-        await meetingImpressionImage.deleteMany({ meetingId: des_events[i] });
-
+      
+        await ImpressionsMeeting.deleteMany({ meeting: meetingId });
+        await meetingComment.deleteMany({ meetingId });
+        await meetingImages.deleteMany({ meetingId });
+        await meetingLikes.deleteMany({ meetingId });
+        await meetingFavorit.deleteMany({ meetingId });
+        await meetingParticipantSpot.deleteMany({ meetingId });
+        await meetingView.deleteMany({ meetingId });
+        await meetingRating.deleteMany({ meetingId });
+        await meetingParticipant.deleteMany({ meetingId });
+        await meetingImpressionImage.deleteMany({ meetingId });
+      
         await User.findByIdAndUpdate(meeting.user.toString(), {
           $pull: { meetings: meeting._id, meeting_favorites: meeting._id },
         });
+      
         await meeting.remove();
         console.log("Meetings and all related data deleted successfully");
       }
+      
+      // for (let i = 0; i < des_events.length; i++) {
+      //   const meeting = await meetingModel.findById(des_events[i]);
+      //   await Notification.deleteMany({ meetingId: des_events[i] });
+      //   await Report.deleteMany({ meeting: des_events[i] });
+      //   if (!meeting) {
+      //     throw new Error("Meeting not found");
+      //   }
+
+      //   const comments = await meetingComment.find({
+      //     meetingId: des_events[i],
+      //   });
+
+      //   for (const comment of comments) {
+      //     await meetingCommentLikes.deleteMany({ commentId: comment._id });
+
+      //     const answers = await meetingCommentAnswer.find({
+      //       commentId: comment._id,
+      //     });
+
+      //     for (const answer of answers) {
+      //       await MeetingAnswerLikes.deleteMany({ answerId: answer._id });
+      //     }
+
+      //     await meetingCommentAnswer.deleteMany({ commentId: comment._id });
+      //   }
+      //   await ImpressionsMeeting.deleteMany({ meeting: des_events[i] });
+
+      //   await meetingComment.deleteMany({ meetingId: des_events[i] });
+      //   await meetingImages.deleteMany({ meetingId: des_events[i] });
+      //   await meetingLikes.deleteMany({ meetingId: des_events[i] });
+      //   await meetingFavorit.deleteMany({ meetingId: des_events[i] });
+      //   await meetingParticipantSpot.deleteMany({ meetingId: des_events[i] });
+      //   await meetingView.deleteMany({ meetingId: des_events[i] });
+      //   await meetingRating.deleteMany({ meetingId: des_events[i] });
+      //   await meetingParticipant.deleteMany({ meetingId: des_events[i] });
+      //   await meetingImpressionImage.deleteMany({ meetingId: des_events[i] });
+
+      //   await User.findByIdAndUpdate(meeting.user.toString(), {
+      //     $pull: { meetings: meeting._id, meeting_favorites: meeting._id },
+      //   });
+      //   await meeting.remove();
+      //   console.log("Meetings and all related data deleted successfully");
+      // }
     }
     if (typeof des_events === "string") {
       const meeting = await meetingModel.findById(des_events);
+      console.log(des_events,"des_events");
+      
       await Notification.deleteMany({ meetingId: des_events });
       await Report.deleteMany({ meeting: des_events });
       if (!meeting) {

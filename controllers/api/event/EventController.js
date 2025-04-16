@@ -763,6 +763,11 @@ class EventController {
     await User.findByIdAndUpdate(user.id, {
       $set: { last_event_date: lastDate },
     });
+      const notidb =  await adminNotifStore({
+      type: "Новая события",
+      message: event.name,
+      data: event,
+    });
     notifEvent.emit(
       "send",
       "ADMIN",
@@ -770,13 +775,11 @@ class EventController {
         type: "Новая события",
         message: event.name,
         data: event,
+        _id:notidb._id
+
       })
     );
-    await adminNotifStore({
-      type: "Новая события",
-      message: event.name,
-      data: event,
-    });
+
     const userDb = await User.findById(user.id);
     async function runAgenda(id, type) {
       await agenda.start(); // <-- Important!

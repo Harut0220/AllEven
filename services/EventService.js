@@ -613,6 +613,8 @@ class EventService {
     if (Array.isArray(des_events)) {
       for await (const eventId of des_events) {
         const event = await Event.findById(eventId);
+        console.log(eventId,"eventId");
+        
         await Notification.deleteMany({ eventId });
         await Report.deleteMany({ event: eventId });
     
@@ -658,6 +660,8 @@ class EventService {
       }
     }else if (typeof des_events === "string") {
       const event = await Event.findById(des_events);
+      console.log(des_events,"des_events");
+      
       await Notification.deleteMany({ eventId: des_events });
       await Report.deleteMany({ event: des_events });
       if (!event) {

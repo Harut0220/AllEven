@@ -298,8 +298,8 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function generateNotifDiv(data) {
-  // console.log(data,"data");
+function generateNotifDiv(data,type) {
+  console.log(data,"data");
   
   return `<div class="notificationModalChild" id="notif-${data.message}">
     <div>${data.type}</div>
@@ -321,7 +321,8 @@ function removeNotif(el, message,id) {
   el.parentElement.remove();
   // console.log(message,id,"message,id");
   const count= document.getElementById("notificationCountSpan").innerHTML;
-  document.getElementById("notificationCountSpan").innerHTML=Number(count)-1
+  const resultCount=Number(count)-1
+  document.getElementById("notificationCountSpan").innerHTML=resultCount===0?" ":resultCount
   
   axios.post(`/admin/profile/notification/confirm/${id}`)
   // const localSocket = JSON.parse(localStorage.getItem("notifCount"));
@@ -369,8 +370,8 @@ const loadNotifs = async () => {
    document.getElementById("notificationCountSpan").innerHTML = notifsAdmin.messages.length > 0 ?  notifsAdmin.messages.length : "";
 
   notifsAdmin.messages.forEach(el => {
-    el._id=notifsAdmin._id
-    appendDiv("notifModal", generateNotifDiv(el));
+    // el._id=notifsAdmin._id
+    appendDiv("notifModal", generateNotifDiv(el,"database"));
   });
 };
 
@@ -387,7 +388,7 @@ socket.onmessage = function (event) {
     window.location.reload();
     return;
   }
-  appendDiv("notifModal", generateNotifDiv(data));
+  appendDiv("notifModal", generateNotifDiv(data,"socket"));
   const count= document.getElementById("notificationCountSpan").innerHTML;
   document.getElementById("notificationCountSpan").innerHTML=Number(count)+1
   // const localSocket = JSON.parse(localStorage.getItem("notifCount"));

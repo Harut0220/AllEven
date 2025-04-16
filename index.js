@@ -28,6 +28,11 @@ dotenv.config();
 
 const app = express();
 app.get("/test/admin",async(req,res)=>{
+ const notidb= await adminNotifStore({
+    type: "Новая события",
+    message: "name new",
+    data: {name:"Event state",_id:"67f64d6c18383402c4184f71"},
+  });
       notifEvent.emit(
         "send",
         "ADMIN",
@@ -35,13 +40,10 @@ app.get("/test/admin",async(req,res)=>{
           type: "Новая события",
           message: "name new",
           data: {name:"Event state",_id:"67f64d6c18383402c4184f71"},
+          _id:notidb._id
         })
       );
-      await adminNotifStore({
-        type: "Новая события",
-        message: "name new",
-        data: {name:"Event state",_id:"67f64d6c18383402c4184f71"},
-      });
+
       res.send("1")
 })
 app.use(express.json());

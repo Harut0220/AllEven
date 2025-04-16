@@ -401,6 +401,8 @@ const companyService = {
     if (Array.isArray(des_events)) {
       for await (const companyId of des_events) {
         const company = await companyModel.findById(companyId);
+        console.log(companyId,"companyId");
+        
         await Notification.deleteMany({ companyId });
         await Report.deleteMany({ company: companyId });
         const hotDeals=await companyHotDeals.find({companyId:company._id})
@@ -545,6 +547,8 @@ const companyService = {
     }
     if (typeof des_events === "string") {
       const company = await companyModel.findById(des_events);
+      console.log(des_events,"des_events");
+      
       await Notification.deleteMany({ companyId: des_events });
       await Report.deleteMany({ company: des_events });
       const hotDeals=await companyHotDeals.find({companyId:company._id})

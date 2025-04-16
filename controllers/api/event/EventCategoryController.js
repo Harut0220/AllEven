@@ -39,12 +39,20 @@ class EventCategoryController {
       description,
       owner: user.id,
     });
+    const notidb = await adminNotifStore({
+      type: "Новая категория",
+      message: category.name,
+    });
+
     notifEvent.emit(
       "send",
       "ADMIN",
-      JSON.stringify({ type: "Новая категория", message: category.name })
+      JSON.stringify({
+        type: "Новая категория",
+        message: category.name,
+        _id: notidb._id,
+      })
     );
-    await adminNotifStore({ type: "Новая категория", message: category.name });
     await this.UserService.pushInCollection(
       user.id,
       category,
