@@ -178,7 +178,7 @@
 <script>
       function openAppOrStore(id,ownerComp) {
       var packageName = "com.alleven"; // Replace with your actual package name
-      var appScheme = `alleven://singleCompany/${id}?owner=${ownerComp}`; // Replace with your actual deep link
+      var appScheme = `alleven://company/${id}?owner=${ownerComp}`; // Replace with your actual deep link
       console.log(appScheme,"appScheme")
       // Try opening the app
       window.location.href = appScheme;
@@ -192,7 +192,7 @@
 
       function openAppOrStoreIOS(id,ownerComp) {
       var packageName = "1662109163"; // Replace with your actual package name
-      var appScheme = `alleven://singleCompany/${id}?owner=${ownerComp}`; // Replace with your actual deep link
+      var appScheme = `alleven://company/${id}?owner=${ownerComp}`; // Replace with your actual deep link
 
       // Try opening the app
       window.location.href = appScheme;

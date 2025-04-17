@@ -171,30 +171,23 @@
 </div>
 <script src="../../public/js/axios.js"></script>
 <script>
-      function openAppOrStore(id, ownerMeet) {
-           const packageName = "com.alleven";
-           const appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`;
-           const fallbackUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-         
-           const isAndroid = /android/i.test(navigator.userAgent);
-         
-           if (isAndroid) {
-             const intentUri = `intent://singleMeeting/${id}?owner=${ownerMeet}#Intent;scheme=alleven;package=${packageName};end`;
-             window.location.href = intentUri;
-           } else {
-             // iOS (or fallback for non-intent-supporting browsers)
-             window.location.href = appScheme;
-         
-             setTimeout(() => {
-               window.location.href = fallbackUrl;
-             }, 2000);
-           }
-      }
+    function openAppOrStore(id,owner) {
+      var packageName = "com.alleven"; // Replace with your actual package name
+      var appScheme = `alleven://meeting/${id}?owner=${owner}`; // Replace with your actual deep link
+      // Try opening the app
+      window.location.href = appScheme;
+
+      // If the app is not installed, redirect to the Play Store after 2 seconds
+      setTimeout(function () {
+        window.location.href =
+          "https://play.google.com/store/apps/details?id=" + packageName;
+      }, 2000);
+    }
 
 
-      function openAppOrStoreIOS(id,ownerMeet) {
+    function openAppOrStoreIOS(id,ownerMeet) {
       var packageName = "1662109163"; // Replace with your actual package name
-      var appScheme = `alleven://singleMeeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
+      var appScheme = `alleven://meeting/${id}?owner=${ownerMeet}`; // Replace with your actual deep link
 
       window.location.href = appScheme;
 

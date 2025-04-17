@@ -127,6 +127,8 @@ const passwordResetConfirm = async (req,res,next) => {
 }
 
 const passwordResetNewPass = async (req,res,next) => {
+    console.log(req.body,"req.body");
+    
     const validationRule = {
         "expiration_token": "required",
         "password" : "required|integer",

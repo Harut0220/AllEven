@@ -144,6 +144,7 @@ class AuthController {
     const { phone_number } = req.body;
     let rand = await this.GenerateRand.pin();
     console.log("password reset",phone_number);
+    console.log(rand,"rand");
     
     let success = myCache.set(`reset_pass_${phone_number}`, rand, 54000);
     const sendSMS = await this.SmsProstoService.sendMessage(phone_number, rand);
