@@ -185,43 +185,53 @@
 
 
     function openAppOrStore(id, ownerComp) {
-  var packageName = "com.alleven";
-  var appScheme = `alleven://event/${id}?owner=${ownerComp}`;
-  var storeUrl = "https://play.google.com/store/apps/details?id=" + packageName;
+           var packageName = "com.alleven";
+           var appScheme = `alleven://event/${id}?owner=${ownerComp}`;
+           var storeUrl = "https://play.google.com/store/apps/details?id=" + packageName;
+         
+           var now = Date.now();
+           var timeout = setTimeout(function () {
+             // Եթե դեռ էջի visibility-ն "visible" է, ենթադրում ենք որ ծրագիրը չբացվեց
+             if (document.visibilityState === 'visible') {
+               window.location.href = storeUrl;
+             }
+           }, 1500);
+         
+           // Փորձում ենք բացել ծրագիրը
+           window.location.href = appScheme;
+         
+           // Եթե visibility-ն փոխվում է (օրինակ՝ բացվեց հավելվածը), չեղարկում ենք redirect-ը
+           document.addEventListener('visibilitychange', function () {
+             if (document.visibilityState === 'hidden') {
+               clearTimeout(timeout);
+             }
+           });
+      }
 
-  var now = Date.now();
-  var timeout = setTimeout(function () {
-    // Եթե դեռ էջի visibility-ն "visible" է, ենթադրում ենք որ ծրագիրը չբացվեց
-    if (document.visibilityState === 'visible') {
-      window.location.href = storeUrl;
-    }
-  }, 1500);
 
-  // Փորձում ենք բացել ծրագիրը
-  window.location.href = appScheme;
-
-  // Եթե visibility-ն փոխվում է (օրինակ՝ բացվեց հավելվածը), չեղարկում ենք redirect-ը
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden') {
-      clearTimeout(timeout);
-    }
-  });
-}
-
-
-      function openAppOrStoreIOS(id,owner) {
-      var packageName = "1662109163"; // Replace with your actual package name
-      var appScheme = `alleven://event/${id}?owner=${owner}`; // Replace with your actual deep link
-
-      // Try opening the app
-      window.location.href = appScheme;
-
-      // If the app is not installed, redirect to the Play Store after 2 seconds
-      setTimeout(function () {
-        window.location.href =
-          "https://apps.apple.com/am/app/alleven/id" + packageName;
-      }, 2000);
-    }
+          function openAppOrStoreIOS(id, ownerComp) {
+           var packageName = "1662109163";
+           var appScheme = `alleven://event/${id}?owner=${ownerComp}`;
+           var storeUrl = "https://apps.apple.com/am/app/alleven/id" + packageName;
+         
+           var now = Date.now();
+           var timeout = setTimeout(function () {
+             // Եթե դեռ էջի visibility-ն "visible" է, ենթադրում ենք որ ծրագիրը չբացվեց
+             if (document.visibilityState === 'visible') {
+               window.location.href = storeUrl;
+             }
+           }, 1500);
+         
+           // Փորձում ենք բացել ծրագիրը
+           window.location.href = appScheme;
+         
+           // Եթե visibility-ն փոխվում է (օրինակ՝ բացվեց հավելվածը), չեղարկում ենք redirect-ը
+           document.addEventListener('visibilitychange', function () {
+             if (document.visibilityState === 'hidden') {
+               clearTimeout(timeout);
+             }
+           });
+      }
 
 
 </script>
