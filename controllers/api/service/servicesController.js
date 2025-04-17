@@ -438,7 +438,10 @@ const servicesController = {
             resArray.push(resToday[i]);
           }
           resObject[resToday[0].dateSlice] = resArray;
-
+          console.log(resArray,"resArray");
+          console.log(dealRegisters,"dealRegisters");
+          resArray.reverse()
+          dealRegisters.reverse()
           res
             .status(200)
             .send({ message: "success", data: resObject, dealRegisters });
