@@ -435,7 +435,7 @@ const servicesController = {
         // dealRegisters = hotDealsDb;
         if (resToday.length) {
           // resToday.sort((a, b) => a.dateSlice - b.dateSlice);
-          resToday.sort((a, b) => new Date(a.dateSlice) - new Date(b.dateSlice))
+          resToday.sort((a, b) => new Date(b.dateSlice) - new Date(a.dateSlice))
 
           const resArray = [];
           for (let i = 0; i < resToday.length; i++) {
