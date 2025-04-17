@@ -430,22 +430,25 @@ const servicesController = {
             dealRegisters.push(obj);
           }
         }
+
+        dealRegisters.sort((a, b) => a.date - b.date)
         // dealRegisters = hotDealsDb;
         if (resToday.length) {
-          resToday.sort((a, b) => b.dateSlice - a.dateSlice);
+          resToday.sort((a, b) => a.dateSlice - b.dateSlice);
           const resArray = [];
           for (let i = 0; i < resToday.length; i++) {
             resArray.push(resToday[i]);
           }
           resObject[resToday[0].dateSlice] = resArray;
-          console.log(resArray,"resArray");
-          console.log(dealRegisters,"dealRegisters");
-          resArray.reverse()
-          dealRegisters.reverse()
+          console.log(resArray,"resArray exist reg");
+          console.log(dealRegisters,"dealRegisters exist reg");
           res
             .status(200)
             .send({ message: "success", data: resObject, dealRegisters });
         } else {
+          console.log(resArray,"resArray");
+          console.log(dealRegisters,"dealRegisters ");
+
           res
             .status(200)
             .send({ message: "success", data: resToday, dealRegisters });
