@@ -431,10 +431,12 @@ const servicesController = {
           }
         }
 
-        dealRegisters.sort((a, b) => a.date - b.date)
+        dealRegisters.sort((a, b) => new Date(a.date) - new Date(b.date))
         // dealRegisters = hotDealsDb;
         if (resToday.length) {
-          resToday.sort((a, b) => a.dateSlice - b.dateSlice);
+          // resToday.sort((a, b) => a.dateSlice - b.dateSlice);
+          resToday.sort((a, b) => new Date(a.dateSlice) - new Date(b.dateSlice))
+
           const resArray = [];
           for (let i = 0; i < resToday.length; i++) {
             resArray.push(resToday[i]);
