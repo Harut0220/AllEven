@@ -120,32 +120,6 @@ const servicesController = {
 
     res.status(200).send({ message: "success", data: result });
   },
-  // confirmPay: async (req, res) => {
-  //   try {
-  //     const authHeader = req.headers.authorization;
-  //     const token = authHeader.split(" ")[1];
-  //     const user = jwt.decode(token);
-  //     const { id } = req.body;
-  //     const registerDb = await servicesRegistrations.findById(id);
-  //     const service = await CompanyServiceModel.findById(
-  //       registerDb.serviceId.toString()
-  //     );
-  //     const prepaymentPrice = (service.cost * 10) / 100;
-  //     // const servicePay = new ServicePays({
-  //     //   user: user.id,
-  //     //   service: registerDb.serviceId,
-  //     //   registerId: id,
-  //     //   prepayment: true,
-  //     //   prepaymentPrice: prepaymentPrice,
-  //     //   paymentPrice: service.cost,
-  //     // });
-
-  //     // await servicePay.save();
-  //     res.status(200).send({ message: "success", data: servicePay });
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // },
   freeTimes: async (req, res) => {
     const { id, date } = req.query;
 
@@ -338,6 +312,7 @@ const servicesController = {
       const inFuture = [];
       const inPast = [];
       const objectIdArray = company.services.map((id) => ObjectId(id));
+      
       const dbResult = await servicesRegistrations
         .find({ pay: true, serviceId: { $in: objectIdArray } })
         .populate({
@@ -346,7 +321,7 @@ const servicesController = {
         })
         .populate("serviceId")
         .exec();
-
+        
       const formattedDate = moment.tz(process.env.TZ).format("YYYY-MM-DD");
 
       /////////////////////////////////////////////////////////
@@ -457,7 +432,7 @@ const servicesController = {
         }
       } else if (day === "future") {
         if (inFuture.length) {
-          inFuture.sort((a, b) => b.dateSlice - a.dateSlice);
+          inFuture.sort((a, b) => a.dateSlice - b.dateSlice);
           for (let i = 0; i < inFuture.length; i++) {
             resObject[inFuture[i].dateSlice] = [];
           }
@@ -556,13 +531,6 @@ const servicesController = {
       console.error(error);
     }
   },
-  // editeService: async (req, res) => {
-  //   try {
-  //     const { serviceId } = req.body;
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // },
   confirm: async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
