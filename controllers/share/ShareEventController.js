@@ -58,21 +58,6 @@ class ShareEventController {
       .populate("services")
       .exec();
 
-    // res.render("profile/event-share", {
-    //   title: event.name,
-    //   event,
-    //   images,
-    //   imageHeader:event.images[0].name,
-    //   imageHeader,
-    //   baseUrl,
-    //   category:event.category.name,
-    //   meta: {
-    //     title: event.name,
-    //     description: event.description || "Check out this event on AllEven",
-    //     image: `https://alleven.ru/${event.images[0].name}`,
-    //     url: `https://alleven.ru/event/${req.params.id}`,
-    //   },
-    // });
     let arr=[]
 
     event.services.map((el)=>{
@@ -94,6 +79,7 @@ class ShareEventController {
       resultDescription=serviceName
     }
     const owner=event.owner._id
+    
     res.render("profile/company-share", {
       title: resultName,
       event,
@@ -105,7 +91,8 @@ class ShareEventController {
       category: event.category.name,
       phone: event.phoneNumbers[0],
       services:event.services,
-      serviceName:resultDescription
+      description:resultDescription,
+      serviceName
     });
   };
 
