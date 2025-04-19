@@ -209,29 +209,31 @@
       }
 
 
-          function openAppOrStoreIOS(id, ownerComp) {
-           var packageName = "1662109163";
-           var appScheme = `alleven://event/${id}?owner=${ownerComp}`;
-           var storeUrl = "https://apps.apple.com/am/app/alleven/id" + packageName;
-         
-           var now = Date.now();
-           var timeout = setTimeout(function () {
-             // Եթե դեռ էջի visibility-ն "visible" է, ենթադրում ենք որ ծրագիրը չբացվեց
-             if (document.visibilityState === 'visible') {
-               window.location.href = storeUrl;
-             }
-           }, 1500);
-         
-           // Փորձում ենք բացել ծրագիրը
-           window.location.href = appScheme;
-         
-           // Եթե visibility-ն փոխվում է (օրինակ՝ բացվեց հավելվածը), չեղարկում ենք redirect-ը
-           document.addEventListener('visibilitychange', function () {
-             if (document.visibilityState === 'hidden') {
-               clearTimeout(timeout);
-             }
-           });
+      function openAppOrStoreIOS(id, ownerComp) {
+             var packageName = "1662109163";
+             var appScheme = `alleven://meeting/${id}?owner=${ownerComp}`;
+             var storeUrl = "https://apps.apple.com/am/app/alleven/id" + packageName;
+           
+             var now = Date.now();
+             var timeout = setTimeout(function () {
+               if (document.visibilityState === 'visible') {
+                 window.location.href = storeUrl;
+               }
+             }, 1500);
+           
+             // Try with iframe instead of window.location.href
+             var iframe = document.createElement('iframe');
+             iframe.style.display = 'none';
+             iframe.src = appScheme;
+             document.body.appendChild(iframe);
+           
+             document.addEventListener('visibilitychange', function () {
+               if (document.visibilityState === 'hidden') {
+                 clearTimeout(timeout);
+               }
+             });
       }
+
 
 
 </script>
