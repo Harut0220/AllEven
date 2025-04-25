@@ -153,7 +153,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     .exec();
   dealRegistr.status = true;
   dealRegistr.pay = true;
-  dealRegistr.free = false;
+  // dealRegistr.free = false;
   dealRegistr.payTime = moment.tz(process.env.TZ).format("YYYY-MM-DD HH:mm:ss");
   await dealRegistr.save();
   const dealDb = await companyHotDeals.findById(dealRegistr.dealId);
@@ -226,7 +226,7 @@ payRouter.get("/deal/success/:id", async (req, res) => {
     );
   }
 
-  const mobileLink = `alleven://singleCompany/${dealDb.companyId}?date=${dealRegistr.startTime}`;
+  const mobileLink = `alleven://singleCompany/${dealDb.companyId}?status=success&date=${dealRegistr.startTime}`;
 
   res.send(`
         <html>
@@ -252,7 +252,7 @@ payRouter.get("/deal/reject/:id", async (req, res) => {
     .populate("user");
   const dealDb = await companyHotDeals.findById(dealRegistr.dealId);
 
-  const mobileLink = `alleven://singleCompany/${dealDb.companyId}`;
+  const mobileLink = `alleven://singleCompany/${dealDb.companyId}?status=reject&date=${dealRegistr.startTime}`;
 
   res.send(`
         <html>
