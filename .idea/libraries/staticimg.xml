@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="staticimg">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/public/images/staticimg/meeting.zip!/" />
+      <root url="jar://$PROJECT_DIR$/public/images/staticimg/Alleven.zip!/" />
+      <root url="jar://$PROJECT_DIR$/public/images/staticimg/pngMeeting.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
