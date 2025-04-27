@@ -18,6 +18,7 @@ import companyHotDealRegistration from "../../../models/company/companyHotDealRe
 import companyParticipants from "../../../models/company/companyParticipants.js";
 import companyService from "../../../models/company/companyService.js";
 import { agenda } from "../../../index.js";
+import daysFunc from "../../../helper/days.js";
 const { ObjectId } = mongoose.Types;
 
 const servicesController = {
@@ -127,43 +128,7 @@ const servicesController = {
 
     const companyDb = await companyModel.findById(serviceDb.companyId);
 
-    const daysFunc = (daysDb) => {
-      if (daysDb === "Пн․- Пят․") {
-        return ["понедельник", "вторник", "среда", "четверг", "пятница"];
-      } else if (daysDb === "Пн․- Сб.") {
-        return [
-          "понедельник",
-          "вторник",
-          "среда",
-          "четверг",
-          "пятница",
-          "суббота",
-        ];
-      } else if (daysDb === "Суб․- Вс․") {
-        return ["суббота", "воскресенье"];
-      } else if (daysDb === "Вт․- Вс․") {
-        return [
-          "вторник",
-          "среда",
-          "четверг",
-          "пятница",
-          "суббота",
-          "воскресенье",
-        ];
-      } else if (daysDb === "Пн․- Чт․") {
-        return ["понедельник", "вторник", "среда", "четверг"];
-      } else if (daysDb === "Пн.-Вс.") {
-        return [
-          "понедельник",
-          "вторник",
-          "среда",
-          "четверг",
-          "пятница",
-          "суббота",
-          "воскресенье",
-        ];
-      }
-    };
+
 
     const dayName = moment
       .tz(date, "YYYY-MM-DD", process.env.TZ)
@@ -875,33 +840,7 @@ const servicesController = {
         moment.locale("ru");
         const specificDate = moment.tz(today, process.env.TZ);
         const dayName = specificDate.format("dddd");
-        const daysFunc = (daysDb) => {
-          if (daysDb === "Пн․- Пят․") {
-            return ["понедельник", "вторник", "среда", "четверг", "пятница"];
-          } else if (daysDb === "Пн․- Сб.") {
-            return [
-              "понедельник",
-              "вторник",
-              "среда",
-              "четверг",
-              "пятница",
-              "суббота",
-            ];
-          } else if (daysDb === "Суб․- Вс․") {
-            return ["суббота", "воскресенье"];
-          } else if (daysDb === "Вт․- Вс․") {
-            return [
-              "вторник",
-              "среда",
-              "четверг",
-              "пятница",
-              "суббота",
-              "воскресенье",
-            ];
-          } else if (daysDb === "Пн․- Чт․") {
-            return ["понедельник", "вторник", "среда", "четверг"];
-          }
-        };
+
 
         const days = daysFunc(daysDb);
 
