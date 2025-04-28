@@ -11,7 +11,8 @@ class ShareEventController {
 
   meetIndex = async (req, res) => {
     const meetingId = req.params.id;
-
+    console.log(meetingId,"meetingId");
+    
     const event = await meetingModel.findById(meetingId).populate("images").populate({path:"user",select:"_id phone_number"});
     const date=event.date.split(" ")[0]
     const time=event.date.split(" ")[1]
