@@ -365,7 +365,7 @@ const servicesController = {
             console.log(element.date,"element.date");
             
           const dealRegistersDb = await companyHotDealRegistration
-            .findOne({ dealId: element._id, })
+            .findOne({ dealId: element._id,pay: true })
             .populate({
               path: "user",
               select: "name surname avatar phone_number",

@@ -1061,7 +1061,7 @@ const companyController = {
       }
 
       const evLink = `alleven://myCompany/${company._id}`;
-     const notidb = await adminNotifStore({
+      const notidb = await adminNotifStore({
         type: "Онлайн оплата",
         message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
         data: company,
@@ -1074,11 +1074,9 @@ const companyController = {
           type: "Онлайн оплата",
           message: `Деактивировано онлайн бронирование ${companyDb.companyName}`,
           data: company,
-          _id:notidb._id
-
+          _id: notidb._id,
         })
       );
-
 
       res
         .status(200)
@@ -2459,9 +2457,11 @@ const companyController = {
       }
       let upcomingDeals = [];
       // console.log(resultChanged1.hotDeals, "resultChanged1.hotDeals skzbic");
-      const hotDealsDb = await companyHotDeals.find({
-        companyId: resultChanged1._id,
-      });
+      const hotDealsDb = await companyHotDeals
+        .find({
+          companyId: resultChanged1._id,
+        })
+        .populate("registration");
       // for await(let i = 0; i < resultChanged1.hotDeals.length; i++) {
       for await (const hotDeal of hotDealsDb) {
         const todayDate = moment.tz(process.env.TZ).format("YYYY-MM-DD");
@@ -2473,7 +2473,9 @@ const companyController = {
         if (dealDateSpl === todayDate) {
           // console.log("today deal",hotDeal);
           if (hotDeal.registration) {
-            upcomingDeals.push(hotDeal);
+            if (hotDeal.registration.pay) {
+              upcomingDeals.push(hotDeal);
+            }
           }
         }
 
@@ -2629,11 +2631,11 @@ const companyController = {
             })
           );
         }
-        const notidb=await adminNotifStore({
+        const notidb = await adminNotifStore({
           type: "Новая услуга",
           message: "event",
           data: db,
-        })
+        });
         notifEvent.emit(
           "send",
           "ADMIN",
@@ -2641,11 +2643,9 @@ const companyController = {
             type: "Новая услуга",
             message: "event",
             data: db,
-            _id:notidb._id
-
+            _id: notidb._id,
           })
         );
-
 
         res.status(200).send(result);
       } else {
