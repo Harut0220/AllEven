@@ -350,11 +350,7 @@ const servicesController = {
         const endOfDay = nowInTz.clone().endOf("day").toDate();
         const hotDealsDb = await companyHotDeals
           .find({
-            companyId,
-            date: {
-              $gte: startOfDay,
-              $lte: endOfDay,
-            },
+            companyId
           })
           .populate({
             path: "registration",
@@ -365,7 +361,7 @@ const servicesController = {
         let dealRegisters = [];
         for (let i = 0; i < hotDealsDb.length; i++) {
           const element = hotDealsDb[i];
-
+          if(element.date.split(" ")[0] === moment.tz(process.env.TZ).format("YYYY-MM-DD")){
           const dealRegistersDb = await companyHotDealRegistration
             .findOne({ dealId: element._id, })
             .populate({
@@ -380,7 +376,7 @@ const servicesController = {
             };
 
             dealRegisters.push(obj);
-          }
+          }}
         }
 
         dealRegisters.sort((a, b) => new Date(a.date) - new Date(b.date))
