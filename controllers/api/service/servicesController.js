@@ -362,6 +362,8 @@ const servicesController = {
         for (let i = 0; i < hotDealsDb.length; i++) {
           const element = hotDealsDb[i];
           if(element.date.split(" ")[0] === moment.tz(process.env.TZ).format("YYYY-MM-DD")){
+            console.log(element.date,"element.date");
+            
           const dealRegistersDb = await companyHotDealRegistration
             .findOne({ dealId: element._id, })
             .populate({
