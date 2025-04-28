@@ -351,7 +351,7 @@ const servicesController = {
         const hotDealsDb = await companyHotDeals
           .find({
             companyId,
-            createdAt: {
+            date: {
               $gte: startOfDay,
               $lte: endOfDay,
             },
@@ -360,6 +360,8 @@ const servicesController = {
             path: "registration",
             populate: { path: "user", select: "name surname avatar" },
           });
+          console.log(hotDealsDb,"hotDealsDb");
+          
         let dealRegisters = [];
         for (let i = 0; i < hotDealsDb.length; i++) {
           const element = hotDealsDb[i];
